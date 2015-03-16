@@ -1,6 +1,5 @@
 package pisada.fallDetector;
 
-import pisada.falldetector.R;
 import android.app.Activity;
 import android.os.Bundle;
 
