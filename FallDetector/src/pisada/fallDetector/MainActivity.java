@@ -13,5 +13,7 @@ public class MainActivity extends Activity {
         TextView txt = (TextView) findViewById(R.id.txt);
         txt.setText("Merdaaaaaaaaaaaaaaaaa");
         //culooooo
+        
+        //vkfjbvoivwoi
     }
 }
