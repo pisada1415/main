@@ -3,7 +3,7 @@ package pisada.fallDetector;
 /*
  * questa è la mainactivity. Vorrei farla in stile Google FIT (dateci un'occhiata) così rispettiamo
  * le richieste di mettere lo start stop (bottone in alto iniziale) nella stessa schermata
- * della lista di sessions.
+ * della lista di sessions..
  */
 
 import android.support.v7.app.ActionBarActivity;
