@@ -6,20 +6,41 @@ package pisada.fallDetector;
  * della lista di sessions..
  */
 
+import java.util.ArrayList;
+
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 
 public class SessionsListActivity extends ActionBarActivity {
 
+	private ListView listView;
+	private ArrayList<Sessione> sessions;
+	private MyAdapter adapter;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sessions_list);
+		listView = (ListView) findViewById(R.id.list);
+		sessions = new ArrayList<Sessione>();
+		sessions.add(new Sessione());
+		sessions.add(new Sessione());
+		sessions.add(new Sessione());
+		sessions.add(new Sessione());
+		sessions.add(new Sessione());
+		sessions.add(new Sessione());
+		sessions.add(new Sessione());
+		sessions.add(new Sessione());
+		sessions.add(new Sessione());
+		sessions.add(new Sessione());
+		adapter = new MyAdapter(this,sessions);
+		listView.setAdapter(adapter);
 	}
 
-	@Override
+	/*@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.sessions_list, menu);
@@ -36,5 +57,5 @@ public class SessionsListActivity extends ActionBarActivity {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
+	}*/
 }

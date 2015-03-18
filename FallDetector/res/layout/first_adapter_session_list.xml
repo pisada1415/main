@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+    <ImageButton 
+        android:id="@+id/play_pause_first_adapter"
+        android:background="@drawable/pause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="25dp"
+        android:contentDescription="@string/img" />
+    
+    <ImageButton 
+        android:id="@+id/stop_first_adapter"
+        android:background="@drawable/stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:contentDescription="@string/img" />
+    
+    <TextView
+        android:id="@+id/txt_first_adapter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nome Sessione" />
+    
+    <TextView
+        android:id="@+id/time_first_adapter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:text="Tempo Sessione (?)" />
+
+</LinearLayout>
