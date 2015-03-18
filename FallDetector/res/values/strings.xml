@@ -4,5 +4,11 @@
     <string name="app_name">FallDetector</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_sessions_list">SessionsListActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_session">SessionActivity</string>
+    <string name="title_activity_current_session">CurrentSessionActivity</string>
+    <string name="title_activity_fall_details">FallDetailsActivity</string>
+    <string name="title_activity_preferences">PreferencesActivity</string>
 
 </resources>
