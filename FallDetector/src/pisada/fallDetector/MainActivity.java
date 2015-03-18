@@ -14,7 +14,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         TextView txt = (TextView) findViewById(R.id.txt); //qualcuno non ha pushato il layout? mi da errore qui.. :/
         txt.setText("Merdaaaaaaaaaaaaaaaaa");
-        //culooooo
+        //culoooo
         txt.setClickable(true);
         txt.setOnClickListener(new View.OnClickListener() {
 			
