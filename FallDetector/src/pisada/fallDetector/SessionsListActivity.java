@@ -9,9 +9,10 @@ package pisada.fallDetector;
 import java.util.ArrayList;
 import java.util.List;
 
-import recycler.CardAdapter;
-import recycler.Member;
 import android.support.v7.app.ActionBarActivity;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,12 +22,15 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 
+
 public class SessionsListActivity extends ActionBarActivity {
 	private RecyclerView rView;
 	private CardAdapter cardAdapter;
 	private RecyclerView.LayoutManager mLayoutManager;
 	ArrayList<Member> members=new ArrayList<Member>();
 	public static int counter;
+	private SensorManager mSensorManager;
+	private Sensor mSensor;
 
 
 	@Override
@@ -35,11 +39,11 @@ public class SessionsListActivity extends ActionBarActivity {
 		setContentView(R.layout.activity_sessions_list);
 		rView=(RecyclerView) findViewById(R.id.my_recycler_view);
 		rView.setHasFixedSize(true);
-		for(counter=1;counter<50;counter++){
+		for(counter=1;counter<1;counter++){
 			Member m=new Member(counter,"cazzo");
 			members.add(m);
 		}
-		cardAdapter=new CardAdapter(members);
+		cardAdapter=new CardAdapter(members, this);
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(this);
 		rView.setLayoutManager(mLayoutManager);
@@ -54,6 +58,8 @@ public class SessionsListActivity extends ActionBarActivity {
 
 
 		});;
+		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
 	}
 	@Override
