@@ -26,7 +26,7 @@ public class SessionsListActivity extends ActionBarActivity {
 	private CardAdapter cardAdapter;
 	private RecyclerView.LayoutManager mLayoutManager;
 	ArrayList<Member> members=new ArrayList<Member>();
-	private int counter=0;
+	public static int counter;
 
 
 	@Override
@@ -35,8 +35,8 @@ public class SessionsListActivity extends ActionBarActivity {
 		setContentView(R.layout.activity_sessions_list);
 		rView=(RecyclerView) findViewById(R.id.my_recycler_view);
 		rView.setHasFixedSize(true);
-		for(int i=0;i<50;i++){
-			Member m=new Member(i,"cazzo");
+		for(counter=1;counter<50;counter++){
+			Member m=new Member(counter,"cazzo");
 			members.add(m);
 		}
 		cardAdapter=new CardAdapter(members);
@@ -48,9 +48,7 @@ public class SessionsListActivity extends ActionBarActivity {
 
 			@Override
 			public void onClick(View v) {
-				counter++;
-				Member m=new Member(counter, "ZIOOOOOOO");
-				members.add(m);
+				Member m=new Member(counter++, "cazzo");
 				cardAdapter.addItem(m);
 			}
 
