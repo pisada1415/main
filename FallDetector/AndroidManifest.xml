@@ -22,6 +22,7 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            
         </activity>
         <activity
             android:name=".SessionDetailsActivity"
@@ -34,11 +35,14 @@
         <activity
             android:name=".FallDetailsActivity"
             android:label="@string/title_activity_fall_details" >
+            
         </activity>
         <activity
             android:name=".PreferencesActivity"
             android:label="@string/title_activity_preferences" >
         </activity>
+        
+        <service android:name=".ForegroundService" />
     </application>
 
 </manifest>

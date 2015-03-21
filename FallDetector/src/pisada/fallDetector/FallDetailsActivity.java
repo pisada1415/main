@@ -1,16 +1,83 @@
 package pisada.fallDetector;
 
-import android.support.v7.app.ActionBarActivity;
+
+
+import java.util.Calendar;
+
+import pisada.plotmaker.Data;
+import pisada.plotmaker.Plot2d;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 
 public class FallDetailsActivity extends ActionBarActivity {
-
+	private static Plot2d plot;
+	private static LinearLayout graphLayout;
+	private static LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT); 
+	private static Calendar c = Calendar.getInstance();
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_fall_details);
+		
+
+		graphLayout = new LinearLayout(this);
+		graphLayout.setOrientation(LinearLayout.VERTICAL);
+
+		/*
+		 * va preso un layout esistente e va inflatata dentro la view giusta. poi siamo a cavallo
+		 */
+
+  //=====================================================inizio prove debug
+		plot = new Plot2d(this, 10);
+		plot.pushValue(new Data(0,2));
+		plot.pushValue(new Data(1,2));
+		plot.pushValue(new Data(2,30));
+		plot.pushValue(new Data(3,2));
+		plot.pushValue(new Data(4,1));
+		plot.pushValue(new Data(5,15));
+		plot.pushValue(new Data(9,2));
+		plot.pushValue(new Data(10,2));
+		plot.pushValue(new Data(11,30));
+		plot.pushValue(new Data(12,2));
+		plot.pushValue(new Data(13,1));
+		plot.pushValue(new Data(14,15));
+
+		
+		Thread t = new Thread(){
+				@Override
+				public void run()
+				{
+					while(true){
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					runOnUiThread (new Thread(new Runnable() { 
+				         public void run() {
+				        	 int minsec = c.get(Calendar.MINUTE)*60;
+				        	 int secsec = c.get(Calendar.SECOND); 
+				        	 c = Calendar.getInstance();
+				        	 plot.pushValue(new Data(minsec + secsec, Math.random()*100));
+								plot.invalidate();
+				         }
+				     }));
+					
+					}
+				}};
+		t.start();
+		
+	//=================================================fine prove debug
+		
+		graphLayout.addView(plot, lp);
+
+		setContentView(graphLayout);
+
 	}
 
 	@Override
