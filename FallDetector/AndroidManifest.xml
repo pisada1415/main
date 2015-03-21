@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="21" />
+        android:targetSdkVersion="22" />
 
     <application
         android:allowBackup="true"
@@ -17,12 +17,8 @@
         <activity
             android:name=".SessionsListActivity"
             android:label="@string/title_activity_sessions_list" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             
+           
         </activity>
         <activity
             android:name=".SessionDetailsActivity"
@@ -35,7 +31,11 @@
         <activity
             android:name=".FallDetailsActivity"
             android:label="@string/title_activity_fall_details" >
-            
+             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".PreferencesActivity"

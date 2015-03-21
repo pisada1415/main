@@ -98,7 +98,7 @@ public class ForegroundService extends Service implements SensorEventListener {
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         
-		HandlerThread thread = new HandlerThread("ServiceStartArguments",
+		HandlerThread thread = new HandlerThread("",
 				android.os.Process.THREAD_PRIORITY_FOREGROUND); //almost unkillable
 		thread.start();
 
@@ -131,27 +131,21 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 					running = true;
 					/*
-					 * here we check the accelerometer data and execute the algorithm
+					 * the service keeps running as long as this statement is cycling 
+					 * the check for the service to stop occurs every 5 seconds (to save battery)
 					 */
-					
-					/*
-					 * qui prendi i dati dell'accelerometro e li passi in danielAlgorithm 
-					 * sotto forma di "roba"
-					 */
-					DetectorAlgorithm.danielAlgorithm(/*roba*/); 
 					
 					try {
-						Thread.sleep(10);
+						Thread.sleep(5000);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
+						
 						e.printStackTrace();
 					}
 					if(stop)
 						break;
 
 				}
-			// Stop the service using the startId, so that we don't stop
-			// the service in the middle of handling another job
+			
 			running = false;
 			stopSelf(msg.arg1);
 		}
@@ -163,11 +157,19 @@ public class ForegroundService extends Service implements SensorEventListener {
 	public void onSensorChanged(SensorEvent event) {
 		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			float[] values = event.values;
-		    // Movement
+		    
 		    float x = values[0];
 		    float y = values[1];
 		    float z = values[2];
+		    
+		    long time = System.currentTimeMillis();
 		    System.out.println("values:" + x + " ," + y + " , " + z );
+		    /*
+			 * qui prendi i dati dell'accelerometro e li passi in danielAlgorithm 
+			 * sotto forma di "roba"
+			 */
+			DetectorAlgorithm.danielAlgorithm(x, y, z); //può restituire bool per identificare una caduta, in questo caso qui di seguito lanciamo la classe che notifica e manda email
+			//TODO storeToDB(time, x, y, z); per salvare i dati nel DataBase
 		}
 	}
 
@@ -175,8 +177,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-		
+	   //not interesting for this purpose
 	}
 
 }

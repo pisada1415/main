@@ -6,13 +6,15 @@ import java.util.Calendar;
 
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 public class FallDetailsActivity extends ActionBarActivity {
 	private static Plot2d plot;
@@ -23,10 +25,19 @@ public class FallDetailsActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		
+		
+		View view; 
+		LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
+		view = inflater.inflate(R.layout.activity_fall_details, null);
 
+		graphLayout = (LinearLayout) view.findViewById(R.id.linear01);
+		
+	
+/*
 		graphLayout = new LinearLayout(this);
 		graphLayout.setOrientation(LinearLayout.VERTICAL);
-
+*/
 		/*
 		 * va preso un layout esistente e va inflatata dentro la view giusta. poi siamo a cavallo
 		 */
@@ -75,8 +86,8 @@ public class FallDetailsActivity extends ActionBarActivity {
 	//=================================================fine prove debug
 		
 		graphLayout.addView(plot, lp);
-
 		setContentView(graphLayout);
+		
 
 	}
 
