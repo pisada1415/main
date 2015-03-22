@@ -5,6 +5,7 @@ package pisada.fallDetector;
  * le richieste di mettere lo start stop (bottone in alto iniziale) nella stessa schermata
  * della lista di sessions..
  */
+//Samuele gay
 
 import java.util.ArrayList;
 import java.util.List;

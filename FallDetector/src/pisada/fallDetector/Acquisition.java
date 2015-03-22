@@ -1,5 +1,6 @@
 package pisada.fallDetector;
 //DA FARE
+//Samuele gay
 public class Acquisition {
 	private long time;
 	private float xAxis;
