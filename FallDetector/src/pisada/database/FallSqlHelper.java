@@ -32,6 +32,7 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	public static final String ZAXIS="Z";
 	public static final String ASESSION="Session";
 	public static final String FALL="Fall";
+	
 	public static final String CREATE_ACQUISITION_TABLE=	
 	"CREATE TABLE IF NOT EXISTS "+ACQUISITION_TABLE+"("+
 			TIME+" INTEGER NOT NULL, "+
