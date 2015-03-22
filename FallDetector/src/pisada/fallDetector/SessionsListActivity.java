@@ -15,11 +15,14 @@ import pisada.recycler.CardAdapter;
 import android.support.v7.app.ActionBarActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,6 +61,8 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		setContentView(R.layout.activity_sessions_list);
 		
 		//INIZIALIZZO RECYCLERVIEW
+	
+		
 		rView=(RecyclerView) findViewById(R.id.my_recycler_view);
 		rView.setHasFixedSize(true);
 		cardAdapter=new CardAdapter(acquisitions, this);
@@ -135,9 +140,9 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		long currentTime=System.currentTimeMillis();
-		TextView xText=(TextView) findViewById(R.id.xAxis);
+	/*	TextView xText=(TextView) findViewById(R.id.xAxis);
 		TextView yText=(TextView) findViewById(R.id.yAxis);
-		TextView zText=(TextView) findViewById(R.id.zAxis);
+		TextView zText=(TextView) findViewById(R.id.zAxis);*/
 		float xValue=event.values[0];
 		float yValue=event.values[1];
 		float zValue=event.values[2];
@@ -159,7 +164,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		}
 	
 		//SCRiVE NELLE TEXT VIEW 
-		if((currentTime-lastFall)/1000>4) fall=false;
+	/*	if((currentTime-lastFall)/1000>4) fall=false;
 		if(!fall){
 			if(absG<30){
 				xText.setText(Float.toString(xValue));
@@ -173,7 +178,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 				fall=true;
 				lastFall=currentTime;
 			}
-		}
+		}*/
 	}
 
 	@Override
