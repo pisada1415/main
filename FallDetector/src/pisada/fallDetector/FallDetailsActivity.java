@@ -30,10 +30,11 @@ public class FallDetailsActivity extends ActionBarActivity {
 		View view; 
 		LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
 		view = inflater.inflate(R.layout.activity_fall_details, null);
-
-		graphLayout = (LinearLayout) view.findViewById(R.id.linear01);
+		RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.relative01);
 		
-	
+		graphLayout = (LinearLayout) rl.findViewById(R.id.linear01);
+		
+
 /*
 		graphLayout = new LinearLayout(this);
 		graphLayout.setOrientation(LinearLayout.VERTICAL);
@@ -43,7 +44,7 @@ public class FallDetailsActivity extends ActionBarActivity {
 		 */
 
   //=====================================================inizio prove debug
-		plot = new Plot2d(this, 10);
+		plot = new Plot2d(this, new Data(0,2));
 		plot.pushValue(new Data(0,2));
 		plot.pushValue(new Data(1,2));
 		plot.pushValue(new Data(2,30));
@@ -86,7 +87,7 @@ public class FallDetailsActivity extends ActionBarActivity {
 	//=================================================fine prove debug
 		
 		graphLayout.addView(plot, lp);
-		setContentView(graphLayout);
+		setContentView(rl);
 		
 
 	}
