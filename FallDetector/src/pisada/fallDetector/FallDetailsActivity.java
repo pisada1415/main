@@ -4,6 +4,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class FallDetailsActivity extends ActionBarActivity {
 
@@ -11,6 +12,9 @@ public class FallDetailsActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_fall_details);
+		TextView caduta = (TextView) findViewById(R.id.segnal_caduta);
+		savedInstanceState = getIntent().getExtras();
+		caduta.setText("Segnal: "+savedInstanceState.getBoolean("segnale"));
 	}
 
 	@Override

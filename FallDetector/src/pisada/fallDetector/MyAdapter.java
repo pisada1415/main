@@ -3,7 +3,6 @@ package pisada.fallDetector;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,12 +75,4 @@ public class MyAdapter extends ArrayAdapter<Sessione> {
 		}
 		return rowView;
 	}
-	
-	/*private void createFirstSession(View v){
-		
-	}
-	
-	private void createSession(View v){
-		
-	}*/
 }

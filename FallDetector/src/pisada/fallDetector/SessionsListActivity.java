@@ -9,10 +9,14 @@ package pisada.fallDetector;
 import java.util.ArrayList;
 
 import android.support.v7.app.ActionBarActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class SessionsListActivity extends ActionBarActivity {
 
@@ -38,6 +42,12 @@ public class SessionsListActivity extends ActionBarActivity {
 		sessions.add(new Sessione());
 		adapter = new MyAdapter(this,sessions);
 		listView.setAdapter(adapter);
+		listView.setOnItemClickListener(new OnItemClickListener(){
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,int position, long id) {
+				startActivity(new Intent(SessionsListActivity.this,SessionDetailsActivity.class));
+			}
+		});
 	}
 
 	/*@Override
