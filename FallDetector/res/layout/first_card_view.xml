@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/first_card_view"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="1400px"
     android:layout_margin="5dp"
     card_view:cardCornerRadius="4dp" >
 
@@ -11,7 +11,7 @@
         <ImageView
             android:id="@+id/image"
             android:layout_width="match_parent"
-            android:layout_height="1400px"
+            android:layout_height="match_parent"
             android:src="@drawable/first"
             android:scaleType="fitXY"/> 
            

@@ -6,7 +6,8 @@ package pisada.fallDetector;
  * della lista di sessions..
  */
 //Samuele gay
-
+//
+//Canaglia
 import java.util.ArrayList;
 import java.util.List;
 
