@@ -30,7 +30,7 @@ public class SessionsListActivity extends ActionBarActivity {
 		
 		
 		serviceIntent = new Intent(this, ForegroundService.class);
-		startService(serviceIntent);
+		startService(serviceIntent);	
 		//===============================================
 		//service debug end
 		//===============================================

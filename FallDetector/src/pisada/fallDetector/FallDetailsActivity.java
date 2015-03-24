@@ -18,7 +18,6 @@ import android.widget.RelativeLayout;
 
 public class FallDetailsActivity extends ActionBarActivity {
 	private static Plot2d plot;
-	private static LinearLayout graphLayout;
 	private static LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT); 
 	private static Calendar c = Calendar.getInstance();
 	@Override
@@ -32,7 +31,7 @@ public class FallDetailsActivity extends ActionBarActivity {
 		view = inflater.inflate(R.layout.activity_fall_details, null);
 		RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.relative01);
 		
-		graphLayout = (LinearLayout) rl.findViewById(R.id.linear01);
+		LinearLayout graphLayout = (LinearLayout) rl.findViewById(R.id.linear01);
 		
 
 /*

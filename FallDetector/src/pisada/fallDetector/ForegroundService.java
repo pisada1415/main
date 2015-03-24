@@ -21,11 +21,15 @@ public class ForegroundService extends Service implements SensorEventListener {
 	boolean running = false;
 	private Looper mServiceLooper;
 	private ServiceHandler mServiceHandler;
-	
+	private static boolean connected = false;
 	private SensorManager mSensorManager;
     private Sensor mAccelerometer;
+	private static ServiceReceiver connectedAc;
 	
-	
+	/*
+	 * VA INIZIALIZZATO CON INTENT IN CUI PASSI IL CONTEXT DELL'ACTIVITY CHE CHIAMA COSì
+	 * LA NOTIFICA RIFERISCE A QUELL'ACTIVITY
+	 */
 	
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -162,9 +166,11 @@ public class ForegroundService extends Service implements SensorEventListener {
 		    float y = values[1];
 		    float z = values[2];
 		    
-		    long time = System.currentTimeMillis();
-		    System.out.println("values:" + x + " ," + y + " , " + z );
-		    /*
+		    if(connected) //&& connectedAc == null
+		    {
+		    	connectedAc.serviceUpdate(x, y, z);
+		    }
+		     /*
 			 * qui prendi i dati dell'accelerometro e li passi in danielAlgorithm 
 			 * sotto forma di "roba"
 			 */
@@ -178,6 +184,18 @@ public class ForegroundService extends Service implements SensorEventListener {
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 	   //not interesting for this purpose
+	}
+	
+	public static void connect(ServiceReceiver connectedActivity)
+	{
+		connectedAc = connectedActivity;
+		connected = true;
+	}
+	
+	public static void disconnect()
+	{
+		connectedAc = null;
+		connected = false;
 	}
 
 }

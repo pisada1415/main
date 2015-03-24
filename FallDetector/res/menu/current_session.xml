@@ -6,7 +6,8 @@
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="stop service"
         app:showAsAction="never"/>
+    <item android:id="@+id/action_settings_2" android:title="start service" android:orderInCategory="100"></item>
 
 </menu>

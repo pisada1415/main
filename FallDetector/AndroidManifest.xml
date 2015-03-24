@@ -27,15 +27,16 @@
         <activity
             android:name=".CurrentSessionActivity"
             android:label="@string/title_activity_current_session" >
-        </activity>
-        <activity
-            android:name=".FallDetailsActivity"
-            android:label="@string/title_activity_fall_details" >
-             <intent-filter>
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".FallDetailsActivity"
+            android:label="@string/title_activity_fall_details" >
+             
         </activity>
         <activity
             android:name=".PreferencesActivity"
