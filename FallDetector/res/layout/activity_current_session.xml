@@ -6,20 +6,23 @@
 <!-- ROBA -->
     <LinearLayout
         android:id="@+id/graphx"
+        android:layout_margin="5dp"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
         android:orientation="vertical" >
     </LinearLayout>
     <LinearLayout
         android:id="@+id/graphy"
+        android:layout_margin="5dp"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
         android:orientation="vertical" >
     </LinearLayout>
     <LinearLayout
         android:id="@+id/graphz"
+        android:layout_margin="5dp"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
         android:orientation="vertical" >
     </LinearLayout>
 

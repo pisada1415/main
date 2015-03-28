@@ -1,39 +1,67 @@
 package pisada.fallDetector;
 
+
+
+import java.util.Calendar;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
+
+/*
+ * funzionamento del gps:
+ * la location viene aggiornata ogni 5 minuti richiedendo la posizione ai provider gps e network.
+ * le coordinate vengono poi passate al metodo che invia la notifica della caduta dando la precedenza ai dati in arrivo dal gps.
+ * todo: 
+ * -usare play service SOLO se disponibili nel dispositivo in uso per avere una location più accurata
+ * -geolocator per dire nome del paese in cui si trova oltre alle coordinate (sempre se play services disponibili)
+ * 
+ */
 
 public class ForegroundService extends Service implements SensorEventListener {
 
-	boolean stop = false; 
-	boolean running = false;
+	private final String GPSProvider = LocationManager.GPS_PROVIDER;
+	private final String NetworkProvider = LocationManager.NETWORK_PROVIDER;
+	
+	private boolean stop = false; 
+	private boolean running = false;
+	private static boolean connected = false;
 	private Looper mServiceLooper;
 	private ServiceHandler mServiceHandler;
-	private static boolean connected = false;
 	private SensorManager mSensorManager;
     private Sensor mAccelerometer;
 	private static ServiceReceiver connectedAc;
+	private LocationListener locationListenerGPS, locationListenerNetwork;
+	private LocationManager lm;
+	private Double latitude = null;
+	private Double longitude = null;
+	private String activeService;
+	private Calendar c;
+	private int counterGPSUpdate = 5; //per attivare subito la ricerca della posizione
+	private Handler uiHandler;
 	
-	/*
-	 * VA INIZIALIZZATO CON INTENT IN CUI PASSI IL CONTEXT DELL'ACTIVITY CHE CHIAMA COSì
-	 * LA NOTIFICA RIFERISCE A QUELL'ACTIVITY
-	 */
 	
 	@Override
 	public void onStart(Intent intent, int startId) {
-		//	    handleCommand(intent);
+		
 	}
 
 	
@@ -47,19 +75,100 @@ public class ForegroundService extends Service implements SensorEventListener {
 		 * ) by calling stopSelf() or stopService()
 		 */
 
-		//	handleCommand(intent);
+		// handleCommand(intent);
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
+		
+		uiHandler = new Handler();
+		
+		activeService = intent.getExtras().getString("activeServ");
+
+		lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+		
+		locationListenerGPS = new LocationListener(){
+
+			@Override
+			public void onLocationChanged(Location location) {
+				stopLocationUpdates();
+			}
+
+			@Override
+			public void onStatusChanged(String provider, int status,
+					Bundle extras) {
+				
+			}
+
+			@Override
+			public void onProviderEnabled(String provider) {
+				
+			}
+
+			@Override
+			public void onProviderDisabled(String provider) {
+				
+			}
+
+			
 
 
-		Notification notification = new Notification(R.drawable.notificationicon, "FallDetector detecting...",
-				System.currentTimeMillis());
-		Intent notificationIntent = new Intent(this, SessionsListActivity.class);
-		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+			
+		};
+		
+		
+		locationListenerNetwork = new LocationListener(){
 
-		notification.setLatestEventInfo(this, "FallDetector",
-				"Detecting...", pendingIntent);
+			@Override
+			public void onLocationChanged(Location location) {
+				stopLocationUpdates();
+			}
 
+			@Override
+			public void onStatusChanged(String provider, int status,
+					Bundle extras) {
+				
+			}
+
+			@Override
+			public void onProviderEnabled(String provider) {
+				
+			}
+
+			@Override
+			public void onProviderDisabled(String provider) {
+				
+			}
+
+			
+
+
+			
+		};
+
+		if(activeService != null){ //chiamato sul thread UI
+			lm.requestLocationUpdates(GPSProvider, 5000, 0/*50*/, locationListenerGPS);
+			lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0/*50*/, locationListenerNetwork);// DA SCOMMENTARE
+		}
+
+		//=========================NOTIFICATION(START)============
+		Context context = getApplicationContext();
+		Intent notificationIntent = new Intent(this, CurrentSessionActivity.class);
+		PendingIntent contentIntent = PendingIntent.getActivity(context,
+				717232, notificationIntent, 0);
+
+		NotificationManager nm = (NotificationManager) context
+		        .getSystemService(Context.NOTIFICATION_SERVICE);
+
+		Resources res = context.getResources();
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+
+		builder.setContentIntent(contentIntent)
+		            .setSmallIcon(R.drawable.notificationicon)
+		            .setContentTitle(res.getString(R.string.detecting));
+		Notification n = builder.build();
+
+		nm.notify(717232, n);
+		//=========================NOTIFICATION(END)==============
+		
 
 		if(running)
 		{
@@ -68,7 +177,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		}
 		else
 		{
-			startForeground(717232, notification);
+			startForeground(717232, n);
 
 			Message msg = mServiceHandler.obtainMessage();
 			msg.arg1 = startId;
@@ -100,7 +209,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 		mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
         
 		HandlerThread thread = new HandlerThread("",
 				android.os.Process.THREAD_PRIORITY_FOREGROUND); //almost unkillable
@@ -109,7 +218,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// Get the HandlerThread's Looper and use it for our Handler
 		mServiceLooper = thread.getLooper();
 		mServiceHandler = new ServiceHandler(mServiceLooper);
-	}
+		
+			}
 
 	@Override
 	public void onDestroy() {
@@ -118,6 +228,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 		 */
 		stop = true;
 		mSensorManager.unregisterListener(this);
+		stopLocationUpdates();
+	}
+	
+	protected void stopLocationUpdates() {
+	    lm.removeUpdates(locationListenerGPS);
+	    lm.removeUpdates(locationListenerNetwork);
 	}
 
 
@@ -138,6 +254,25 @@ public class ForegroundService extends Service implements SensorEventListener {
 					 * the service keeps running as long as this statement is cycling 
 					 * the check for the service to stop occurs every 5 seconds (to save battery)
 					 */
+					
+					if(activeService == null){
+						activeService = Utility.checkLocationServices(getApplicationContext(), false);		
+					}
+					if(activeService != null && counterGPSUpdate++ >= 5) //richiesto update posizione ogni 5 minuti per risparmiare batteria
+					{
+						counterGPSUpdate = 0;
+						//lm.requestLocationUpdates(activeService, 2000, 10, locationListener);
+						
+						 runOnUiThread(new Runnable() {
+
+		                        @Override
+		                        public void run() {
+		                        	lm.requestLocationUpdates(GPSProvider, 5000, 0/*50*/, locationListenerGPS);
+		    						lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0/*50*/, locationListenerNetwork);
+		    					}
+		                    });
+					}
+					
 					
 					try {
 						Thread.sleep(5000);
@@ -166,16 +301,42 @@ public class ForegroundService extends Service implements SensorEventListener {
 		    float y = values[1];
 		    float z = values[2];
 		    
+		    c = Calendar.getInstance();
+		    
 		    if(connected) //&& connectedAc == null
 		    {
-		    	connectedAc.serviceUpdate(x, y, z);
+		    	long time = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
+		    	connectedAc.serviceUpdate(x, y, z, time);
 		    }
 		     /*
 			 * qui prendi i dati dell'accelerometro e li passi in danielAlgorithm 
 			 * sotto forma di "roba"
 			 */
-			DetectorAlgorithm.danielAlgorithm(x, y, z); //può restituire bool per identificare una caduta, in questo caso qui di seguito lanciamo la classe che notifica e manda email
-			//TODO storeToDB(time, x, y, z); per salvare i dati nel DataBase
+			boolean fall = DetectorAlgorithm.danielAlgorithm(x, y, z); //può restituire bool per identificare una caduta, in questo caso qui di seguito lanciamo la classe che notifica e manda email
+			
+			if(fall)
+			{
+				Location locationGPS = lm.getLastKnownLocation(GPSProvider);
+				Location locationNetwork = lm.getLastKnownLocation(NetworkProvider);
+				latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
+				longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
+				//qui usare latitude e longitude e mandarle al metodo che manderà l'email. considerare che saranno null in caso non ci siano i servizi attivi.
+				//
+				//
+				//
+				//
+			}
+			/*
+			 * if(fall){
+			 * Intent launchImOK = new Intent(getBaseContext(), ImOK.class);
+			 * launchImOK.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			 * launchImOK.putExtras("latitude", latitude);
+			 * launchImOK.putExtras("longitude", longitude); //se sono null va scritto location non disponibile
+			 * getApplication().startActivity(launchImOK);
+			 * (sarebbe bello fosse un dialog più che un'activity)
+			 */
+			//TODO storetoDB(time, x, y, z); per salvare i dati nel DataBase
+			
 		}
 	}
 
@@ -197,5 +358,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 		connectedAc = null;
 		connected = false;
 	}
+	
+	private void runOnUiThread(Runnable runnable) {
+        uiHandler.post(runnable);
+    }
 
 }

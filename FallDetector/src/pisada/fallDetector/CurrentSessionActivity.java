@@ -21,6 +21,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	Plot2d plotx, ploty, plotz;
 	Intent serviceIntent;
 	Calendar c;
+	private int secondsStartGraph;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +39,11 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		
 		c = Calendar.getInstance();
 		
-		
-		plotx = new Plot2d(this, new Data(c.get(Calendar.MINUTE)*60 + c.get(Calendar.SECOND),0));
-		ploty = new Plot2d(this, new Data(c.get(Calendar.MINUTE)*60 + c.get(Calendar.SECOND),0));
-		plotz = new Plot2d(this, new Data(c.get(Calendar.MINUTE)*60 + c.get(Calendar.SECOND),0));
+		secondsStartGraph = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
+
+		plotx = new Plot2d(this, new Data(c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - secondsStartGraph,0));
+		ploty = new Plot2d(this, new Data(c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - secondsStartGraph,0));
+		plotz = new Plot2d(this, new Data(c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - secondsStartGraph,0));
 		
 		graphXLayout.addView(plotx, lp);
 		graphYLayout.addView(ploty, lp);
@@ -49,6 +51,9 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		setContentView(rl);
 		
 		serviceIntent = new Intent(this, ForegroundService.class);
+		String activeServ = Utility.checkLocationServices(this, true);
+		serviceIntent.putExtra("activeServ", activeServ);
+		
 		startService(serviceIntent);
 		
 		
@@ -85,7 +90,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	}
 
 	@Override
-	public void serviceUpdate(float x, float y, float z) {
+	public void serviceUpdate(float x, float y, float z, long time) {
 		
 		//==============================================================================
 		// TODO qui vanno aggiunti i valori di x, y, z nell'oggetto plot per il grafico.
@@ -93,11 +98,11 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		//==============================================================================
 		
 			c = Calendar.getInstance();
-			plotx.pushValue(new Data(c.get(Calendar.MINUTE)*60 + c.get(Calendar.SECOND),x));
+			plotx.pushValue(new Data(time - secondsStartGraph,x));
 			plotx.invalidate();
-			ploty.pushValue(new Data(c.get(Calendar.MINUTE)*60 + c.get(Calendar.SECOND),y));
+			ploty.pushValue(new Data(time- secondsStartGraph,y));
 			ploty.invalidate();
-			plotz.pushValue(new Data(c.get(Calendar.MINUTE)*60 + c.get(Calendar.SECOND),z));
+			plotz.pushValue(new Data(time- secondsStartGraph,z));
 			plotz.invalidate();
 	}
 	

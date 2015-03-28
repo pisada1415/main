@@ -1,5 +1,6 @@
 package pisada.plotmaker;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import android.content.Context;
@@ -14,19 +15,24 @@ import android.view.View;
  * create a new Plot2d using the constructor
  * add the values using the pushValue method
  * get the view calling getplpotview
+ * quindi value iniziale di yaxis in realtà deve coincidere con secondi iniziali 
+ * quindi in teoria si risolve partendo da 0?
  */
 public class Plot2d extends View {
 
 	private Paint paint;
 	private ArrayList<Data> values, valuesInPixel;
-	private float maxX,maxY,minX,minY,xAxis,yAxis;
-	private int vectorLength;
+	private float maxX,maxY,minX,minY,xAxis;//, yAxis;
 	
-	
+	private final int MAX_VALUES_STORED = 100;
+	private DecimalFormat formatter;
 	/*
 	 * defData is a default value (like the first of the list) which is meant to initialize 
 	 * the min values
 	 */
+	
+	//arriva un tempo e il value è 0. cazzo sarebbe yaxis... 
+	
 	public Plot2d(Context context, Data defData) {
 		super(context);
 		paint = new Paint();
@@ -35,8 +41,7 @@ public class Plot2d extends View {
 		maxX = 0;
 		maxY = 0;
 		values = new ArrayList<Data>();
-		vectorLength = values.size();
-		
+		formatter = new DecimalFormat("#.00");
 	}
 	
 	
@@ -47,12 +52,17 @@ public class Plot2d extends View {
 	
 	public void pushValue(Data data)
 	{
+		while(values.size() >= MAX_VALUES_STORED)
+			values.remove(0);
 		values.add(data);
-		minX = Math.min(minX, data.getX());
+		
+		//minx dovrebe essere il valore minimo del tempo quindi il valore di tempo del primo della lista
+		minX = values.get(0).getX();
+		//minX = Math.min(minX, data.getX());
 		minY = Math.min(minY, data.getY());
-		maxX = Math.max(maxX, data.getX());
+		//maxX = Math.max(maxX, data.getX());
+		maxX = values.get(values.size()-1).getX();	
 		maxY = Math.max(maxY, data.getY());
-		vectorLength = values.size();
 	}
 
 	@Override
@@ -63,12 +73,12 @@ public class Plot2d extends View {
 		valuesInPixel = toPixel(canvasWidth, canvasHeight, minX, maxX, minY, maxY, values);		
 		
 		int xAxisInPixels = toPixelInt(canvasHeight, minY, maxY, xAxis);
-		int yAxisInPixels = toPixelInt(canvasWidth, minX, maxX, yAxis);
-		
+	//	int yAxisInPixels = toPixelInt(canvasWidth, minX, maxX, yAxis);
+		int yAxisInPixels = 10; //valore fissato sullo schermo indipendente dai valori di x
 		paint.setStrokeWidth(2);
 		canvas.drawARGB(255, 255, 255, 255); //white background
 		
-		for (int i = 0; i < vectorLength-1; i++) {
+		for (int i = 0; i < valuesInPixel.size()-1; i++) {
 			paint.setColor(Color.DKGRAY);
 			canvas.drawLine(valuesInPixel.get(i).getX(),canvasHeight-valuesInPixel.get(i).getY(),valuesInPixel.get(i+1).getX(),canvasHeight-valuesInPixel.get(i+1).getY(),paint);
 		}
@@ -80,17 +90,20 @@ public class Plot2d extends View {
 		//axes labeling
 
 		float temp = 0.0f;
-		int n=10; //number of values per-axis
+		int n=5; //number of values per-axis
 		paint.setTextAlign(Paint.Align.CENTER);
 		paint.setTextSize(20.0f);
 		for (int i=1;i<=n;i++){
-			temp = Math.round(10*(minX+(i-1)*(maxX-minX)/n))/10;
-			canvas.drawText(""+temp, (float)toPixelInt(canvasWidth, minX, maxX, temp),canvasHeight-xAxisInPixels+20, paint);
+			temp = Math.round(10*(minX+(i-1)*(maxX-minX)/n))/10; //valore in millisecondi /1000 = valore in secondi
+			canvas.drawText(""+formatter.format(temp/1000), (float)toPixelInt(canvasWidth, minX, maxX, temp),canvasHeight-xAxisInPixels+20, paint);
 			temp = Math.round(10*(minY+(i-1)*(maxY-minY)/n))/10;
 			canvas.drawText(""+temp, yAxisInPixels+20,canvasHeight-(float)toPixelInt(canvasHeight, minY, maxY, temp), paint);
 		}
-		canvas.drawText(""+maxX, (float)toPixelInt(canvasWidth, minX, maxX, maxX),canvasHeight-xAxisInPixels+20, paint);
-		canvas.drawText(""+maxY, yAxisInPixels+20,canvasHeight-(float)toPixelInt(canvasHeight, minY, maxY, maxY), paint);
+		
+		String output = formatter.format(maxX/1000);
+		canvas.drawText(output, (float)toPixelInt(canvasWidth, minX, maxX, maxX),canvasHeight-xAxisInPixels+20, paint);
+		output = formatter.format(maxY);
+		canvas.drawText(output, yAxisInPixels+20,canvasHeight-(float)toPixelInt(canvasHeight, minY, maxY, maxY), paint);
 				
 	}
 	
