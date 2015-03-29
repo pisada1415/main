@@ -1,13 +1,17 @@
 package pisada.fallDetector;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 public class Utility {
 
@@ -59,6 +63,21 @@ public class Utility {
 		   if(network_enabled)
 			   return LocationManager.NETWORK_PROVIDER;
 		   return null;
+	}
+	
+	public static boolean playServicesAvailable(Context ctx) {
+	    int isAvailable = GooglePlayServicesUtil
+	            .isGooglePlayServicesAvailable(ctx);
+	    if (isAvailable == ConnectionResult.SUCCESS) {
+	        return true;
+	    } else if (GooglePlayServicesUtil.isUserRecoverableError(isAvailable)) {
+	        Dialog dialog = GooglePlayServicesUtil.getErrorDialog(isAvailable,(Activity)ctx, 0);
+	        dialog.show();
+	    } else {
+	        Toast.makeText(ctx, "Connect Connect to Maps", Toast.LENGTH_SHORT).show();
+
+	    }
+	    return false;
 	}
 	
 }

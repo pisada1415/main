@@ -2,6 +2,9 @@ package pisada.fallDetector;
 
 import java.util.Calendar;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
 import android.support.v7.app.ActionBarActivity;
@@ -15,18 +18,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
-public class CurrentSessionActivity extends ActionBarActivity implements ServiceReceiver {
+import com.google.android.gms.common.*;
 
-	Plot2d plotx, ploty, plotz;
-	Intent serviceIntent;
-	Calendar c;
+public class CurrentSessionActivity extends ActionBarActivity implements ServiceReceiver{
+
+	private Plot2d plotx, ploty, plotz;
+	private Intent serviceIntent;
+	private Calendar c;
 	private int secondsStartGraph;
+	private boolean playServices;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 		View view; 
 		LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
 		view = inflater.inflate(R.layout.activity_current_session, null);
@@ -50,15 +56,18 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		graphZLayout.addView(plotz, lp);
 		setContentView(rl);
 		
+		//=======================BLOCCO DA SPOSTARE NEL TASTO START=======================
+		
+		playServices = Utility.playServicesAvailable(this);
 		serviceIntent = new Intent(this, ForegroundService.class);
 		String activeServ = Utility.checkLocationServices(this, true);
 		serviceIntent.putExtra("activeServ", activeServ);
-		
+		serviceIntent.putExtra("playServicesAvailable", playServices);
 		startService(serviceIntent);
-		
-		
-		
 		ForegroundService.connect(this);
+		//====================BLOCCO DA SPOSTARE NEL TASTO START (FINE)===================
+		
+		
 	}
 
 	@Override
@@ -119,6 +128,8 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		super.onResume();
 		ForegroundService.connect(this);
 	}
+	
+	
 
 	
 }
