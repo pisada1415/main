@@ -17,11 +17,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Criteria;
 import android.location.Location;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.*;
-
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -45,7 +40,7 @@ import android.widget.Toast;
  * ora
  */
 
-public class ForegroundService extends Service implements SensorEventListener,  GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+public class ForegroundService extends Service implements SensorEventListener {
 
 	private final String GPSProvider = LocationManager.GPS_PROVIDER;
 	private final String networkProvider = LocationManager.NETWORK_PROVIDER;
@@ -53,6 +48,8 @@ public class ForegroundService extends Service implements SensorEventListener,  
 	private boolean stop = false; 
 	private boolean running = false;
 	private boolean playServices = false;
+	private boolean updatesRemoved = false;
+	
 	private static boolean connected = false;
 	private Looper mServiceLooper;
 	private ServiceHandler mServiceHandler;
@@ -63,16 +60,13 @@ public class ForegroundService extends Service implements SensorEventListener,  
 	private LocationManager lm;
 	private Double latitude = null;
 	private Double longitude = null;
-	private Location locationPlayServices;
-	private String activeService;
 	private Calendar c;
 	private int counterGPSUpdate = 5; //per attivare subito la ricerca della posizione
 	private Handler uiHandler;
 	private Criteria criteria;
 	private String bestProvider;
-	private GoogleApiClient mGoogleApiClient;
-	private LocationRequest mLocationRequest;
-
+	private String activeService;
+	
 	@Override
 	public void onStart(Intent intent, int startId) {
 
@@ -95,11 +89,12 @@ public class ForegroundService extends Service implements SensorEventListener,  
 
 		uiHandler = new Handler();
 		criteria = new Criteria();
-		buildGoogleApiClient();
-		activeService = intent.getExtras().getString("activeServ");
-		playServices = intent.getBooleanExtra("playServicesAvailable", false);
 		
-		
+		if(intent != null){
+			activeService = intent.getStringExtra("activeServices");
+		}
+
+
 		//========================================================================
 
 
@@ -110,8 +105,8 @@ public class ForegroundService extends Service implements SensorEventListener,  
 
 			@Override
 			public void onLocationChanged(Location location) {
-				System.out.println("AGGIORNATA POSIZIONE SENZA PLAY SERVICES GPS");
 				stopLocationUpdates();
+				Toast.makeText(getApplicationContext(), "ricevuta posizione gps", Toast.LENGTH_LONG).show();
 			}
 
 			@Override
@@ -142,12 +137,11 @@ public class ForegroundService extends Service implements SensorEventListener,  
 			@Override
 			public void onLocationChanged(Location location) {
 				stopLocationUpdates();
-				System.out.println("AGGIORNATA POSIZIONE SENZA PLAY SERVICES NETWORK");
+				Toast.makeText(getApplicationContext(), "ricevuta posizione network", Toast.LENGTH_LONG).show();
 			}
 
 			@Override
-			public void onStatusChanged(String provider, int status,
-					Bundle extras) {
+			public void onStatusChanged(String provider, int status, Bundle extras) {
 
 			}
 
@@ -167,27 +161,14 @@ public class ForegroundService extends Service implements SensorEventListener,  
 
 		};
 
-		if(activeService != null){ //chiamato sul thread UI
-			if(!playServices){
-				
+		if(activeService != null && !updatesRemoved){ //chiamato sul thread UI
+			
+
 				bestProvider = lm.getBestProvider(criteria, true); 
 				lm.requestLocationUpdates(bestProvider, 5000, 0/*50*/, locationListenerGPS); //if gps is available
 				lm.requestLocationUpdates(networkProvider, 5000, 0/*50*/, locationListenerNetwork); //always updates location with network: it's faster
 				System.out.println("inizializzato senza PLAY SERVICES inizio. LATLNG nulle penso = " + latitude + " " + longitude);
-			}
-			else{
-				createLocationRequest();
-				bestProvider = lm.getBestProvider(criteria, true); 
-				if(locationPlayServices == null)
-					locationPlayServices = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-				// Get latitude of the current location 
-				if(locationPlayServices != null){
-					latitude = locationPlayServices.getLatitude(); 
-					// Get longitude of the current location 
-					longitude = locationPlayServices.getLongitude();
-				}
-				System.out.println("POSIZIONE AGGIORNATA PLAY SERVICES inizio. LATLNG = " + latitude + " " + longitude);
-			}
+			
 		}
 
 		//=========================NOTIFICATION(START)============
@@ -227,8 +208,8 @@ public class ForegroundService extends Service implements SensorEventListener,  
 			return START_STICKY;
 		}
 	}
-	
-	
+
+
 
 
 	@Override
@@ -249,7 +230,7 @@ public class ForegroundService extends Service implements SensorEventListener,  
 		 * when the service is first created, before onStartCommand or onBind are called
 		 * 
 		 */
-		
+
 
 		mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -278,7 +259,7 @@ public class ForegroundService extends Service implements SensorEventListener,  
 	protected void stopLocationUpdates() {
 		lm.removeUpdates(locationListenerGPS);
 		lm.removeUpdates(locationListenerNetwork);
-		LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+		updatesRemoved = true;
 	}
 
 
@@ -303,7 +284,7 @@ public class ForegroundService extends Service implements SensorEventListener,  
 					if(activeService == null){
 						activeService = Utility.checkLocationServices(getApplicationContext(), false);		
 					}
-					if(activeService != null && counterGPSUpdate++ >= 5) //richiesto update posizione ogni 5 minuti per risparmiare batteria
+					if(activeService != null && counterGPSUpdate++ >= 50) //richiesto update posizione ogni 2.5 minuti per risparmiare batteria
 					{
 						counterGPSUpdate = 0;
 						//lm.requestLocationUpdates(activeService, 2000, 10, locationListener);
@@ -312,27 +293,15 @@ public class ForegroundService extends Service implements SensorEventListener,  
 
 							@Override
 							public void run() {
-								if(!playServices){
+								if(!playServices && !updatesRemoved){
 									lm.requestLocationUpdates(GPSProvider, 5000, 0/*50*/, locationListenerGPS);
 									lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0/*50*/, locationListenerNetwork);
 									System.out.println("POSIZIONE AGGIORNATA senza!! PLAY SERVICES. LATLNG = " + latitude + " " + longitude);
 								}
-								else{
-									bestProvider = lm.getBestProvider(criteria, true); 
-									locationPlayServices = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);//lm.getLastKnownLocation(bestProvider);
-									
-									if(locationPlayServices == null) locationPlayServices = lm.getLastKnownLocation(networkProvider);
-									else System.out.println("FUNZIONANOOOOOOOOOOOOOOO");
-									// Get latitude of the current location 
-									latitude = locationPlayServices.getLatitude(); 
-									// Get longitude of the current location 
-									longitude = locationPlayServices.getLongitude(); 
-									System.out.println("POSIZIONE AGGIORNATA PLAY SERVICES. LATLNG = " + latitude + " " + longitude);
-								}
 							}
 						});
 					}
-					
+
 
 
 					try {
@@ -365,10 +334,10 @@ public class ForegroundService extends Service implements SensorEventListener,  
 			c = Calendar.getInstance();
 
 			if(connected) //&& connectedAc == null
-					{
+			{
 				long time = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
 				connectedAc.serviceUpdate(x, y, z, time);
-					}
+			}
 			/*
 			 * qui prendi i dati dell'accelerometro e li passi in danielAlgorithm 
 			 * sotto forma di "roba"
@@ -379,6 +348,7 @@ public class ForegroundService extends Service implements SensorEventListener,  
 			{
 				Location locationGPS = lm.getLastKnownLocation(GPSProvider);
 				Location locationNetwork = lm.getLastKnownLocation(networkProvider);
+
 				latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
 				longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
 				//qui usare latitude e longitude e mandarle al metodo che manderà l'email. considerare che saranno null in caso non ci siano i servizi attivi.
@@ -425,57 +395,6 @@ public class ForegroundService extends Service implements SensorEventListener,  
 	}
 
 
-
-	protected synchronized void buildGoogleApiClient() {
-		   mGoogleApiClient = new GoogleApiClient.Builder(this)
-		        .addConnectionCallbacks(this)
-		        .addOnConnectionFailedListener(this)
-		        .addApi(LocationServices.API)
-		        .build();
-		   mGoogleApiClient.connect();
-		}
-
-	@Override
-	public void onConnectionFailed(ConnectionResult arg0) {
-		Toast.makeText(this, "connection to google play services failed", Toast.LENGTH_SHORT).show();
-		
-	}
-
-	@Override
-	public void onConnected(Bundle arg0) {
-		Toast.makeText(this, "connected to google play services", Toast.LENGTH_SHORT).show();
-		
-		startLocationUpdates();
-	
-	}
-	
-	protected void startLocationUpdates() {
-	    LocationServices.FusedLocationApi.requestLocationUpdates(
-	            mGoogleApiClient, mLocationRequest, this);
-	}
-	
-	
-
-	@Override
-	public void onConnectionSuspended(int arg0) {
-		Toast.makeText(this, "connection to google play services suspended", Toast.LENGTH_SHORT).show();
-		
-	}
-	
-	protected void createLocationRequest() {
-	    mLocationRequest = new LocationRequest();
-	    mLocationRequest.setInterval(10000); //da cambiare
-	    mLocationRequest.setFastestInterval(5000); //da cambiare
-	    mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
-	}
-
-
-
-	@Override
-	public void onLocationChanged(Location location) {
-		locationPlayServices = location;
-		System.out.println("LOCATION CAMBIATA PLAYYYYYYYYYYY");
-	}
 
 
 

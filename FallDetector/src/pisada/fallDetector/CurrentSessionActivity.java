@@ -2,9 +2,6 @@ package pisada.fallDetector;
 
 import java.util.Calendar;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
-
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
 import android.support.v7.app.ActionBarActivity;
@@ -20,7 +17,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.google.android.gms.common.*;
 
 public class CurrentSessionActivity extends ActionBarActivity implements ServiceReceiver{
 
@@ -28,7 +24,6 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	private Intent serviceIntent;
 	private Calendar c;
 	private int secondsStartGraph;
-	private boolean playServices;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,11 +53,9 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		
 		//=======================BLOCCO DA SPOSTARE NEL TASTO START=======================
 		
-		playServices = Utility.playServicesAvailable(this);
 		serviceIntent = new Intent(this, ForegroundService.class);
 		String activeServ = Utility.checkLocationServices(this, true);
-		serviceIntent.putExtra("activeServ", activeServ);
-		serviceIntent.putExtra("playServicesAvailable", playServices);
+		serviceIntent.putExtra("activeServices", activeServ);
 		startService(serviceIntent);
 		ForegroundService.connect(this);
 		//====================BLOCCO DA SPOSTARE NEL TASTO START (FINE)===================
