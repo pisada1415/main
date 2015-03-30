@@ -9,36 +9,26 @@ package pisada.fallDetector;
 //
 //Canaglia
 import java.util.ArrayList;
-import java.util.List;
 
 import pisada.database.AcquisitionDataSource;
+import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
-import pisada.recycler.CardAdapter;
+import pisada.recycler.SessionListCardAdapter;
 import android.support.v7.app.ActionBarActivity;
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Point;
+import android.database.sqlite.SQLiteConstraintException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
-import android.view.animation.ScaleAnimation;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import pisada.database.BoolNotBoolException;
 
 
 
@@ -47,18 +37,15 @@ import android.support.v7.widget.RecyclerView;
 public class SessionsListActivity extends ActionBarActivity implements SensorEventListener {
 
 	private RecyclerView rView;
-	private CardAdapter cardAdapter;
+	private SessionListCardAdapter cardAdapter;
 	private RecyclerView.LayoutManager mLayoutManager;
-	private ArrayList<Acquisition> acquisitions=new ArrayList<Acquisition>();
 	public static int counter;
 	private SensorManager mSensorManager;
 	private Sensor mSensor;
 	private static SessionDataSource sessionData;
 	private static AcquisitionDataSource acquisitionData;
-	private boolean fall=false;
-	private long lastTime=0;
-	private long lastFall=0;
-	private String sessionName="prima";
+	//private String sessionName="prima";
+
 
 
 
@@ -67,15 +54,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sessions_list);
 
-		//INIZIALIZZO RECYCLERVIEW
-
-
-		rView=(RecyclerView) findViewById(R.id.my_recycler_view);
-		rView.setHasFixedSize(true);
-		cardAdapter=new CardAdapter(acquisitions, this);
-		rView.setAdapter(cardAdapter);
-		mLayoutManager = new LinearLayoutManager(this);
-		rView.setLayoutManager(mLayoutManager);
 
 		//APRO CONNESSIONI AL DATABASE
 		sessionData=new SessionDataSource(this);
@@ -83,23 +61,25 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		acquisitionData=new AcquisitionDataSource(this);
 		acquisitionData.open();
 
-		//PROVO A FARE INSERT DELL'UNICA SESSIONE
-		try{sessionData.storeNewSession(sessionName, "noFoto",System.currentTimeMillis(), 0);
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
+
+		//INIZIALIZZO RECYCLERVIEW
+
+		rView=(RecyclerView) findViewById(R.id.session_list_recycler);
+		rView.setHasFixedSize(true);
+		cardAdapter=new SessionListCardAdapter(this);
+		rView.setAdapter(cardAdapter);
+		mLayoutManager = new LinearLayoutManager(this);
+		rView.setLayoutManager(mLayoutManager);
+
 
 		//INIZIALIZZO SENSORE E MANAGER
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
-		//RIEMPIO RECYCLERVIEW CON TUTTE LE ACQUISIZIONI
-		acquisitions=acquisitionData.acquisitions(sessionName);
-		for(Acquisition a: acquisitions){
-			cardAdapter.addItem(a);
-		}
+
+		//RIEMPIO RECYCLERVIEW CON TUTTE LE SESSIONI
+
 
 	}
 
@@ -157,18 +137,19 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		int bool=0;
 		if(absG>30)bool=1;
 		//STORE NEL DATABASE
-		if((currentTime-lastTime)/1000>1){
+		/*if(add){
 			try{
 				lastTime=currentTime;
 				acquisitionData.insert(currentTime, xValue, yValue, zValue, sessionName,bool );
 				Acquisition a=acquisitionData.getAcquisition(currentTime, sessionName);
 				cardAdapter.addItem(a);
+				add=false;
 			}
 			catch(Exception e){
 				e.printStackTrace();
 
 			}
-		}
+		}*/
 	}
 
 	@Override
@@ -176,14 +157,24 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		// TODO Auto-generated method stub
 
 	}
-	public void espandi(View v){
-		ImageView img=(ImageView) findViewById(R.id.image);
-		CardView card=(CardView) img.getParent();
-		ScaleAnimation anim = new ScaleAnimation(1, 1, 1, 0);
-		anim.setDuration(2000);
-		card.startAnimation(anim);
-	}
+	public void addSession(View v) throws BoolNotBoolException{
+		EditText editName=(EditText) findViewById(R.id.type_session);
+		String name=editName.getText().toString();
+		
+		if(!sessionData.existSession(name)){
+			Session session=new Session(name,"NONE",System.currentTimeMillis(),0,FallSqlHelper.OPEN,null);
+			try{
+				sessionData.insert(session);
+				cardAdapter.addItem(session);
+			}
+			catch(SQLiteConstraintException e){
+				e.printStackTrace();
+			}
 
+		}
+
+
+	}
 
 
 

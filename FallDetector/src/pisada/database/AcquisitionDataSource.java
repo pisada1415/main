@@ -31,20 +31,19 @@ public class AcquisitionDataSource {
 	}
 
 	//NUOVA ACQUISIZIONE
-	public Acquisition insert(long time,float xAxis,float yAxis,float zAxis, String session, int bool)throws Exception{
+	public Acquisition insert(long time,float xAxis,float yAxis,float zAxis, String session, int fall)throws Exception{
 
-		if(bool!=0 && bool!=1)throw new BoolNotBoolException("bool deve essere o 0 o 1");
+		
+			ContentValues values=new ContentValues();
+			values.put(FallSqlHelper.TIME, time);
+			values.put(FallSqlHelper.XAXIS,xAxis);
+			values.put(FallSqlHelper.YAXIS,yAxis);
+			values.put(FallSqlHelper.ZAXIS,zAxis);
+			values.put(FallSqlHelper.ASESSION, session);
+			values.put(FallSqlHelper.FALL,fall);
+			database.insert(FallSqlHelper.ACQUISITION_TABLE, null,values);
+			return new Acquisition(time,xAxis,yAxis,zAxis,session, fall);	
 
-		ContentValues values=new ContentValues();
-		values.put(FallSqlHelper.TIME, time);
-		values.put(FallSqlHelper.XAXIS,xAxis);
-		values.put(FallSqlHelper.YAXIS,yAxis);
-		values.put(FallSqlHelper.ZAXIS,zAxis);
-		values.put(FallSqlHelper.ASESSION, session);
-		values.put(FallSqlHelper.FALL,bool);
-		database.insert(FallSqlHelper.ACQUISITION_TABLE, null,values);
-
-		return new Acquisition(time,xAxis,yAxis,zAxis,session, bool);	
 	}
 
 	//NUOVA ACQUISIZIONE
@@ -54,19 +53,20 @@ public class AcquisitionDataSource {
 		long time=acquisition.time();
 		float xAxis=acquisition.xAxis(), yAxis=acquisition.yAxis(), zAxis=acquisition.yAxis(); 
 		String session=acquisition.session();
-		int bool=acquisition.integerFall();
-
+		int fall=acquisition.integerFall();
+		
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.TIME, time);
 		values.put(FallSqlHelper.XAXIS,xAxis);
 		values.put(FallSqlHelper.YAXIS,yAxis);
 		values.put(FallSqlHelper.ZAXIS,zAxis);
 		values.put(FallSqlHelper.ASESSION, session);
-		values.put(FallSqlHelper.FALL,bool);
+		values.put(FallSqlHelper.FALL,fall);
 
 		database.insert(FallSqlHelper.ACQUISITION_TABLE, null,values);
 
-		return new Acquisition(time,xAxis,yAxis,zAxis,session, bool);	
+		return new Acquisition(time,xAxis,yAxis,zAxis,session, fall);	
+		
 	}
 
 	//RESTITUISCE L'ACQUISIZIONE DATA LA CHIAVE COMPOSTA
@@ -82,7 +82,16 @@ public class AcquisitionDataSource {
 
 	//TRASFORMA UNA RIGA IN UN ACQUISIZIONE
 	private Acquisition cursorToAcquisition(Cursor cursor) {
-		return new Acquisition(cursor.getLong(0),cursor.getFloat(1),cursor.getFloat(2),cursor.getFloat(3),cursor.getString(4),cursor.getInt(5));
+		
+		long time=cursor.getLong(cursor.getColumnIndex(FallSqlHelper.TIME));
+		float x=cursor.getFloat(cursor.getColumnIndex(FallSqlHelper.XAXIS));
+		float y=cursor.getFloat(cursor.getColumnIndex(FallSqlHelper.YAXIS));
+		float z=cursor.getFloat(cursor.getColumnIndex(FallSqlHelper.ZAXIS));
+		String sessionName=cursor.getString(cursor.getColumnIndex(FallSqlHelper.ASESSION));
+		int fall=cursor.getInt(cursor.getColumnIndex(FallSqlHelper.FALL));
+		
+	
+		return new Acquisition(time,x,y,z,sessionName,fall);
 	}
 
 	//RESTiTUISCE TUTTE LE ACQUISIZIONI
@@ -100,8 +109,4 @@ public class AcquisitionDataSource {
 	}
 }
 
-class BoolNotBoolException extends Exception{
-	public BoolNotBoolException() { super(); }
-	public BoolNotBoolException(String message) { super(message); }
 
-}

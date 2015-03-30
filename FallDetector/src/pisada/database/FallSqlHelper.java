@@ -9,6 +9,8 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 
 	private static final String DATABASE_NAME="fall.db";
 	private static final int DATABASE_VERSION=1;
+	public static final int CLOSE=1;
+	public static final int OPEN=0;
 
 	//DEFINIZIONE TABELLA SESSIONE
 	public static final String SESSION_TABLE="SESSION";
@@ -16,13 +18,15 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	public static final String SESSION_IMG="Img";
 	public static final String START_TIME="StartTime";
 	public static final String END_TIME="EndTime";
+	public static final String CLOSE_COLUMN="Close";
 
 	public static final String CREATE_SESSION_TABLE=
 			"CREATE TABLE IF NOT EXISTS "+SESSION_TABLE+"("
 					+NAME+ " TEXT PRIMARY KEY, "
 					+START_TIME+ " INTEGER NOT NULL, "
 					+END_TIME+ " INTEGER, "
-					+SESSION_IMG+" );";
+					+SESSION_IMG+" TEXT, "
+					+CLOSE_COLUMN+ " INTEGER NOT NULL );";
 
 	//DEFINIZIONE TABELLA AQUISIZIONE
 	public static final String ACQUISITION_TABLE="ACQUISITION"; 
@@ -32,18 +36,18 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	public static final String ZAXIS="Z";
 	public static final String ASESSION="Session";
 	public static final String FALL="Fall";
-	
+
 	public static final String CREATE_ACQUISITION_TABLE=	
-	"CREATE TABLE IF NOT EXISTS "+ACQUISITION_TABLE+"("+
-			TIME+" INTEGER NOT NULL, "+
-			XAXIS+" REAL NOT NULL,"+
-			YAXIS+" REAL NOT NULL,"+
-			ZAXIS+ " REAL NOT NULL,"+
-			ASESSION+" TEXT NOT NULL ,"+
-			FALL+" INTEGER NOT NULL,"+
-			"PRIMARY KEY ("+TIME+","+ASESSION+") "+
-			"FOREIGN KEY ("+ASESSION+") REFERENCES "+SESSION_TABLE+"("+NAME+")"+
-			");";
+			"CREATE TABLE IF NOT EXISTS "+ACQUISITION_TABLE+"("+
+					TIME+" INTEGER NOT NULL, "+
+					XAXIS+" REAL NOT NULL,"+
+					YAXIS+" REAL NOT NULL,"+
+					ZAXIS+ " REAL NOT NULL,"+
+					ASESSION+" TEXT NOT NULL ,"+
+					FALL+" INTEGER NOT NULL,"+
+					"PRIMARY KEY ("+TIME+","+ASESSION+") "+
+					"FOREIGN KEY ("+ASESSION+") REFERENCES "+SESSION_TABLE+"("+NAME+")"+
+					");";
 
 
 	public FallSqlHelper(Context context) {

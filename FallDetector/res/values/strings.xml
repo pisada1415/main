@@ -10,5 +10,7 @@
     <string name="title_activity_current_session">CurrentSessionActivity</string>
     <string name="title_activity_fall_details">FallDetailsActivity</string>
     <string name="title_activity_preferences">PreferencesActivity</string>
+    
+    <string name="new_session">Click for new session</string>
 
 </resources>
