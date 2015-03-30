@@ -4,10 +4,17 @@ import java.util.Calendar;
 
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
+import pisada.recycler.CurrentSessionCardAdapter;
+import pisada.recycler.SessionListCardAdapter;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.LayoutManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -34,7 +41,9 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	private Intent serviceIntent;
 	private Calendar c;
 	private int secondsStartGraph;
-	
+	RecyclerView rView;
+	RecyclerView.Adapter<RecyclerView.ViewHolder> cardAdapter;
+	LayoutManager mLayoutManager;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,6 +80,37 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		//====================BLOCCO DA SPOSTARE NEL TASTO START (FINE)===================
 		
 		
+		
+		
+		
+		//INIZIALIZZO RECYCLERVIEW
+
+				rView=(RecyclerView) findViewById(R.id.session_list_recycler);
+				rView.setHasFixedSize(true);
+				cardAdapter=new CurrentSessionCardAdapter(this);
+				rView.setAdapter(cardAdapter);
+				mLayoutManager = new LinearLayoutManager(this);
+				rView.setLayoutManager(mLayoutManager);
+
+
+				//BESTIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+				/*AOSDJOIAJDOIAJSMDOIASMDAOIMDOIAMDOIAJMODIAMDOIASJMDAOIM
+				asdasd
+				asd
+				as
+				das
+				da
+				sd
+				asd
+				as
+				d
+				a
+				sdsa
+				a*/
+				
+				//RIEMPIO RECYCLERVIEW CON TUTTE LE SESSIONI
+				
+				
 	}
 
 	@Override
@@ -98,7 +138,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	
+
 	}
 
 	@Override

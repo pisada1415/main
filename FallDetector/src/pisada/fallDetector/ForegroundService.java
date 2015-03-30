@@ -47,7 +47,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	private boolean stop = false; 
 	private boolean running = false;
-	private boolean playServices = false;
 	private boolean updatesRemoved = false;
 	
 	private static boolean connected = false;
@@ -167,7 +166,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 				bestProvider = lm.getBestProvider(criteria, true); 
 				lm.requestLocationUpdates(bestProvider, 5000, 0/*50*/, locationListenerGPS); //if gps is available
 				lm.requestLocationUpdates(networkProvider, 5000, 0/*50*/, locationListenerNetwork); //always updates location with network: it's faster
-				System.out.println("inizializzato senza PLAY SERVICES inizio. LATLNG nulle penso = " + latitude + " " + longitude);
 			
 		}
 
@@ -293,10 +291,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 							@Override
 							public void run() {
-								if(!playServices && !updatesRemoved){
+								if(!updatesRemoved){
 									lm.requestLocationUpdates(GPSProvider, 5000, 0/*50*/, locationListenerGPS);
 									lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0/*50*/, locationListenerNetwork);
-									System.out.println("POSIZIONE AGGIORNATA senza!! PLAY SERVICES. LATLNG = " + latitude + " " + longitude);
 								}
 							}
 						});
@@ -393,10 +390,5 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private void runOnUiThread(Runnable runnable) {
 		uiHandler.post(runnable);
 	}
-
-
-
-
-
 
 }
