@@ -16,7 +16,17 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-
+/*
+ * impostare il layout con tastone grosso sopra ecc e nelle cardview ci vanno le cose varie.
+ * 
+ * connect dovrà anche inizializzare il timer che manda indietro qui il tempo passato da quando
+ * è stato inizializzato il service.
+ * 
+ * inoltre la lista fall deve essere a sua volta riempita dal service quindi serve altro metodo
+ * ancora che funziona come il mandadati dei grafici adesso.
+ * 
+ * 
+ */
 
 public class CurrentSessionActivity extends ActionBarActivity implements ServiceReceiver{
 
