@@ -12,5 +12,8 @@
 	<string name="detecting">Detecting…</string>
 
     <string name="new_session">Click for new session</string>
-
+    <string name="time_elapsed">00:00:00</string>
+	<string name="info">info.</string>
+	<string name="position">position</string>
+	<string name="current_session_name">Current Session Name</string>
 </resources>

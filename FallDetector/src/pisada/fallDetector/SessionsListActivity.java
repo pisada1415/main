@@ -188,10 +188,10 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 	}
 	public void addSession(View v) throws BoolNotBoolException{
-		EditText editName=(EditText) findViewById(R.id.type_session);
-		String name=editName.getText().toString();
+		//EditText editName=(EditText) findViewById(R.id.type_session);
+	//	String name=editName.getText().toString();
 		
-		if(!sessionData.existSession(name)){
+	/*	if(!sessionData.existSession(name)){
 			Session session=new Session(name,"NONE",System.currentTimeMillis(),0,FallSqlHelper.OPEN,null);
 			try{
 				sessionData.insert(session);
@@ -201,7 +201,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 				e.printStackTrace();
 			}
 
-		}
+		}*/
 
 
 	}

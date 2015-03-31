@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/first_card_new_session"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    card_view:cardCornerRadius="4dp" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+        
+        
+        <ImageView
+        android:id="@+id/thumbnail_fall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_margin="5dp"
+        android:src="@drawable/ic_launcher" />
+        
+        <TextView
+            android:id="@+id/fall_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/thumbnail_fall"
+            android:layout_toEndOf="@id/thumbnail_fall"
+            android:text="@string/time_elapsed" 
+            android:textSize="20sp" />
+        
+         <TextView
+            android:id="@+id/position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/thumbnail_fall"
+            android:layout_toEndOf="@id/thumbnail_fall"
+            android:layout_below="@id/fall_time"
+            android:text="@string/position" 
+            android:textSize="20sp" />
+        
+    </RelativeLayout>
+
+    
+
+</android.support.v7.widget.CardView>

@@ -35,8 +35,8 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		private TextView vAdjective;
 		public OldSessionHolder(View v) {
 			super(v);
-			vName =  (TextView) v.findViewById(R.id.name_text);
-			vAdjective = (TextView)  v.findViewById(R.id.adjective_text);
+		/*	vName =  (TextView) v.findViewById(R.id.name_text);
+			vAdjective = (TextView)  v.findViewById(R.id.adjective_text);*/
 
 		}
 	}
@@ -50,9 +50,9 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		public NewSessionHolder(View v) {
 			super(v);
-			newSessionText=(TextView) v.findViewById(R.id.new_session_text);
+			/*newSessionText=(TextView) v.findViewById(R.id.new_session_text);
 			addSessionButton=(Button) v.findViewById(R.id.add_session_button);
-			typeSession=(EditText) v.findViewById(R.id.type_session);
+			typeSession=(EditText) v.findViewById(R.id.type_session);*/
 			sessionData.open();
 		//	v.setLayoutParams(new LayoutParams(v.getWidth(),0));
 		}
@@ -135,10 +135,10 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			/*if(currSession==null)return new NewSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_session_card, viewGroup, false));
 			else return new CurrentSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_curr_session_card,viewGroup,false));
 		*/
-			return new NewSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_session_card, viewGroup, false));
+		//	return new NewSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_session_card, viewGroup, false));
 		}
-		else return new OldSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.old_session_card, viewGroup, false));
-
+	//	else return new OldSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.old_session_card, viewGroup, false));
+		return null;
 	}
 	public void addItem(Session s) {
 		this.sessionList.add(1,s);
