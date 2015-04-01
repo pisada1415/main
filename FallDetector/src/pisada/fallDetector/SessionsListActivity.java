@@ -32,9 +32,13 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.LayoutManager;
 import pisada.database.BoolNotBoolException;
 
 
@@ -44,7 +48,7 @@ import pisada.database.BoolNotBoolException;
 public class SessionsListActivity extends ActionBarActivity implements SensorEventListener {
 
 	private RecyclerView rView;
-	private SessionListCardAdapter cardAdapter;
+	private static SessionListCardAdapter cardAdapter;
 	private RecyclerView.LayoutManager mLayoutManager;
 	public static int counter;
 	private SensorManager mSensorManager;
@@ -88,11 +92,11 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 		rView=(RecyclerView) findViewById(R.id.session_list_recycler);
 		rView.setHasFixedSize(true);
-		cardAdapter=new SessionListCardAdapter(this);
+		cardAdapter=new SessionListCardAdapter(this, rView);
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(this);
 		rView.setLayoutManager(mLayoutManager);
-
+		rView.setItemAnimator(new DefaultItemAnimator());
 
 		//INIZIALIZZO SENSORE E MANAGER
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -100,7 +104,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
 
-		//RIEMPIO RECYCLERVIEW CON TUTTE LE SESSIONI
+
 
 
 	}
@@ -188,24 +192,29 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 	}
 	public void addSession(View v) throws BoolNotBoolException{
-		//EditText editName=(EditText) findViewById(R.id.type_session);
-	//	String name=editName.getText().toString();
-		
-	/*	if(!sessionData.existSession(name)){
+
+		EditText editName=(EditText) findViewById(R.id.type_session);
+		String name=editName.getText().toString();
+
+		if(!sessionData.existSession(name)){
+
 			Session session=new Session(name,"NONE",System.currentTimeMillis(),0,FallSqlHelper.OPEN,null);
 			try{
 				sessionData.insert(session);
-				cardAdapter.addItem(session);
+				cardAdapter.addNewSession(session);
 			}
 			catch(SQLiteConstraintException e){
 				e.printStackTrace();
 			}
 
-		}*/
 
 
+		}
 	}
-
+	
+	public void closeCurrentSession(View v){
+	 cardAdapter.closeCurrentSession();
+	}
 
 
 }

@@ -18,6 +18,9 @@ public class Acquisition {
 		this.fall=fall;
 
 	}
+	public Acquisition(){
+		
+	}
 
 	public long time(){	return time;}
 	public float xAxis(){return xAxis;}
@@ -31,6 +34,10 @@ public class Acquisition {
 	public int integerFall(){return fall;}
 
 	public String session(){return aSession;}
+	
+	public boolean isValidAcquisition(){
+		return time!=0&&aSession!=null;
+	}
 
 
 }

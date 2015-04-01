@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/first_curr_session_card"
+    android:layout_width="match_parent"
+    android:layout_height="1400px"
+    android:layout_margin="5dp"
+    card_view:cardCornerRadius="4dp" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <TextView
+            android:id="@+id/current_session_name_text"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:text="cazzo" 
+            android:textSize="20sp"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/current_session_start_text"
+            android:layout_width="match_parent"
+            android:layout_below="@id/current_session_name_text"
+            android:layout_height="120dp"
+            android:textSize="20sp"
+            android:text="cazzo"
+            android:gravity="center" />
+        
+        <Button
+             android:id="@+id/close_session_button"
+            android:layout_width="match_parent"
+            android:layout_below="@id/current_session_start_text"
+            android:layout_height="120dp"
+            android:textSize="20sp"
+            android:text="Chiudi sessione"
+            android:onClick="closeCurrentSession"
+            android:gravity="center" />
+        
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>
