@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/first_new_session_card"
     android:layout_width="match_parent"
-    android:layout_height="1300px"
+    android:layout_height="1400px"
     android:layout_margin="5dp"
     card_view:cardCornerRadius="4dp" >
 

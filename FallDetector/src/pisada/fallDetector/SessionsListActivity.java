@@ -177,10 +177,8 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 
 		}
-
-
-
 	}
+	
 	public void closeCurrentSession(View v){
 	 cardAdapter.closeCurrentSession();
 	}
