@@ -15,30 +15,27 @@ public class Session {
 	private int close;
 
 
-	public Session(String name, String img,long startTime,long endTime, int close, Context context){
-		this.name=name;
-		this.img=img;
-		this.startTime=startTime;
-		this.endTime=endTime;
-		this.close=close;
-		
+	public Session(String name, String img,long startTime,long endTime, int close, Context context) throws BoolNotBoolException{
+		if(close!=0&&close!=1)throw new BoolNotBoolException();
+		else{
+			this.name=name;
+			this.img=img;
+			this.startTime=startTime;
+			this.endTime=endTime;
+			this.close=close;
+		}
+
 	}
 	//ritorna sessione vuota
 	public Session(){
-		name="NONE";
-		startTime=0;
-		endTime=0;
-		img="NONE";
-		context=null;
-		//valore booleano non ammesso;
-		close=2;
+
 	}
 	public long startTime(){return startTime;}
-	
+
 	public long endTime(){return endTime;}
-	
+
 	public String name(){return name;}
-	
+
 	public boolean booleanIsClose(){
 		if(close==0)
 			return false;
@@ -47,8 +44,10 @@ public class Session {
 	public int integerIsClose(){return close;}
 	public String img(){return img;
 	}
-	
+	public boolean isValidSession() {return name!=null && startTime!=0;}
+
 	public void setEndTime(long endTime){this.endTime=endTime;}
+	public void setClose(long endTime){close=1;this.endTime=endTime;}
 }
 
 

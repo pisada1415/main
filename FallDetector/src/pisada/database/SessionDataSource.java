@@ -44,7 +44,7 @@ public class SessionDataSource {
 
 	}
 
-	public Session insert(Session s) throws SQLiteConstraintException{
+	public Session insert(Session s) throws SQLiteConstraintException, BoolNotBoolException{
 		String name=s.name(), img=s.img();
 		long startTime=s.startTime(),  endTime=s.endTime();
 		int close=s.integerIsClose();
@@ -86,6 +86,7 @@ public class SessionDataSource {
 		ArrayList<Session> list=new ArrayList<Session>();
 
 		Cursor cursor= database.rawQuery("SELECT * FROM "+FallSqlHelper.SESSION_TABLE+" ORDER BY "+FallSqlHelper.START_TIME+" DESC",null );
+		if(cursor.getCount()==0)return list;
 		while(cursor.moveToNext()){
 			Session s=cursorToSession(cursor);
 			list.add(s);
@@ -102,8 +103,14 @@ public class SessionDataSource {
 		long startTime=cursor.getLong(cursor.getColumnIndex(FallSqlHelper.START_TIME));
 		long endTime=cursor.getLong(cursor.getColumnIndex(FallSqlHelper.END_TIME));
 		int isClose=cursor.getInt(cursor.getColumnIndex(FallSqlHelper.CLOSE_COLUMN));
-
-		return new Session(name,img,startTime,endTime, isClose,context);
+		Session session=null;
+		try{
+			session=new Session(name,img,startTime,endTime, isClose,context);
+		}
+		catch(BoolNotBoolException e){
+			e.printStackTrace();
+		}
+		return session;
 	}
 
 	public int sessionCount(){
@@ -112,16 +119,33 @@ public class SessionDataSource {
 		cursor.close();
 		return count;
 	}
-	
-	public void closeSession(String name){
 
+	//DA CHIAMARE SOLO SE SI VUOLE AGGIORNARE IL DATABASE
+	public void closeSession(String name){
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.CLOSE_COLUMN, FallSqlHelper.CLOSE);
 		values.put(FallSqlHelper.END_TIME, System.currentTimeMillis());
 		database.update(FallSqlHelper.SESSION_TABLE, values, FallSqlHelper.NAME+" = "+ name, null);
-
 	}
 
+
+	//CHIUDE SIA LA SESSIONE NEL DATABASE, SIA COME OGGETTO PASSATO
+	public void closeSession(Session s){
+
+		long endTime=System.currentTimeMillis();
+
+		String name=s.name();
+		ContentValues values=new ContentValues();
+		values.put(FallSqlHelper.CLOSE_COLUMN, FallSqlHelper.CLOSE);
+		values.put(FallSqlHelper.END_TIME, System.currentTimeMillis());
+		//database.update(FallSqlHelper.SESSION_TABLE, values, FallSqlHelper.NAME+" = "+ name, null);
+		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
+				+ " SET "+ FallSqlHelper.CLOSE_COLUMN+" = "+FallSqlHelper.CLOSE+", "
+				+ FallSqlHelper.END_TIME+" = "+endTime
+				+ " WHERE "+FallSqlHelper.NAME+" = '"+name+"';");
+		s.setClose(endTime);
+
+	}
 	public Session getSession(String name){
 
 		Cursor cursor=database.rawQuery("SELECT * FROM "+ FallSqlHelper.SESSION_TABLE+" WHERE "+FallSqlHelper.NAME+" = '"+name+"'", null);
