@@ -1,10 +1,9 @@
 package pisada.fallDetector;
 
 //DA FARE
-import pisada.database.BoolNotBoolException;
+import java.util.ArrayList;
+
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
 public class Session {
 	private String name;
@@ -13,6 +12,7 @@ public class Session {
 	private String img;
 	private Context context;
 	private int close;
+	private ArrayList<Fall> fallList;
 
 
 	public Session(String name, String img,long startTime,long endTime, int close, Context context){
@@ -21,7 +21,7 @@ public class Session {
 		this.startTime=startTime;
 		this.endTime=endTime;
 		this.close=close;
-		
+		fallList = new ArrayList<Fall>();
 	}
 	//ritorna sessione vuota
 	public Session(){
@@ -32,6 +32,7 @@ public class Session {
 		context=null;
 		//valore booleano non ammesso;
 		close=2;
+		fallList = new ArrayList<Fall>();
 	}
 	public long startTime(){return startTime;}
 	
@@ -49,6 +50,14 @@ public class Session {
 	}
 	
 	public void setEndTime(long endTime){this.endTime=endTime;}
+	
+	public void addFall(Fall f){
+		fallList.add(f);
+	}
+	
+	public ArrayList<Fall> getFalls(){
+		return this.fallList;
+	}
 }
 
 

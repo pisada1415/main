@@ -133,6 +133,13 @@ public class Plot2d extends View {
 		 */
 		return (int)(0.1*pixels+((value-min)/(max-min))*0.8*pixels);
 	}
+	
+	public void clear()
+	{
+		values = new ArrayList<Data>();
+		valuesInPixel = new ArrayList<Data>();
+		this.invalidate();
+	}
 
 	
 

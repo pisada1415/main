@@ -39,14 +39,22 @@
             android:background="@drawable/session_add_button"
             android:onClick="stopService" />
         
-        <TextView
-            android:id="@+id/duration"
+        
+        
+        
+        <Chronometer
+            android:id="@+id/chronometer"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_below="@id/stop_button"
+            android:layout_height="wrap_content"
+             android:layout_below="@id/stop_button"
             android:layout_centerHorizontal="true"
-            android:text="@string/time_elapsed"
-            android:textSize="20sp" />
+            android:text="Chronometer" />
+        
+        
+        
+        
+        
+        
 
         <ImageView
             android:id="@+id/thumbnail"
@@ -65,6 +73,8 @@
             android:layout_centerHorizontal="true"
             android:text="@string/info"
             android:textSize="20sp" />
+
+        
 
     </RelativeLayout>
 

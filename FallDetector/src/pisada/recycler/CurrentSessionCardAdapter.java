@@ -7,19 +7,20 @@ import java.util.Calendar;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.R;
 import pisada.fallDetector.ServiceReceiver;
-import pisada.fallDetector.Session;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.os.SystemClock;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -31,48 +32,55 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private ArrayList<Double> lastFallThumbnailData;
 	private String lastFallTime;
 	private String lastFallPosition;
-	
+
 	private long time;
 	private double lastX, lastY, lastZ;
-	private Plot2d graphX, graphY, graphZ;
+	private static Plot2d graphX, graphY, graphZ;
 	private Calendar c;
 	private long millisecStartGraph;
 	/*
- * 
- * first_new_currentsession_card
- */
+	 * 
+	 * first_new_currentsession_card
+	 */
 	public static class FirstCardHolder extends RecyclerView.ViewHolder {
 		private TextView sessionName;
 		private Button startPauseButton;
 		private Button stopButton;
-		private TextView duration;
+		private Chronometer duration;
 		private ImageView thumbNail;
 		private TextView info;
-		
+
 		public FirstCardHolder(View v) {
 			super(v);
-			
+
 			sessionName = (TextView)v.findViewById(R.id.session_name);
 			startPauseButton = (Button)v.findViewById(R.id.start_pause_button);
 			stopButton = (Button)v.findViewById(R.id.stop_button);
-			duration = (TextView) v.findViewById(R.id.duration);
+			duration = (Chronometer) v.findViewById(R.id.chronometer);
 			thumbNail = (ImageView)v.findViewById(R.id.thumbnail);
 			info =  (TextView) v.findViewById(R.id.info);
+
+			//prendi valore start session dal database (qui uso un valore esempio)
+			long millisStartSession = 10000000;
+			long base = SystemClock.elapsedRealtime()-millisStartSession;
+			duration.setBase(base);
+			duration.start();
+
 		}
 	}
 
-/*
- * plots_card
- */
+	/*
+	 * plots_card
+	 */
 	public  class SecondCardHolder extends RecyclerView.ViewHolder {
 		private LinearLayout graphXLayout;
 		private LinearLayout graphYLayout;
 		private LinearLayout graphZLayout;
-		
-/*
- * qui aggiungiamo sui parametri del costruttore la roba da passare per buttarla nelle card (penso)
- */
-		
+
+		/*
+		 * qui aggiungiamo sui parametri del costruttore la roba da passare per buttarla nelle card (penso)
+		 */
+
 		public SecondCardHolder(View v) {
 			super(v);
 			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT); 
@@ -80,7 +88,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			graphXLayout=(LinearLayout) v.findViewById(R.id.graphx);
 			graphYLayout=(LinearLayout) v.findViewById(R.id.graphy);
 			graphZLayout=(LinearLayout) v.findViewById(R.id.graphz);
-			
+
 			graphX = new Plot2d(activity, new Data(c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - millisecStartGraph,0));
 			graphY = new Plot2d(activity, new Data(c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - millisecStartGraph,0));
 			graphZ = new Plot2d(activity, new Data(c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - millisecStartGraph,0));
@@ -88,8 +96,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			graphXLayout.addView(graphX, lp);
 			graphYLayout.addView(graphY, lp);
 			graphZLayout.addView(graphZ, lp);
-			
-			
+
 		}
 
 	}
@@ -109,8 +116,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 
 	}
-	
-	
+
+
 
 	public CurrentSessionCardAdapter(Activity activity) {
 
@@ -123,7 +130,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		cardContentList.add(1, new CardContent());
 	}
 
-	
+
 
 	@Override
 	public void onBindViewHolder(ViewHolder holder, int i) {
@@ -146,7 +153,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			Oholder.fallThumbnail.setImageBitmap(getBitmapFromData(lastFallThumbnailData));
 			Oholder.fallPosition.setText("posizione");
 			Oholder.fallTime.setText("tempo");
-			
+
 		}
 
 	}
@@ -162,11 +169,11 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int type) {
 
-		
+
 		if(type==0){
 			/*if(currSession==null)return new NewSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_session_card, viewGroup, false));
 			else return new CurrentSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_curr_session_card,viewGroup,false));
-		*/
+			 */
 			return new FirstCardHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_currentsession_card, viewGroup, false));
 		}
 		if(type==1)
@@ -178,12 +185,12 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 	}
 	public void addItem(CardContent c) {//DIVENTERà FALL
-	
+
 		cardContentList.add(c);
 		notifyItemInserted(1);
 
 	}
-	
+
 
 	@Override
 	public int getItemViewType(int position) {
@@ -206,7 +213,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void serviceUpdate(float x, float y, float z, long time) {
 		// TODO Auto-generated method stub
 		lastX = x; lastY = y; lastZ = z; this.time = time;
-		
+
 		c = Calendar.getInstance();
 		graphX.pushValue(new Data(time - millisecStartGraph,x));
 		graphX.invalidate();
@@ -214,6 +221,17 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		graphY.invalidate();
 		graphZ.pushValue(new Data(time- millisecStartGraph,z));
 		graphZ.invalidate();
+	}
+
+
+	public void clearGraphs()
+	{
+		if(graphX != null && graphY != null && graphZ != null){
+			graphX.clear();
+			graphY.clear();
+			graphZ.clear();
+		}
+		//altrimenti fallisce silenziosamente
 	}
 
 

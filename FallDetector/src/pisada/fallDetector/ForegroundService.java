@@ -37,7 +37,7 @@ import android.widget.Toast;
  * -geolocator per dire nome del paese in cui si trova oltre alle coordinate (sempre se play services disponibili)
  * 
  * 
- * ora
+ *
  */
 
 public class ForegroundService extends Service implements SensorEventListener {
@@ -50,6 +50,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private boolean updatesRemoved = false;
 	
 	private static boolean connected = false;
+	private static boolean isRunning = false;
 	private Looper mServiceLooper;
 	private ServiceHandler mServiceHandler;
 	private SensorManager mSensorManager;
@@ -65,6 +66,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private Criteria criteria;
 	private String bestProvider;
 	private String activeService;
+	
 	
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -86,6 +88,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
 
+		isRunning = true;
 		uiHandler = new Handler();
 		criteria = new Criteria();
 		
@@ -252,12 +255,17 @@ public class ForegroundService extends Service implements SensorEventListener {
 		stop = true;
 		mSensorManager.unregisterListener(this);
 		stopLocationUpdates();
+		isRunning = false;
 	}
 
 	protected void stopLocationUpdates() {
 		lm.removeUpdates(locationListenerGPS);
 		lm.removeUpdates(locationListenerNetwork);
 		updatesRemoved = true;
+	}
+	
+	protected static boolean isRunning(){
+		return isRunning;
 	}
 
 
@@ -385,6 +393,11 @@ public class ForegroundService extends Service implements SensorEventListener {
 	{
 		connectedAc = null;
 		connected = false;
+	}
+	
+	public static boolean isConnected()
+	{
+		return connectedAc != null;
 	}
 
 	private void runOnUiThread(Runnable runnable) {
