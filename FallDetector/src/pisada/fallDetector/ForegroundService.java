@@ -66,6 +66,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private Criteria criteria;
 	private String bestProvider;
 	private String activeService;
+	private static long startTime;
 	
 	
 	@Override
@@ -402,6 +403,16 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	private void runOnUiThread(Runnable runnable) {
 		uiHandler.post(runnable);
+	}
+	
+	protected static void initTime(long time)
+	{
+		startTime = time;
+	}
+	
+	protected static void storeDuration()
+	{
+		//TODO add to sessiondata the value 'System.currentTimeMillis() - startTime'
 	}
 
 }

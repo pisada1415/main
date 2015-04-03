@@ -4,10 +4,9 @@
     tools:context="pisada.fallDetector.CurrentSessionActivity" >
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/rename_session"
         android:orderInCategory="100"
-        android:title="stop service"
-        app:showAsAction="never"/>
-    <item android:id="@+id/action_settings_2" android:title="start service" android:orderInCategory="100"></item>
+        android:title="@string/rename"
+        app:showAsAction="ifRoom"/>
 
 </menu>

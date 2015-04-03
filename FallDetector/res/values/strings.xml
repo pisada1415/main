@@ -16,4 +16,5 @@
 	<string name="info">info.</string>
 	<string name="position">position</string>
 	<string name="current_session_name">Current Session Name</string>
+	<string name="rename">Rename session</string>
 </resources>

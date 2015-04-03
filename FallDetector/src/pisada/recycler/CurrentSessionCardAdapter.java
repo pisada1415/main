@@ -7,6 +7,7 @@ import java.util.Calendar;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.R;
 import pisada.fallDetector.ServiceReceiver;
+import pisada.fallDetector.Session;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
 import android.app.Activity;
@@ -38,6 +39,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static Plot2d graphX, graphY, graphZ;
 	private Calendar c;
 	private long millisecStartGraph;
+	private static Chronometer duration; 
+	private long timeSessionUp;
 	/*
 	 * 
 	 * first_new_currentsession_card
@@ -46,28 +49,24 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		private TextView sessionName;
 		private Button startPauseButton;
 		private Button stopButton;
-		private Chronometer duration;
+		
 		private ImageView thumbNail;
 		private TextView info;
-
+		
 		public FirstCardHolder(View v) {
 			super(v);
-
 			sessionName = (TextView)v.findViewById(R.id.session_name);
 			startPauseButton = (Button)v.findViewById(R.id.start_pause_button);
 			stopButton = (Button)v.findViewById(R.id.stop_button);
 			duration = (Chronometer) v.findViewById(R.id.chronometer);
 			thumbNail = (ImageView)v.findViewById(R.id.thumbnail);
 			info =  (TextView) v.findViewById(R.id.info);
-
+			
 			//prendi valore start session dal database (qui uso un valore esempio)
-			long millisStartSession = 10000000;
-			long base = SystemClock.elapsedRealtime()-millisStartSession;
-			duration.setBase(base);
-			duration.start();
-
+			
+			
 		}
-	}
+	}	
 
 	/*
 	 * plots_card
@@ -119,7 +118,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 
-	public CurrentSessionCardAdapter(Activity activity) {
+	public CurrentSessionCardAdapter(Activity activity, long time) {
 
 		this.activity=activity;
 		c = Calendar.getInstance();
@@ -128,6 +127,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		cardContentList = new ArrayList<CardContent>();
 		cardContentList.add(0,new CardContent());
 		cardContentList.add(1, new CardContent());
+		timeSessionUp = time;
 	}
 
 
@@ -233,7 +233,39 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 		//altrimenti fallisce silenziosamente
 	}
+	
+	
+	/*
+	 * QUI SALVIAMO I TEMPI NEL DATABASE 
+	 */
+	long timeStop = 0;
+	public void pauseChronometer()
+	{
+		timeStop = duration.getBase() - SystemClock.elapsedRealtime();
 
+		duration.stop();
+	}
+	public void startChronometer()
+	{
+		if(timeStop == 0){
+			
+			long base = SystemClock.elapsedRealtime()-timeSessionUp;
+			duration.setBase(base);
+			duration.start();
+		}
+		else{
+
+			duration.setBase(SystemClock.elapsedRealtime() + timeStop);
+			duration.start();
+		}
+	}
+	public void stopChronometer()
+	{
+		duration.setBase(SystemClock.elapsedRealtime());
+		duration.stop();
+	}
+	
+	
 
 }
 
