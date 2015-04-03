@@ -64,9 +64,9 @@ public class SessionDataSource {
 		return new Session(name,img,startTime,endTime,stopTimePreference,close, context);
 
 	}
-	
 
-	
+
+
 
 	//RITORNA SESSIONE CORRENTE APERTA
 	public Session currentSession(){
@@ -125,7 +125,7 @@ public class SessionDataSource {
 		return session;
 	}
 
-	//NUMERO DI TUTTE LE SESSIONi
+	//NUMERO DI TUTTE LE SESSIONI
 	public int sessionCount(){
 		Cursor cursor=database.query(FallSqlHelper.SESSION_TABLE, allColumns,null,null,null,null,null);
 		int count=cursor.getCount();
@@ -142,23 +142,7 @@ public class SessionDataSource {
 	}*/
 
 
-	//CHIUDE SIA LA SESSIONE NEL DATABASE, SIA COME OGGETTO PASSATO
-	public void closeSession(Session s){
 
-		long endTime=System.currentTimeMillis();
-
-		String name=s.name();
-		ContentValues values=new ContentValues();
-		values.put(FallSqlHelper.SESSION_CLOSE_COLUMN, FallSqlHelper.CLOSE);
-		values.put(FallSqlHelper.SESSION_END_TIME, System.currentTimeMillis());
-		//database.update(FallSqlHelper.SESSION_TABLE, values, FallSqlHelper.NAME+" = "+ name, null);
-		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
-				+ " SET "+ FallSqlHelper.SESSION_CLOSE_COLUMN+" = "+FallSqlHelper.CLOSE+", "
-				+ FallSqlHelper.SESSION_END_TIME+" = "+endTime
-				+ " WHERE "+FallSqlHelper.SESSION_NAME+" = '"+name+"';");
-		s.setClose(endTime);
-
-	}
 	public Session getSession(String name){
 
 		Cursor cursor=database.rawQuery("SELECT * FROM "+ FallSqlHelper.SESSION_TABLE+" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+name+"'", null);
@@ -174,7 +158,31 @@ public class SessionDataSource {
 		return true;
 	}
 
-	//RITORNA L'ULTIMA DURATA STORATA NEL DATABASE
+	
+
+	//CHIUDE SIA LA SESSIONE NEL DATABASE, SIA COME OGGETTO PASSATO. RICORDARSI DI UPDATARE LA DURATA FUORI SE NO USARE 'closeAfterUpdateSession'
+	public void closeSession(Session s){
+
+		long endTime=System.currentTimeMillis();
+
+		String name=s.name();
+		//database.update(FallSqlHelper.SESSION_TABLE, values, FallSqlHelper.NAME+" = "+ name, null);
+		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
+				+ " SET "+ FallSqlHelper.SESSION_CLOSE_COLUMN+" = "+FallSqlHelper.CLOSE+", "
+				+ FallSqlHelper.SESSION_END_TIME+" = "+endTime
+				+ " WHERE "+FallSqlHelper.SESSION_NAME+" = '"+name+"';");
+		s.setClose(endTime);
+
+	}
+
+	//AGGIORNA DURATA E CHIUDE SESSIONE. SIA OGGETTO CHE DATABASE
+	public void closeAfterUpdateSession(Session s, long addDuration){
+		updateSessionDuration(s,addDuration);
+		closeSession(s);
+	}
+	
+	
+	//RITORNA L'ULTIMA DURATA STORATA NEL DATABASE DELLA LA SESSIONE PASSATA....INUTILE CREDO
 	public long sessionDuration(Session s){
 
 		String[] column={FallSqlHelper.SESSION_DURATION};
@@ -186,6 +194,7 @@ public class SessionDataSource {
 		return duration;
 	}
 
+	
 	//AGGIORNA NEL DATABASE E RITORNA LA DURATA DELLA SESSIONE IN INPUT SOMMANDO LA DURATA DA AGGIUNGERE
 	public long updateSessionDuration(Session s, long addDuration){
 
@@ -201,16 +210,18 @@ public class SessionDataSource {
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_DURATION+" = "+newDuration+
 				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.name()+"';");
-
+		s.setStopTimePreference(newDuration);
 		return newDuration;
 
 	}
 
+	
+	//CAMBIA STOPTIMEPREFERENCE DELL'OGGETTO E NEL DATABASE
 	public void changeStopTimePreference(Session s, long newStopTime){
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_STOP_TIME_PREFERENCE+" = "+newStopTime+
 				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.name()+"';");
-		
+
 		s.setStopTimePreference(newStopTime);
 	}
 

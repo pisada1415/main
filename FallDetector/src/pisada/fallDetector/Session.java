@@ -15,7 +15,7 @@ public class Session {
 	private long stopTimePreference;
 	private int close;
 
-//CON STOPTIME
+	//CON STOPTIME
 	public Session(String name, String img,long startTime,long endTime,long stopTimePreference, int close, Context context) throws BoolNotBoolException{
 		if(close!=0&&close!=1)throw new BoolNotBoolException();
 		else{
@@ -28,7 +28,7 @@ public class Session {
 		}
 
 	}
-	
+
 	//SENZA STOPTIME
 	public Session(String name, String img,long startTime,long endTime, int close, Context context) throws BoolNotBoolException{
 		if(close!=0&&close!=1)throw new BoolNotBoolException();
@@ -38,6 +38,7 @@ public class Session {
 			this.startTime=startTime;
 			this.endTime=endTime;
 			this.close=close;
+			stopTimePreference=-1;
 		}
 
 	}
@@ -50,16 +51,16 @@ public class Session {
 	public String name(){return name;}
 	public boolean booleanIsClose(){return close==1;}
 	public long stopTimePreference(){return stopTimePreference;}
-	
-	
+
+
 	public int integerIsClose(){return close;}
 	public String img(){return img;}
 	public void setEndTime(long endTime){this.endTime=endTime;}
 	public void setClose(long endTime){close=1;this.endTime=endTime;}
 	public void setStopTimePreference(long t){stopTimePreference=t;}
-	
+
 	public boolean isValidSession() {return name!=null && startTime!=0;}
-	public boolean hasStopTimePreference(){return stopTimePreference!=0;}
+	public boolean hasStopTimePreference(){return stopTimePreference<0;}
 }
 
 
