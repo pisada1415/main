@@ -46,15 +46,15 @@ public class Session {
 	public Session(){
 
 	}
-	public long startTime(){return startTime;}
-	public long endTime(){return endTime;}
-	public String name(){return name;}
+	public long getStartTime(){return startTime;}
+	public long getEndTime(){return endTime;}
+	public String getName(){return name;}
 	public boolean booleanIsClose(){return close==1;}
-	public long stopTimePreference(){return stopTimePreference;}
-
-
+	public long getStopTimePreference(){return stopTimePreference;}
 	public int integerIsClose(){return close;}
 	public String img(){return img;}
+	
+	public void setName(String name){this.name=name;}
 	public void setEndTime(long endTime){this.endTime=endTime;}
 	public void setClose(long endTime){close=1;this.endTime=endTime;}
 	public void setStopTimePreference(long t){stopTimePreference=t;}
