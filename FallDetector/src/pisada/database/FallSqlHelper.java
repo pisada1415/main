@@ -18,6 +18,8 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	public static final String SESSION_START_TIME="StartTime";
 	public static final String SESSION_END_TIME="EndTime";
 	public static final String SESSION_CLOSE_COLUMN="Close";
+	public static final String SESSION_DURATION="Duration";
+	public static final String SESSION_STOP_TIME_PREFERENCE="StopTimePreference";
 	public static final int CLOSE=1;
 	public static final int OPEN=0;
 
@@ -27,7 +29,9 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 					+SESSION_START_TIME+ " INTEGER NOT NULL, "
 					+SESSION_END_TIME+ " INTEGER, "
 					+SESSION_IMG+" TEXT, "
-					+SESSION_CLOSE_COLUMN+ " INTEGER NOT NULL "
+					+SESSION_CLOSE_COLUMN+ " INTEGER NOT NULL, "
+					+SESSION_DURATION+" INTEGER NOT NULL, "
+					+SESSION_STOP_TIME_PREFERENCE+" INTEGER, "
 					+ "CHECK("+SESSION_CLOSE_COLUMN+" = "+0+" OR "+SESSION_CLOSE_COLUMN+" = "+1+"));";
 
 	//DEFINIZIONE TABELLA AQUISIZIONE
