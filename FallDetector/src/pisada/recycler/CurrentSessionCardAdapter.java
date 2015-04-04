@@ -40,7 +40,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private Calendar c;
 	private long millisecStartGraph;
 	private static Chronometer duration; 
-	private long timeSessionUp;
+	private static long timeSessionUp;
+	private static boolean startChronometerOnStart = false;
 	/*
 	 * 
 	 * first_new_currentsession_card
@@ -61,7 +62,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			duration = (Chronometer) v.findViewById(R.id.chronometer);
 			thumbNail = (ImageView)v.findViewById(R.id.thumbnail);
 			info =  (TextView) v.findViewById(R.id.info);
-			
+			if(startChronometerOnStart)
+				startChronometer();
 			//prendi valore start session dal database (qui uso un valore esempio)
 			
 			
@@ -118,7 +120,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 
-	public CurrentSessionCardAdapter(Activity activity, long time) {
+	public CurrentSessionCardAdapter(Activity activity, long time, boolean startChron) {
 
 		this.activity=activity;
 		c = Calendar.getInstance();
@@ -128,6 +130,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		cardContentList.add(0,new CardContent());
 		cardContentList.add(1, new CardContent());
 		timeSessionUp = time;
+		startChronometerOnStart = startChron;
 	}
 
 
@@ -215,12 +218,14 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		lastX = x; lastY = y; lastZ = z; this.time = time;
 
 		c = Calendar.getInstance();
+		if(graphX != null && graphY != null && graphZ != null){
 		graphX.pushValue(new Data(time - millisecStartGraph,x));
 		graphX.invalidate();
 		graphY.pushValue(new Data(time- millisecStartGraph,y));
 		graphY.invalidate();
 		graphZ.pushValue(new Data(time- millisecStartGraph,z));
 		graphZ.invalidate();
+		}
 	}
 
 
@@ -238,14 +243,14 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	/*
 	 * QUI SALVIAMO I TEMPI NEL DATABASE 
 	 */
-	long timeStop = 0;
+	static long timeStop = 0;
 	public void pauseChronometer()
 	{
 		timeStop = duration.getBase() - SystemClock.elapsedRealtime();
 
 		duration.stop();
 	}
-	public void startChronometer()
+	public static void startChronometer()
 	{
 		if(timeStop == 0){
 			
@@ -263,6 +268,11 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	{
 		duration.setBase(SystemClock.elapsedRealtime());
 		duration.stop();
+	}
+	public void clearChronometer()
+	{
+		duration.setBase(SystemClock.elapsedRealtime());
+		timeSessionUp = 0;
 	}
 	
 	

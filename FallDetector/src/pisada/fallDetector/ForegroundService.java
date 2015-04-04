@@ -50,7 +50,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private boolean stop = false; 
 	private boolean running = false;
 	private boolean updatesRemoved = false;
-	
 	private static boolean connected = false;
 	private static boolean isRunning = false;
 	private Looper mServiceLooper;
@@ -68,12 +67,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private Criteria criteria;
 	private String bestProvider;
 	private String activeService;
-	private static long startTime;
+	private long startTime = System.currentTimeMillis();
+	private NotificationManager nm;
 
-	private static SessionDataSource sessionData;
-	private static AcquisitionDataSource acquisitionData;
-	
-	
+	private AcquisitionDataSource acquisitionData;
+	private SessionDataSource sessionDataSource;
+
 	@Override
 	public void onStart(Intent intent, int startId) {
 
@@ -95,16 +94,17 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// stopped, so return sticky.
 
 		//APRO CONNESSIONI AL DATABASE
-		if(sessionData == null){
-		sessionData=new SessionDataSource(this);
-		sessionData.open();
-		acquisitionData=new AcquisitionDataSource(this);
-		acquisitionData.open();}
-		
+		if(acquisitionData == null){
+			acquisitionData=new AcquisitionDataSource(this);
+			acquisitionData.open();}
+		if(sessionDataSource == null){
+			sessionDataSource = new SessionDataSource(this);
+			sessionDataSource.open();}
+
 		isRunning = true;
 		uiHandler = new Handler();
 		criteria = new Criteria();
-		
+
 		if(intent != null){
 			activeService = intent.getStringExtra("activeServices");
 		}
@@ -177,12 +177,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 		};
 
 		if(activeService != null && !updatesRemoved){ //chiamato sul thread UI
-			
 
-				bestProvider = lm.getBestProvider(criteria, true); 
-				lm.requestLocationUpdates(bestProvider, 5000, 0/*50*/, locationListenerGPS); //if gps is available
-				lm.requestLocationUpdates(networkProvider, 5000, 0/*50*/, locationListenerNetwork); //always updates location with network: it's faster
-			
+
+			bestProvider = lm.getBestProvider(criteria, true); 
+			lm.requestLocationUpdates(bestProvider, 5000, 0/*50*/, locationListenerGPS); //if gps is available
+			lm.requestLocationUpdates(networkProvider, 5000, 0/*50*/, locationListenerNetwork); //always updates location with network: it's faster
+
 		}
 
 		//=========================NOTIFICATION(START)============
@@ -191,7 +191,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		PendingIntent contentIntent = PendingIntent.getActivity(context,
 				717232, notificationIntent, 0);
 
-		NotificationManager nm = (NotificationManager) context
+		nm = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 
 		Resources res = context.getResources();
@@ -244,11 +244,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		 * when the service is first created, before onStartCommand or onBind are called
 		 * 
 		 */
-		if(sessionData == null){
-			sessionData=new SessionDataSource(this);
-			sessionData.open();
-			acquisitionData=new AcquisitionDataSource(this);
-			acquisitionData.open();}
+		
 
 		mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -261,7 +257,28 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// Get the HandlerThread's Looper and use it for our Handler
 		mServiceLooper = thread.getLooper();
 		mServiceHandler = new ServiceHandler(mServiceLooper);
-
+		if(acquisitionData == null){
+			acquisitionData=new AcquisitionDataSource(this);
+			acquisitionData.open();}
+		if(sessionDataSource == null){
+			sessionDataSource = new SessionDataSource(this);
+			sessionDataSource.open();}
+		new Thread(new Runnable(){
+			@Override
+			public void run()
+			{
+				while(!stop){
+					
+						storeDuration();
+					try {
+						Thread.sleep(1000); //precisione di un secondo +-
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}).start();
 	}
 
 	@Override
@@ -269,12 +286,19 @@ public class ForegroundService extends Service implements SensorEventListener {
 		/*
 		 * clean everything up
 		 */
-		sessionData.close();
+
+		/*deve mandare in pausa la session
+		 * 
+		 */
+		if(sessionDataSource.existCurrentSession())
+			storeDuration();
+		sessionDataSource.close();
 		acquisitionData.close();
 		stop = true;
 		mSensorManager.unregisterListener(this);
 		stopLocationUpdates();
 		isRunning = false;
+		nm.cancel(717232);
 	}
 
 	protected void stopLocationUpdates() {
@@ -282,7 +306,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		lm.removeUpdates(locationListenerNetwork);
 		updatesRemoved = true;
 	}
-	
+
 	protected static boolean isRunning(){
 		return isRunning;
 	}
@@ -413,24 +437,32 @@ public class ForegroundService extends Service implements SensorEventListener {
 		connectedAc = null;
 		connected = false;
 	}
-	
+
 	public static boolean isConnected()
 	{
 		return connectedAc != null;
 	}
 
+
 	private void runOnUiThread(Runnable runnable) {
 		uiHandler.post(runnable);
 	}
-	
-	protected static void initTime(long time)
-	{
-		startTime = time;
-	}
-	
-	protected static void storeDuration()
+
+
+	/*
+	 * viene chiusa la sessione e poi viene comunque chiamato ondestroy sulla sessione
+	 * già chiusa che risulta null nel database. perché ondestroy contiene storeduration.
+	 * soluzioni:
+	 * try - catch (poco elegante)
+	 */
+	/*protected static void storeDuration(SessionDataSource sessionData)
 	{
 		sessionData.updateSessionDuration(sessionData.currentSession(), System.currentTimeMillis() - startTime);
+	}*/
+	private void storeDuration()
+	{
+		if(sessionDataSource.existCurrentSession())
+			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
 	}
 
 }
