@@ -176,10 +176,11 @@ public class SessionDataSource {
 
 	}
 
-	//AGGIORNA DURATA E CHIUDE SESSIONE. SIA OGGETTO CHE DATABASE
-	public void closeAfterUpdateSession(Session s, long addDuration){
-		updateSessionDuration(s,addDuration);
+	//AGGIORNA DURATA E CHIUDE SESSIONE. SIA OGGETTO CHE DATABASE. RITORNA NUOVA DURATA
+	public long closeAfterUpdateSession(Session s, long addDuration){
+		long newDuration=updateSessionDuration(s,addDuration);
 		closeSession(s);
+		return newDuration;
 	}
 	
 	
@@ -187,8 +188,10 @@ public class SessionDataSource {
 	public long sessionDuration(Session s){
 
 		String[] column={FallSqlHelper.SESSION_DURATION};
-		String where=FallSqlHelper.SESSION_NAME+" = "+s.getName();
+		String where=FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"'";
 		Cursor cursor=database.query(FallSqlHelper.SESSION_TABLE, column,where,null,null,null,null);
+		if(cursor.getCount()==0)return -1;
+		
 		cursor.moveToFirst();
 		long duration=cursor.getLong(0);
 		cursor.close();
@@ -199,21 +202,13 @@ public class SessionDataSource {
 	//AGGIORNA NEL DATABASE E RITORNA LA DURATA DELLA SESSIONE IN INPUT SOMMANDO LA DURATA DA AGGIUNGERE
 	public long updateSessionDuration(Session s, long addDuration){
 
-		String[] column={FallSqlHelper.SESSION_DURATION};
-		String where=FallSqlHelper.SESSION_NAME+" = "+s.getName();
-		long oldDuration, newDuration;
-
-		Cursor cursor=database.query(FallSqlHelper.SESSION_TABLE, column,where,null,null,null,null);
-		cursor.moveToFirst();
-		oldDuration= cursor.getLong(0);
-		newDuration=oldDuration+addDuration;
+		long oldDuration=sessionDuration(s), newDuration=oldDuration+addDuration;
 
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_DURATION+" = "+newDuration+
 				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");
-		s.setStopTimePreference(newDuration);
+		
 		return newDuration;
-
 	}
 
 	
