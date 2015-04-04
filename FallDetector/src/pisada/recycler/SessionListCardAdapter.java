@@ -165,6 +165,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			sessionData.closeSession(currSession);
 			sessionList.add(1,new Session());
 			notifyItemInserted(1);
+			//
 		}
 	}
 
