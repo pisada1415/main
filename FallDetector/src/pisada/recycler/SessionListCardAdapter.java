@@ -125,7 +125,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		OldSessionHolder Oholder=(OldSessionHolder) holder;
 		Session session = sessionList.get(i);
-		Oholder.vName.setText("Name: "+session.getName()+"\nStart Time: "+session.getStartTime()+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose());
+		Oholder.vName.setText("Name: "+session.getName()+"\nStart Time: "+session.getStartTime()+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
 
 	}
 
@@ -166,10 +166,9 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	public void closeCurrentSession(){
 		Session currSession=sessionList.get(1);
 		if(currSession.isValidSession()) {
-			sessionData.closeSession(currSession);
+			sessionData.closeAfterUpdateSession(currSession, System.currentTimeMillis()-currSession.getStartTime());
 			sessionList.add(1,new Session());
 			notifyItemInserted(1);
-
 		}
 	}
 
