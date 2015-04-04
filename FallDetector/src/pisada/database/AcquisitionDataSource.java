@@ -127,7 +127,7 @@ public class AcquisitionDataSource {
 	public ArrayList<Acquisition> sessionFalls(Session session){
 
 		ArrayList<Acquisition> list=new ArrayList<Acquisition>();
-		Cursor cursor = database.query(FallSqlHelper.ACQUISITION_TABLE,allColumns, FallSqlHelper.ACQUISITION_FALL_COLUMN + " = " +1+ " AND "+FallSqlHelper.ACQUISITION_ASESSION+"='"+session.name()+"'", null,null, null, null);
+		Cursor cursor = database.query(FallSqlHelper.ACQUISITION_TABLE,allColumns, FallSqlHelper.ACQUISITION_FALL_COLUMN + " = " +1+ " AND "+FallSqlHelper.ACQUISITION_ASESSION+"='"+session.getName()+"'", null,null, null, null);
 		if(cursor.getCount()==0)return list;
 		while(cursor.moveToNext()){
 			list.add(cursorToAcquisition(cursor));

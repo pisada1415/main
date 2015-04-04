@@ -11,6 +11,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 
+
 public class SessionDataSource {
 	private SQLiteDatabase database;
 	private FallSqlHelper databaseHelper;
@@ -48,8 +49,8 @@ public class SessionDataSource {
 
 	//STORE NUOVA ACQUISIZIONE DATA LA SESSIONE
 	public Session insert(Session s) throws SQLiteConstraintException, BoolNotBoolException{
-		String name=s.name(), img=s.img();
-		long startTime=s.startTime(),  endTime=s.endTime(), stopTimePreference=s.stopTimePreference();
+		String name=s.getName(), img=s.img();
+		long startTime=s.getStartTime(),  endTime=s.getEndTime(), stopTimePreference=s.getStopTimePreference();
 		int close=s.integerIsClose();
 
 		ContentValues values=new ContentValues();
@@ -166,7 +167,7 @@ public class SessionDataSource {
 
 		long endTime=System.currentTimeMillis();
 
-		String name=s.name();
+		String name=s.getName();
 		//database.update(FallSqlHelper.SESSION_TABLE, values, FallSqlHelper.NAME+" = "+ name, null);
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_CLOSE_COLUMN+" = "+FallSqlHelper.CLOSE+", "
@@ -187,7 +188,7 @@ public class SessionDataSource {
 	public long sessionDuration(Session s){
 
 		String[] column={FallSqlHelper.SESSION_DURATION};
-		String where=FallSqlHelper.SESSION_NAME+" = "+s.name();
+		String where=FallSqlHelper.SESSION_NAME+" = "+s.getName();
 		Cursor cursor=database.query(FallSqlHelper.SESSION_TABLE, column,where,null,null,null,null);
 		cursor.moveToFirst();
 		long duration=cursor.getLong(0);
@@ -200,7 +201,7 @@ public class SessionDataSource {
 	public long updateSessionDuration(Session s, long addDuration){
 
 		String[] column={FallSqlHelper.SESSION_DURATION};
-		String where=FallSqlHelper.SESSION_NAME+" = "+s.name();
+		String where=FallSqlHelper.SESSION_NAME+" = "+s.getName();
 		long oldDuration, newDuration;
 
 		Cursor cursor=database.query(FallSqlHelper.SESSION_TABLE, column,where,null,null,null,null);
@@ -210,7 +211,7 @@ public class SessionDataSource {
 
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_DURATION+" = "+newDuration+
-				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.name()+"';");
+				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");
 		s.setStopTimePreference(newDuration);
 		return newDuration;
 
@@ -221,11 +222,21 @@ public class SessionDataSource {
 	public void changeStopTimePreference(Session s, long newStopTime){
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_STOP_TIME_PREFERENCE+" = "+newStopTime+
-				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.name()+"';");
+				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");
 
 		s.setStopTimePreference(newStopTime);
 	}
 
+	
+	public void changeSessionName(Session s,String name){
+		
+		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
+				+ " SET "+ FallSqlHelper.SESSION_NAME+" = "+name+
+				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");
+		
+		s.setName(name);
+			
+	}
 
 }
 

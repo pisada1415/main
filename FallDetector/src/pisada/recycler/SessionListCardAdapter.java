@@ -117,15 +117,15 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		case 1:
 			if(currSession!=null){
 				CurrentSessionHolder cHolder=(CurrentSessionHolder) holder;
-				cHolder.sessionName.setText(currSession.name()+"\n Close: "+currSession.booleanIsClose());
-				cHolder.sessionStart.setText(String.valueOf(currSession.startTime()).toString());
+				cHolder.sessionName.setText(currSession.getName()+"\n Close: "+currSession.booleanIsClose());
+				cHolder.sessionStart.setText(String.valueOf(currSession.getStartTime()).toString());
 			}
 			return;
 		}
 
 		OldSessionHolder Oholder=(OldSessionHolder) holder;
 		Session session = sessionList.get(i);
-		Oholder.vName.setText("Name: "+session.name()+"\nStart Time: "+session.startTime()+"\nendTime: "+session.endTime()+"\n Close: "+session.booleanIsClose());
+		Oholder.vName.setText("Name: "+session.getName()+"\nStart Time: "+session.getStartTime()+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose());
 
 	}
 
