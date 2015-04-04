@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
+import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -60,8 +61,11 @@ public class CurrentSessionActivity extends ActionBarActivity{
 				
 		//INIZIALIZZO RECYCLERVIEW
 		long timeSessionUp = 0;
+		
 		if(sessionData.existCurrentSession())
-			timeSessionUp = sessionData.time();
+			timeSessionUp = sessionData.sessionDuration(sessionData.currentSession());
+		///CRASHHHHHHHHHHHHHHHHH====================================================TODO
+		
 		rView=(RecyclerView) findViewById(R.id.currentsession_list_recycler);
 		rView.setHasFixedSize(true);
 		cardAdapter=new CurrentSessionCardAdapter(this, timeSessionUp);
@@ -113,11 +117,14 @@ public class CurrentSessionActivity extends ActionBarActivity{
 			ForegroundService.initTime(System.currentTimeMillis());
 			
 			cardAdapter.startChronometer();
-			
+			/*
+			 * CONTROLLO SE SESSIONE ESISTE NEL DATABASE. IN CASO ESISTA INIZIALIZZO L'ISTANZA LOCALE CON QUELLA.
+			 * SE NON ESISTE NE CREO UNA NUOVA NEL DB
+			 */
 			if(sessionData.existCurrentSession() && currentSession == null)
 			{
 				currentSession = sessionData.currentSession();
-				
+				setTitle(currentSession.name()); //equivale a sessionData.currentSession().name();
 			}
 			if(currentSession == null)
 			{
@@ -129,14 +136,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 				}
 				setTitle(nomeDefault);
 			}
-			// if(/*vedere nel db se current session è CHIUSA*/){/*qui mettere la roba che inizializza dati nuova sess nel db*/}
-			/*
-			 * QUI VIENE INIZIALIZZATA LA SESSION. DATI TRA CUI
-			 * ORA INIZIO
-			 * MINIATURA
-			 * NOME SESSION
-			 * VENGONO INIZIALIZZATI QUI
-			 */
+			
 		}
 		else
 		{
@@ -186,6 +186,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		        public void onClick(DialogInterface dialog, int whichButton) {
 		            Editable value = input.getText(); 
 		            setTitle(value);
+		            //sessionData.renameCurrentSession(//TODO RENAME CON "value" e UPDATE OGGETTO LOCALE CURRENTSESSION CON QUELLA DB
 		        }
 		    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 		        public void onClick(DialogInterface dialog, int whichButton) {

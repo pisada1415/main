@@ -4,6 +4,8 @@ package pisada.fallDetector;
 
 import java.util.Calendar;
 
+import pisada.database.AcquisitionDataSource;
+import pisada.database.SessionDataSource;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -67,6 +69,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private String bestProvider;
 	private String activeService;
 	private static long startTime;
+
+	private static SessionDataSource sessionData;
+	private static AcquisitionDataSource acquisitionData;
 	
 	
 	@Override
@@ -89,6 +94,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
 
+		//APRO CONNESSIONI AL DATABASE
+		if(sessionData == null){
+		sessionData=new SessionDataSource(this);
+		sessionData.open();
+		acquisitionData=new AcquisitionDataSource(this);
+		acquisitionData.open();}
+		
 		isRunning = true;
 		uiHandler = new Handler();
 		criteria = new Criteria();
@@ -232,7 +244,11 @@ public class ForegroundService extends Service implements SensorEventListener {
 		 * when the service is first created, before onStartCommand or onBind are called
 		 * 
 		 */
-
+		if(sessionData == null){
+			sessionData=new SessionDataSource(this);
+			sessionData.open();
+			acquisitionData=new AcquisitionDataSource(this);
+			acquisitionData.open();}
 
 		mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -253,6 +269,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 		/*
 		 * clean everything up
 		 */
+		sessionData.close();
+		acquisitionData.close();
 		stop = true;
 		mSensorManager.unregisterListener(this);
 		stopLocationUpdates();
@@ -412,7 +430,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	
 	protected static void storeDuration()
 	{
-		//TODO add to sessiondata the value 'System.currentTimeMillis() - startTime'
+		sessionData.updateSessionDuration(sessionData.currentSession(), System.currentTimeMillis() - startTime);
 	}
 
 }

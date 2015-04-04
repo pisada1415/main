@@ -55,9 +55,10 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			this.newSessionText=(TextView) v.findViewById(R.id.new_session_text);
 			this.addSessionButton=(Button) v.findViewById(R.id.add_session_button);
 			this.typeSession=(EditText) v.findViewById(R.id.type_session);
-				if(sessionData.existCurrentSession()){
-			v.setLayoutParams(new LayoutParams(v.getWidth(),0));
-				}
+
+			if(sessionData.existCurrentSession()){
+				v.setLayoutParams(new LayoutParams(v.getWidth(),0));
+			}
 
 		}
 
@@ -72,7 +73,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			sessionName=(TextView) v.findViewById(R.id.current_session_name_text);
 			sessionStart=(TextView) v.findViewById(R.id.current_session_start_text);
 			if(!sessionData.existCurrentSession()){
-			v.setLayoutParams(new LayoutParams(v.getWidth(),0));
+				v.setLayoutParams(new LayoutParams(v.getWidth(),0));
 			}
 		}
 
@@ -141,7 +142,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		return new OldSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.old_session_card, viewGroup, false));
 
 	}
-	
+
 	//AGGIUNGE NUOVA SESSIONE ALL'ADAPTER, SENZA STORE NEL DATABASE. STORE DA FARE FUORI PRIMA
 	public void addNewSession(Session s) {
 		Session currSession=sessionList.get(1);
@@ -160,7 +161,17 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		}
 
 	}
-	
+
+	//CHIUDE SESSIONE CORRENTE APPOGGIANDOSI AL METODO DI SESSIONDATASOURCE
+	public void closeCurrentSession(){
+		Session currSession=sessionList.get(1);
+		if(currSession.isValidSession()) {
+			sessionData.closeSession(currSession);
+			sessionList.add(1,new Session());
+			notifyItemInserted(1);
+
+		}
+	}
 
 	@Override
 	public int getItemViewType(int position) {
@@ -173,18 +184,9 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 	}
 
-	//CHIUDE SESSIONE CORRENTE APPOGGIANDOSI AL METODO DI SESSIONDATASOURCE
-	public void closeCurrentSession(){
-		Session currSession=sessionList.get(1);
-		if(currSession.isValidSession()) {
-			sessionData.closeSession(currSession);
-			sessionList.add(1,new Session());
-			notifyItemInserted(1);
-			
-		}
 
 
-	}
+
 
 }
 
