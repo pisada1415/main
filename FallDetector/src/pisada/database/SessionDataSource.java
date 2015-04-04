@@ -222,12 +222,11 @@ public class SessionDataSource {
 	}
 
 	
-	public void changeSessionName(Session s,String name){
+	public void renameSession(Session s,String name){
 		
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
-				+ " SET "+ FallSqlHelper.SESSION_NAME+" = "+name+
-				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");
-		
+				+ " SET "+ FallSqlHelper.SESSION_NAME+" = '"+name+
+				"' WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");
 		s.setName(name);
 			
 	}
