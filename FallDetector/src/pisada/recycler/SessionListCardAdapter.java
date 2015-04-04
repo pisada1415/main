@@ -166,9 +166,10 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	public void closeCurrentSession(){
 		Session currSession=sessionList.get(1);
 		if(currSession.isValidSession()) {
-			sessionData.closeAfterUpdateSession(currSession, System.currentTimeMillis()-currSession.getStartTime());
+			sessionData.closeSession(currSession);
 			sessionList.add(1,new Session());
 			notifyItemInserted(1);
+			//
 		}
 	}
 
