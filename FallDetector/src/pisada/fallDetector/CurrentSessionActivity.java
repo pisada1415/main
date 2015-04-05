@@ -11,17 +11,14 @@ import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
-import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.LayoutManager;
-import android.text.Editable;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -77,16 +74,15 @@ public class CurrentSessionActivity extends ActionBarActivity{
 			sessionName = sessionData.currentSession().getName();
 			startChronometerOnStartActivity = true;
 			/*
-			 * TODO QUI SE è IN PAUSA BISOGNA CHE IL SERVICE NON PARTA QUINDI QUESTE 6 RIGHE SOTTO VANNO MESSE SOLO SE NON è IN PAUSA.
+			 * TODO QUI SE è IN PAUSA BISOGNA CHE IL SERVICE NON PARTA QUINDI QUESTE 6 RIGHE SOTTO VANNO MESSE SOLO SE NON è IN PAUSA e il service non sta già andando.
 			 * STESSO TIPO DI CONTROLLO SI FA PER SETTARE IL TASTO IN STATO DI PAUSA O DI PLAY
+			 * 
 			 */
 			serviceIntent = new Intent(this, ForegroundService.class);
 			String activeServ = Utility.checkLocationServices(this, true);
 			serviceIntent.putExtra("activeServices", activeServ);
 			startService(serviceIntent);
-			long time = System.currentTimeMillis();
 			
-
 			
 		}
 		
@@ -141,7 +137,6 @@ public class CurrentSessionActivity extends ActionBarActivity{
 			if(sessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
 				sessionName = "Session"+ time; //assegno nome default (altrimenti tengo quello cambiato
 
-			cardAdapter.clearChronometer();
 			cardAdapter.startChronometer();
 			/*
 			 * CONTROLLO SE SESSIONE ESISTE NEL DATABASE. IN CASO ESISTA INIZIALIZZO L'ISTANZA LOCALE CON QUELLA.
@@ -183,7 +178,6 @@ public class CurrentSessionActivity extends ActionBarActivity{
 
 
 		cardAdapter.stopChronometer();
-		cardAdapter.clearChronometer();
 		if(ForegroundService.isRunning()){
 		//	ForegroundService.storeDuration(sessionData);
 

@@ -463,6 +463,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	{
 		if(sessionDataSource.existCurrentSession())
 			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
+		startTime = System.currentTimeMillis();
 	}
 
 }

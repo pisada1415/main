@@ -243,16 +243,16 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	/*
 	 * QUI SALVIAMO I TEMPI NEL DATABASE 
 	 */
-	static long timeStop = 0;
+	static long timePause = 0;
 	public void pauseChronometer()
 	{
-		timeStop = duration.getBase() - SystemClock.elapsedRealtime();
+		timePause = duration.getBase() - SystemClock.elapsedRealtime();
 
 		duration.stop();
 	}
 	public static void startChronometer()
 	{
-		if(timeStop == 0){
+		if(timePause == 0){
 			
 			long base = SystemClock.elapsedRealtime()-timeSessionUp;
 			duration.setBase(base);
@@ -260,20 +260,18 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 		else{
 
-			duration.setBase(SystemClock.elapsedRealtime() + timeStop);
+			duration.setBase(SystemClock.elapsedRealtime() + timePause);
 			duration.start();
 		}
 	}
 	public void stopChronometer()
 	{
 		duration.setBase(SystemClock.elapsedRealtime());
+		timeSessionUp = 0;
+		timePause = 0; //non deve riprendere da tempo stop
 		duration.stop();
 	}
-	public void clearChronometer()
-	{
-		duration.setBase(SystemClock.elapsedRealtime());
-		timeSessionUp = 0;
-	}
+	
 	
 	
 
