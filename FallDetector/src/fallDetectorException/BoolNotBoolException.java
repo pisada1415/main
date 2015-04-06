@@ -1,4 +1,4 @@
-package pisada.database;
+package fallDetectorException;
 
 public class BoolNotBoolException  extends Exception{
 		private static final String message="Valori interi ammessi per 'Close': 0 , 1";

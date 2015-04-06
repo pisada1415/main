@@ -10,6 +10,9 @@ package pisada.fallDetector;
 //Canaglia
 import java.util.ArrayList;
 
+import fallDetectorException.BoolNotBoolException;
+import fallDetectorException.MoreThanOneOpenSessionException;
+import pisada.database.SessionDataSource.Session;
 import pisada.database.AcquisitionDataSource;
 import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
@@ -32,7 +35,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.LayoutManager;
-import pisada.database.BoolNotBoolException;
 
 
 
@@ -166,12 +168,11 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		String name=editName.getText().toString();
 
 		if(!sessionData.existSession(name)){
-			Session session=new Session(name,"NONE",System.currentTimeMillis(),0,FallSqlHelper.OPEN,null);
 			try{
-				sessionData.insert(session);
-				cardAdapter.addNewSession(session);
+				
+				cardAdapter.addNewSession(sessionData.openNewSession(name,"NONE",System.currentTimeMillis()));
 			}
-			catch(SQLiteConstraintException e){
+			catch(Exception e){
 				e.printStackTrace();
 			}
 
