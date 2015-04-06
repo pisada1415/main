@@ -67,10 +67,10 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		acquisitionData.open();
 
 
-		long timeSessionUp = 0;
+		//long timeSessionUp = 0;
 
 		if(sessionData.existCurrentSession()){
-			timeSessionUp = sessionData.sessionDuration(sessionData.currentSession());
+			//timeSessionUp = sessionData.sessionDuration(sessionData.currentSession());
 			sessionName = sessionData.currentSession().getName();
 			startChronometerOnStartActivity = true;
 			/*
@@ -88,7 +88,12 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		
 		rView=(RecyclerView) findViewById(R.id.currentsession_list_recycler);
 		rView.setHasFixedSize(true);
-		cardAdapter = new CurrentSessionCardAdapter(this, timeSessionUp, startChronometerOnStartActivity);
+		//ForegroundService.setSessionTime(sessionData.existCurrentSession() ? System.currentTimeMillis() - sessionData.sessionDuration(sessionData.currentSession()) : System.currentTimeMillis());
+		/*
+		 * se il service sta andando chiedo al metodo del service: ok
+		 */
+		long oollo = ForegroundService.getSessionDuration(sessionData);
+		cardAdapter = new CurrentSessionCardAdapter(this, oollo, startChronometerOnStartActivity);
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(this);
 		rView.setLayoutManager(mLayoutManager);
