@@ -2,6 +2,7 @@ package pisada.database;
 
 import java.util.ArrayList;
 
+import fallDetectorException.AlreadyCloseSessionException;
 import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.InvalidSessionException;
@@ -18,8 +19,7 @@ import android.database.sqlite.SQLiteDatabase;
 public class SessionDataSource {
 	private SQLiteDatabase database;
 	private FallSqlHelper databaseHelper;
-	private 
-	String[] allColumns={FallSqlHelper.SESSION_NAME,FallSqlHelper.SESSION_IMG,FallSqlHelper.SESSION_START_TIME,FallSqlHelper.SESSION_END_TIME, 
+	private String[] allColumns={FallSqlHelper.SESSION_NAME,FallSqlHelper.SESSION_IMG,FallSqlHelper.SESSION_START_TIME,FallSqlHelper.SESSION_END_TIME, 
 			FallSqlHelper.SESSION_CLOSE_COLUMN, FallSqlHelper.SESSION_DURATION, FallSqlHelper.SESSION_STOP_TIME_PREFERENCE, FallSqlHelper.SESSION_PAUSE_COLUMN };
 	private Context context;
 	private static ArrayList<Session> sessionList=new ArrayList<Session>();
@@ -53,7 +53,7 @@ public class SessionDataSource {
 		}
 
 
-		//PUBBLICO; RITORNASESSIONE VUOTA PER ADAPTER
+		//PUBBLICO; RITORNA SESSIONE VUOTA PER ADAPTER. SESSION NON VALIDA
 		public Session(){
 			isValid=false;
 		}
@@ -86,14 +86,14 @@ public class SessionDataSource {
 		databaseHelper=new FallSqlHelper(context);
 		this.context=context;
 		open();
-		if(sessionList==null){
-		Cursor cursor= database.rawQuery("SELECT * FROM "+FallSqlHelper.SESSION_TABLE+" ORDER BY "+FallSqlHelper.SESSION_START_TIME+" DESC",null );
-		if(cursor.getCount()!=0)
-			while(cursor.moveToNext()){
-				Session s=cursorToSession(cursor);
-				sessionList.add(s);
-			}
-		cursor.close();
+		if(sessionList.size()==0){
+			Cursor cursor= database.rawQuery("SELECT * FROM "+FallSqlHelper.SESSION_TABLE+" ORDER BY "+FallSqlHelper.SESSION_START_TIME+" DESC",null );
+			if(cursor.getCount()!=0)
+				while(cursor.moveToNext()){
+					Session s=cursorToSession(cursor);
+					sessionList.add(s);
+				}
+			cursor.close();
 		}
 	}
 	public void open() throws SQLException {
@@ -123,9 +123,10 @@ public class SessionDataSource {
 	}
 
 	//NUOVA SESSIONE SENZA STOPTIMEPREFERENCE
-	public Session openNewSession(String name,String img, long startTime) throws BoolNotBoolException, MoreThanOneOpenSessionException{
+	public Session openNewSession(String name,String img, long startTime) throws  MoreThanOneOpenSessionException, DublicateNameSessionException{
 
 		if(existCurrentSession()) throw new MoreThanOneOpenSessionException();
+		if(getSession(name)!=null) throw new DublicateNameSessionException();
 
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.SESSION_NAME, name);
@@ -190,11 +191,29 @@ public class SessionDataSource {
 		return sessionList.size();
 	}
 
+
+
+	public boolean existSession(String name){
+
+		Session s=getSession(name);
+		if(s==null)return false;
+		return true;
+	}
+
+	public Session getSession(String name){
+
+		for(Session s: sessionList){
+			if(s.getName().equalsIgnoreCase(name)) return s;
+		}
+		return null;
+	}
+
+
 	//CHIUDE SESSIONE DATO IL NOME
 	public void closeSession(String name){
 		Session s=getSession(name);
 		if(s==null) return;
-		if(s.booleanIsClose()) return;
+		if(s.booleanIsClose())throw new AlreadyCloseSessionException();
 
 		long sEndTime=System.currentTimeMillis();
 
@@ -207,29 +226,11 @@ public class SessionDataSource {
 	}
 
 
-
-	public Session getSession(String name){
-
-		for(Session s: sessionList){
-			if(s.getName().equalsIgnoreCase(name)) return s;
-		}
-		return null;
-	}
-
-	public boolean existSession(String name){
-
-		Session s=getSession(name);
-		if(s==null)return false;
-		return true;
-	}
-
-
-
-	//CHIUDE SIA LA SESSIONE NEL DATABASE, SIA COME OGGETTO PASSATO. RICORDARSI DI UPDATARE LA DURATA FUORI SE NO USARE 'closeAfterUpdateSession'
+	//CHIUDE SESSIONE DATA LA SESSIONE
 	public void closeSession(Session s){
 
-		if(!s.isValidSession())return;
-		if(s.booleanIsClose())return;
+		if(!s.isValidSession())throw new InvalidSessionException();
+		if(s.booleanIsClose())throw new AlreadyCloseSessionException();
 
 		String name=s.getName();
 		long sEndTime=System.currentTimeMillis();
@@ -247,8 +248,8 @@ public class SessionDataSource {
 	//AGGIORNA DURATA E CHIUDE SESSIONE. SIA OGGETTO CHE DATABASE. RITORNA NUOVA DURATA
 	//RITORNA -1 SE LA SESSIONE NON è VALIDA, O SE LA SESSIONE è GIA CHIUSA
 	public long closeAfterUpdateSession(Session s, long addDuration){
-		if(!s.isValidSession())return -1; //TODO throw new InvalidSessionException()
-		if(s.booleanIsClose())return -1; //TODO alreadyCloseSessionException()
+		if(!s.isValidSession()) throw new InvalidSessionException();
+		if(s.booleanIsClose())throw new AlreadyCloseSessionException();
 
 		long newDuration=updateSessionDuration(s,addDuration);
 		closeSession(s);
@@ -261,8 +262,8 @@ public class SessionDataSource {
 
 	public long updateSessionDuration(Session s, long addDuration){
 
-		if(!s.isValidSession())return -1; //TODO throw new InvalidSessionException()
-		if(s.booleanIsClose())return -1;  //TODO alreadyCloseSessionException()
+		if(!s.isValidSession()) throw new InvalidSessionException();
+		if(s.booleanIsClose())throw new  AlreadyCloseSessionException();
 
 		long oldDuration=sessionDuration(s), newDuration=oldDuration+addDuration;
 
@@ -276,8 +277,7 @@ public class SessionDataSource {
 	//RITORNA L'ULTIMA DURATA STORATA NEL DATABASE DELLA LA SESSIONE PASSATA
 	public long sessionDuration(Session s){
 
-		
-		if(!s.isValidSession())return -1; //TODO throw new InvalidSessionException()
+		if(!s.isValidSession()) throw new InvalidSessionException();
 
 		String[] column={FallSqlHelper.SESSION_DURATION};
 		String where=FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"'";
@@ -295,8 +295,8 @@ public class SessionDataSource {
 
 	//CAMBIA STOPTIMEPREFERENCE DELL'OGGETTO SESSIONE E AGGIORNA IL DATABASE
 	public void changeStopTimePreference(Session s, long newStopTime){
-		if(!s.isValidSession())return ;  //TODO throw new InvalidSessionException()
-		if(s.booleanIsClose())return ; //TODO alreadyCloseSessionException()
+		if(!s.isValidSession()) throw new InvalidSessionException();
+		if(s.booleanIsClose()) throw new AlreadyCloseSessionException();
 
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_STOP_TIME_PREFERENCE+" = "+newStopTime+
@@ -308,8 +308,8 @@ public class SessionDataSource {
 
 	public void renameSession(Session s,String name){
 
-		if(!s.isValidSession())return ; //TODO throw new InvalidSessionException()
-
+		if(!s.isValidSession())throw new InvalidSessionException();
+		
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_NAME+" = '"+name+
 				"' WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");
@@ -319,8 +319,8 @@ public class SessionDataSource {
 
 	public void setSessionOnPause(Session s){
 
-		if(!s.isValidSession())return ; //TODO throw new InvalidSessionException()
-		if(s.booleanIsClose())return;
+		if(!s.isValidSession()) throw new InvalidSessionException();
+		if(s.booleanIsClose()) throw new AlreadyCloseSessionException();
 
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_PAUSE_COLUMN+" = "+FallSqlHelper.PAUSE+
@@ -330,8 +330,8 @@ public class SessionDataSource {
 	}
 
 	public void resumeSession(Session s){
-		if(!s.isValidSession())return ; //TODO throw new InvalidSessionException()
-		if(s.booleanIsClose())return;
+		if(!s.isValidSession()) throw new InvalidSessionException();
+		if(s.booleanIsClose()) throw new AlreadyCloseSessionException();
 
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_PAUSE_COLUMN+" = "+FallSqlHelper.RUNNING+

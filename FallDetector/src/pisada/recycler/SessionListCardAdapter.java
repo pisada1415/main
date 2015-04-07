@@ -3,26 +3,19 @@ package pisada.recycler;
 
 import java.util.ArrayList;
 
-import pisada.database.AcquisitionDataSource;
+import fallDetectorException.DublicateNameSessionException;
 import pisada.database.SessionDataSource;
 import pisada.database.SessionDataSource.Session;
-import pisada.fallDetector.Acquisition;
 import pisada.fallDetector.R;
 import pisada.fallDetector.SessionsListActivity;
-import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.LayoutManager;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -106,7 +99,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	@Override
 	public void onBindViewHolder(ViewHolder holder, int i) {
 
-	Session currSession=sessionData.currentSession();
+		Session currSession=sessionData.currentSession();
 		switch(i) {
 		case 0: 
 			if(sessionData.existCurrentSession()){
@@ -125,7 +118,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		}
 
 		OldSessionHolder Oholder=(OldSessionHolder) holder;
-	Session session = sessionList.get(i);
+		Session session = sessionList.get(i);
 		Oholder.vName.setText("Name: "+session.getName()+"\nStart Time: "+session.getStartTime()+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
 
 	}
@@ -145,18 +138,17 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	}
 
 	//AGGIUNGE NUOVA SESSIONE ALL'ADAPTER, SENZA STORE NEL DATABASE. STORE DA FARE FUORI PRIMA
-	public void addNewSession(Session s) {
-		Session currSession=sessionList.get(1);
+	public void addNewSession(String name,String img,long startTime) throws DublicateNameSessionException {
 
-		if(currSession.isValidSession()){
-			sessionData.closeSession(currSession);
-			sessionList.add(1,s);
+		if(sessionData.existCurrentSession()){
+			sessionData.closeSession(sessionData.currentSession());
+			sessionList.add(1,sessionData.openNewSession(name, img, startTime));
 			notifyItemInserted(1);
 
 		}
 
 		else{
-			sessionList.set(1,s);
+			sessionList.set(1,sessionData.openNewSession(name, img, startTime));
 			notifyItemInserted(1);
 
 		}
@@ -170,7 +162,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			sessionData.closeSession(currSession);
 			sessionList.add(1,new Session());
 			notifyItemInserted(1);
-			//
 		}
 	}
 

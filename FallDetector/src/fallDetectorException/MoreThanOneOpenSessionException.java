@@ -1,6 +1,6 @@
 package fallDetectorException;
 
-public class MoreThanOneOpenSessionException extends Exception{
+public class MoreThanOneOpenSessionException extends RuntimeException{
 	
 	private static final String message="Tentativo di inserire nuova session con una sessione già aperta";
 

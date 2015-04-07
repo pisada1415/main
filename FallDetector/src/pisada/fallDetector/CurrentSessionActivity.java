@@ -2,13 +2,11 @@ package pisada.fallDetector;
 
 /*
  * problemi:
- * tempo storato nel cronometro raddoppia ogni volta che esci e entri
- * update: macelli vari col cronometro
+ * 
  */
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
 import pisada.database.AcquisitionDataSource;
-import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.AlertDialog;
@@ -60,47 +58,42 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		serviceIntent = new Intent(this, ForegroundService.class);
 		sessionNameDefault = getResources().getString(R.string.defaultSessionName);
 		sessionName = sessionNameDefault;
-		//APRO CONNESSIONI AL DATABASE
+		
+		
+		//INIZIALIZZO DATABASE
 
 		sessionData=new SessionDataSource(this);
-	//	sessionData.open();
 		acquisitionData=new AcquisitionDataSource(this);
-	//	acquisitionData.open();
-
-
-		//long timeSessionUp = 0;
-
+	
 		if(sessionData.existCurrentSession()){
-			//timeSessionUp = sessionData.sessionDuration(sessionData.currentSession());
 			sessionName = sessionData.currentSession().getName();
-			startChronometerOnStartActivity = true;
-			/*
-			 * TODO QUI SE è IN PAUSA BISOGNA CHE IL SERVICE NON PARTA QUINDI QUESTE 6 RIGHE SOTTO VANNO MESSE SOLO SE NON è IN PAUSA e il service non sta già andando.
-			 * STESSO TIPO DI CONTROLLO SI FA PER SETTARE IL TASTO IN STATO DI PAUSA O DI PLAY
-			 * 
-			 */
+			if(!sessionData.currentSession().isOnPause())
+				startChronometerOnStartActivity = true; //FA SI CHE PARTA IL CRONOMETRO AL LANCIO DELL'ACTIVITY
+			
+			
+			//SE CURRENTSESSION NON è IN PAUSA E NON C'è IL SERVICE ATTIVO... FAI PARTIRE IL SERVICE (C'è STATA UNA CHIUSURA INASPETTATA)
 			if(!sessionData.currentSession().isOnPause() && !ForegroundService.isRunning()){
 				serviceIntent = new Intent(this, ForegroundService.class);
 				String activeServ = Utility.checkLocationServices(this, true);
 				serviceIntent.putExtra("activeServices", activeServ);
 				startService(serviceIntent);
+				pauseTime = 0;
 			}
-			else if(sessionData.currentSession().isOnPause())
+			else if(sessionData.currentSession().isOnPause()) //SE INVECE LA CURRENT SESSION è IN PAUSA... 
 			{
+				//INIZIALIZZO IL TEMPO DA CUI IL CRONOMETRO DEVE RIPARTIRE
 				pauseTime = sessionData.sessionDuration(sessionData.currentSession());
-				setTitle(sessionData.currentSession().getName());
+				
+				
+				//TODO SETTARE ICONA ADATTA NELL'ADAPTER
 			}
 
 
 		}
 
+		//INIZIALIZZO LA RECYCLERVIEW
 		rView=(RecyclerView) findViewById(R.id.currentsession_list_recycler);
 		rView.setHasFixedSize(true);
-		//ForegroundService.setSessionTime(sessionData.existCurrentSession() ? System.currentTimeMillis() - sessionData.sessionDuration(sessionData.currentSession()) : System.currentTimeMillis());
-		/*
-		 * se il service sta andando chiedo al metodo del service: ok
-		 */
-		
 		cardAdapter = new CurrentSessionCardAdapter(this, ForegroundService.getSessionDuration(sessionData), startChronometerOnStartActivity, pauseTime);
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(this);
@@ -134,15 +127,16 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		super.onResume();
 		if(!ForegroundService.isConnected())
 			ForegroundService.connect(cardAdapter);
-	//	sessionData.open();
-	//	acquisitionData.open();
+		sessionData.open();
+		acquisitionData.open();
 	}
 
+	//CHIAMATO QUANDO VIENE PREMUTO IL TASTO SOPRA (PLAY/PAUSA)
 	public void playPauseService(View v){
 
-		long time = System.currentTimeMillis();
+		long time = System.currentTimeMillis(); //MEMORIZZA IL MOMENTO IN CUI è STATO PREMUTO IL TASTO
 		if(sessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
-			sessionName = "Session"+ time; //assegno nome default (altrimenti tengo quello cambiato
+			sessionName = "Session"+ time; //assegno nome default UNICO (altrimenti tengo quello cambiato)
 
 		
 		if(!ForegroundService.isRunning()){
@@ -153,7 +147,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 				currentSession = addSession(sessionName, "" + time, time, 0);
 				setTitle(sessionName);
 				cardAdapter.startChronometer();
-				
+				//FA PARTIRE IL SERVICE
 				serviceIntent = new Intent(this, ForegroundService.class);
 				String activeServ = Utility.checkLocationServices(this, true);
 				serviceIntent.putExtra("activeServices", activeServ);
@@ -161,22 +155,21 @@ public class CurrentSessionActivity extends ActionBarActivity{
 			}
 			else
 			{
+				//ESISTE SESSIONE CORRENTE
 				if(sessionData.currentSession().isOnPause()){
+					//è IN PAUSA
 					currentSession = sessionData.currentSession();
-					sessionData.resumeSession(currentSession);
-					setTitle(currentSession.getName());
+					sessionData.resumeSession(currentSession); //LA FACCIO RIPARTIRE
 					cardAdapter.startChronometer();
-					
+					//FA PARTIRE IL SERVICE
 					serviceIntent = new Intent(this, ForegroundService.class);
 					String activeServ = Utility.checkLocationServices(this, true);
 					serviceIntent.putExtra("activeServices", activeServ);
 					startService(serviceIntent);
 				}
 				else{
-					//pausa
-					
+					//STA ANDANDO, QUINDI VA MESSA IN PAUSA
 					sessionData.setSessionOnPause(sessionData.currentSession());
-					//	ForegroundService.storeDuration(sessionData);
 					stopService(serviceIntent); //dovrebbe essere inutile
 					cardAdapter.pauseChronometer();
 				}
@@ -185,7 +178,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		}
 		else
 		{
-			//il service sta già andando
+			//il service sta già andando (STESSA COSA DI PRIMA MA QUI NON FA PARTIRE IL SERVICE)
 			if(!sessionData.existCurrentSession()){
 				//non esiste sessione corrente: creane una nuova
 				currentSession = null;
@@ -215,14 +208,14 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		}
 	}
 
-
+	//METODO CHIAMATO DAL TASTO STOP NELLA PRIMA CARD
 	public void stopService(View v) {
 		cardAdapter.stopChronometer();
 		
 		if(sessionData.existCurrentSession())
 			closeSession(sessionData.currentSession());
 		if(serviceIntent!=null)
-			stopService(serviceIntent);
+			stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
 
 
 		serviceIntent = null;
@@ -231,15 +224,13 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		setTitle(sessionNameDefault);
 		cardAdapter.clearGraphs();
 		/*
-		 *  * SESSION VIENE TERMINATA QUI. 
+		 *  * SESSION VIENE TERMINATA QUI. (dal service in ondestroy) 
 		 */
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
+		
 
 		int id = item.getItemId();
 		if (id == R.id.rename_session) {
@@ -308,7 +299,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		}
 		else
 		{
-			Toast.makeText(this, "Can't add session with same name!aiusdiuashdiusa", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, "Can't add session with same name!!!!", Toast.LENGTH_LONG).show();
 			if(ForegroundService.isRunning())
 				stopService(serviceIntent);
 			cardAdapter.stopChronometer();

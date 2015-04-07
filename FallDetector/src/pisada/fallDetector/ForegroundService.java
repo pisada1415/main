@@ -303,7 +303,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		if(sessionDataSource.existCurrentSession())
 			storeDuration();
 		resetTime();
-	//	sessionDataSource.close();
+		sessionDataSource.close();
 		acquisitionData.close();
 		stop = true;
 		mSensorManager.unregisterListener(this);

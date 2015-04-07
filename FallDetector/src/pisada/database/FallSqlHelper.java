@@ -10,7 +10,7 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	private static final String DATABASE_NAME="fall.db";
 	private static final int DATABASE_VERSION=1;
 	public static final int NO_VALUE_FOR_TIME_COLUMN=-1;
-	
+
 
 	//DEFINIZIONE TABELLA SESSIONE
 	public static final String SESSION_TABLE="SESSION";
@@ -36,7 +36,8 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 					+SESSION_CLOSE_COLUMN+ " INTEGER DEFAULT 0, "
 					+SESSION_PAUSE_COLUMN+ " INTEGER DEFAULT 0, "
 					+SESSION_DURATION+" INTEGER DEFAULT 0, "
-					+SESSION_STOP_TIME_PREFERENCE+" INTEGER DEFAULT -1, "
+					+SESSION_STOP_TIME_PREFERENCE+" INTEGER DEFAULT -1,"
+					+ "CHECK("+SESSION_NAME+" != ''), "
 					+ "CHECK("+SESSION_CLOSE_COLUMN+" = "+0+" OR "+SESSION_CLOSE_COLUMN+" = "+1+"));";
 
 	//DEFINIZIONE TABELLA AQUISIZIONE

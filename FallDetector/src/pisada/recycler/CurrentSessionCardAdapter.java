@@ -39,6 +39,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private long millisecStartGraph;
 	private static Chronometer duration; 
 	private static long timeSessionUp;
+	private static long timeWhenPaused = 0;
+	
 	private static boolean startChronometerOnStart = false;
 	/*
 	 * 
@@ -62,6 +64,13 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			info =  (TextView) v.findViewById(R.id.info);
 			if(startChronometerOnStart)
 				startChronometer();
+			if(timeWhenPaused != 0)
+			{
+				duration.setBase(SystemClock.elapsedRealtime() - timeWhenPaused);
+				duration.start();
+				duration.stop();
+				timeWhenPaused = 0;
+			}
 			//prendi valore start session dal database (qui uso un valore esempio)
 			
 			
@@ -129,8 +138,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		cardContentList.add(1, new CardContent());
 		timeSessionUp = time;
 		startChronometerOnStart = startChron;
-		if(timePause != 0)
-			duration.setBase(SystemClock.elapsedRealtime() - timePause);
+		if(pauseTime != 0) {
+			timeWhenPaused = pauseTime;
+		}
 	}
 
 
@@ -139,15 +149,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void onBindViewHolder(ViewHolder holder, int i) {
 
 		if(i==0 || i == 1){ //se sono le prime due non fare niente
-			/*if(currSession==null){
-				//NewSessionHolder nHolder=(NewSessionHolder) holder;
-				//nHolder.
-			}
-			else{
-				CurrentSessionHolder cHolder=(CurrentSessionHolder) holder;
-				cHolder.sessionName.setText(currSession.name().toString());
-				cHolder.sessionStart.setText(String.valueOf(currSession.startTime()).toString());
-			}*/
+
+
 
 
 		}
@@ -162,7 +165,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	}
 
 	private Bitmap getBitmapFromData(ArrayList<Double> lastFallThumbnailData2) {
-		// TODO Auto-generated method stub
+		// TODO facciamo l'immagine. oppure decidere se metterlo da un'altra parte e memorizzare l'img nel database
 		Bitmap b = Bitmap.createBitmap(100,100,Config.ARGB_4444);
 		return b;
 	}
@@ -174,9 +177,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 		if(type==0){
-			/*if(currSession==null)return new NewSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_session_card, viewGroup, false));
-			else return new CurrentSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_curr_session_card,viewGroup,false));
-			 */
 			return new FirstCardHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_currentsession_card, viewGroup, false));
 		}
 		if(type==1)
