@@ -11,6 +11,7 @@ package pisada.fallDetector;
 import java.util.ArrayList;
 
 import fallDetectorException.BoolNotBoolException;
+import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
 import pisada.database.SessionDataSource.Session;
 import pisada.database.AcquisitionDataSource;
@@ -30,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -50,7 +52,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	private Sensor mSensor;
 	private static SessionDataSource sessionData;
 	private static AcquisitionDataSource acquisitionData;
-	//private String sessionName="prima";
+	private long lastToastTime;
 
 
 
@@ -167,22 +169,30 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		EditText editName=(EditText) findViewById(R.id.type_session);
 		String name=editName.getText().toString();
 
-		if(!sessionData.existSession(name)){
-			try{
-				
-				cardAdapter.addNewSession(sessionData.openNewSession(name,"NONE",System.currentTimeMillis()));
+		if(name.equalsIgnoreCase("")){
+			if(System.currentTimeMillis()-lastToastTime>2000){
+				Toast.makeText(this, "Inserire un nome per la nuova sessione", 2000).show();
+				lastToastTime=System.currentTimeMillis();
 			}
-			catch(Exception e){
-				e.printStackTrace();
-			}
+			return;
+		}
 
+
+		try{
+			cardAdapter.addNewSession(name,"NONE",System.currentTimeMillis());
+		}
+		catch(DublicateNameSessionException e){
+			if(System.currentTimeMillis()-lastToastTime>2000){
+				Toast.makeText(this, "Esiste già una sessione con questo nome", 2000).show();
+				lastToastTime=System.currentTimeMillis();
+			}
 
 		}
 	}
-	
+
 	public void closeCurrentSession(View v){
-	 cardAdapter.closeCurrentSession();
-	 
+		cardAdapter.closeCurrentSession();
+
 	}
 
 
