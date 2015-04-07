@@ -98,13 +98,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 		//APRO CONNESSIONI AL DATABASE
 		if(acquisitionData == null){
 			acquisitionData=new AcquisitionDataSource(this);
-			acquisitionData.open();}
+		/*	acquisitionData.open();*/}
 		if(sessionDataSource == null){
 			sessionDataSource = new SessionDataSource(this);
-			sessionDataSource.open();}
+			}
 
 		//questo fa si che totalTime tenga il tempo per cui la sessione è aperta in totale
-		if(!timeInitialized){
+		if(!timeInitialized && sessionDataSource.existCurrentSession()){
+			
 		totalTime = sessionDataSource.sessionDuration(sessionDataSource.currentSession());
 		timeInitialized = true;
 		startTime = System.currentTimeMillis();
@@ -268,10 +269,10 @@ public class ForegroundService extends Service implements SensorEventListener {
 		mServiceHandler = new ServiceHandler(mServiceLooper);
 		if(acquisitionData == null){
 			acquisitionData=new AcquisitionDataSource(this);
-			acquisitionData.open();}
+			/*acquisitionData.open();*/}
 		if(sessionDataSource == null){
 			sessionDataSource = new SessionDataSource(this);
-			sessionDataSource.open();}
+		}
 		/*new Thread(new Runnable(){
 			@Override
 			public void run()
@@ -302,7 +303,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		if(sessionDataSource.existCurrentSession())
 			storeDuration();
 		resetTime();
-		sessionDataSource.close();
+	//	sessionDataSource.close();
 		acquisitionData.close();
 		stop = true;
 		mSensorManager.unregisterListener(this);

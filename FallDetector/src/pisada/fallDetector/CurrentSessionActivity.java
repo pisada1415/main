@@ -5,8 +5,9 @@ package pisada.fallDetector;
  * tempo storato nel cronometro raddoppia ogni volta che esci e entri
  * update: macelli vari col cronometro
  */
+import fallDetectorException.DublicateNameSessionException;
+import fallDetectorException.MoreThanOneOpenSessionException;
 import pisada.database.AcquisitionDataSource;
-import pisada.database.BoolNotBoolException;
 import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
@@ -43,14 +44,14 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	private static Intent serviceIntent;
 	RecyclerView rView;
 	CurrentSessionCardAdapter cardAdapter;
-	Session currentSession; //ooOOOOooOooOOOOH!
+	SessionDataSource.Session currentSession; //ooOOOOooOooOOOOH!
 	private static SessionDataSource sessionData;
 	private static AcquisitionDataSource acquisitionData;
 	LayoutManager mLayoutManager;
 	String sessionName;
 	String sessionNameDefault;
 	private boolean startChronometerOnStartActivity = false;
-
+	private long pauseTime = 0;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -62,9 +63,9 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		//APRO CONNESSIONI AL DATABASE
 
 		sessionData=new SessionDataSource(this);
-		sessionData.open();
+	//	sessionData.open();
 		acquisitionData=new AcquisitionDataSource(this);
-		acquisitionData.open();
+	//	acquisitionData.open();
 
 
 		//long timeSessionUp = 0;
@@ -78,28 +79,35 @@ public class CurrentSessionActivity extends ActionBarActivity{
 			 * STESSO TIPO DI CONTROLLO SI FA PER SETTARE IL TASTO IN STATO DI PAUSA O DI PLAY
 			 * 
 			 */
-			serviceIntent = new Intent(this, ForegroundService.class);
-			String activeServ = Utility.checkLocationServices(this, true);
-			serviceIntent.putExtra("activeServices", activeServ);
-			startService(serviceIntent);
-			
-			
+			if(!sessionData.currentSession().isOnPause() && !ForegroundService.isRunning()){
+				serviceIntent = new Intent(this, ForegroundService.class);
+				String activeServ = Utility.checkLocationServices(this, true);
+				serviceIntent.putExtra("activeServices", activeServ);
+				startService(serviceIntent);
+			}
+			else if(sessionData.currentSession().isOnPause())
+			{
+				pauseTime = sessionData.sessionDuration(sessionData.currentSession());
+				setTitle(sessionData.currentSession().getName());
+			}
+
+
 		}
-		
+
 		rView=(RecyclerView) findViewById(R.id.currentsession_list_recycler);
 		rView.setHasFixedSize(true);
 		//ForegroundService.setSessionTime(sessionData.existCurrentSession() ? System.currentTimeMillis() - sessionData.sessionDuration(sessionData.currentSession()) : System.currentTimeMillis());
 		/*
 		 * se il service sta andando chiedo al metodo del service: ok
 		 */
-		long oollo = ForegroundService.getSessionDuration(sessionData);
-		cardAdapter = new CurrentSessionCardAdapter(this, oollo, startChronometerOnStartActivity);
+		
+		cardAdapter = new CurrentSessionCardAdapter(this, ForegroundService.getSessionDuration(sessionData), startChronometerOnStartActivity, pauseTime);
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(this);
 		rView.setLayoutManager(mLayoutManager);
 		setTitle(sessionName);
-		
-		
+
+
 	}
 
 	@Override
@@ -126,67 +134,91 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		super.onResume();
 		if(!ForegroundService.isConnected())
 			ForegroundService.connect(cardAdapter);
-		sessionData.open();
-		acquisitionData.open();
+	//	sessionData.open();
+	//	acquisitionData.open();
 	}
 
 	public void playPauseService(View v){
 
+		long time = System.currentTimeMillis();
+		if(sessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
+			sessionName = "Session"+ time; //assegno nome default (altrimenti tengo quello cambiato
+
+		
 		if(!ForegroundService.isRunning()){
-			//play
-			serviceIntent = new Intent(this, ForegroundService.class);
-			String activeServ = Utility.checkLocationServices(this, true);
-			serviceIntent.putExtra("activeServices", activeServ);
-			startService(serviceIntent);
-			long time = System.currentTimeMillis();
-			if(sessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
-				sessionName = "Session"+ time; //assegno nome default (altrimenti tengo quello cambiato
-
-			cardAdapter.startChronometer();
-			/*
-			 * CONTROLLO SE SESSIONE ESISTE NEL DATABASE. IN CASO ESISTA INIZIALIZZO L'ISTANZA LOCALE CON QUELLA.
-			 * SE NON ESISTE NE CREO UNA NUOVA NEL DB
-			 */
-			if(sessionData.existCurrentSession() && currentSession == null)
-			{
-				currentSession = sessionData.currentSession();
-				setTitle(currentSession.getName()); //equivale a sessionData.currentSession().name();
-			}
-			if(currentSession == null)
-			{
-				try {
-					currentSession = addSession(sessionName, "" + time, time, 0);
-
-
-				} 
-				catch (BoolNotBoolException e) {
-
-					e.printStackTrace();
-				}
+			//il service non sta andando
+			if(!sessionData.existCurrentSession()){
+				//non esiste sessione corrente: creane una nuova
+				currentSession = null;
+				currentSession = addSession(sessionName, "" + time, time, 0);
 				setTitle(sessionName);
+				cardAdapter.startChronometer();
+				
+				serviceIntent = new Intent(this, ForegroundService.class);
+				String activeServ = Utility.checkLocationServices(this, true);
+				serviceIntent.putExtra("activeServices", activeServ);
+				startService(serviceIntent);
 			}
-
+			else
+			{
+				if(sessionData.currentSession().isOnPause()){
+					currentSession = sessionData.currentSession();
+					sessionData.resumeSession(currentSession);
+					setTitle(currentSession.getName());
+					cardAdapter.startChronometer();
+					
+					serviceIntent = new Intent(this, ForegroundService.class);
+					String activeServ = Utility.checkLocationServices(this, true);
+					serviceIntent.putExtra("activeServices", activeServ);
+					startService(serviceIntent);
+				}
+				else{
+					//pausa
+					
+					sessionData.setSessionOnPause(sessionData.currentSession());
+					//	ForegroundService.storeDuration(sessionData);
+					stopService(serviceIntent); //dovrebbe essere inutile
+					cardAdapter.pauseChronometer();
+				}
+			}
+			
 		}
 		else
 		{
-			//pausa
-
-		//	ForegroundService.storeDuration(sessionData);
-			stopService(serviceIntent);
-			cardAdapter.pauseChronometer();
+			//il service sta già andando
+			if(!sessionData.existCurrentSession()){
+				//non esiste sessione corrente: creane una nuova
+				currentSession = null;
+				currentSession = addSession(sessionName, "" + time, time, 0);
+				setTitle(sessionName);
+				cardAdapter.startChronometer();
+				
+			}
+			else
+			{
+				if(sessionData.currentSession().isOnPause()){
+					currentSession = sessionData.currentSession();
+					sessionData.resumeSession(currentSession);
+					setTitle(currentSession.getName());
+					cardAdapter.startChronometer();
+					
+				}
+				else{
+					//pausa
+					
+					sessionData.setSessionOnPause(sessionData.currentSession());
+					//	ForegroundService.storeDuration(sessionData);
+					stopService(serviceIntent); 
+					cardAdapter.pauseChronometer();
+				}
+			}
 		}
 	}
 
 
-
 	public void stopService(View v) {
-
-
 		cardAdapter.stopChronometer();
-		if(ForegroundService.isRunning()){
-		//	ForegroundService.storeDuration(sessionData);
-
-		}
+		
 		if(sessionData.existCurrentSession())
 			closeSession(sessionData.currentSession());
 		if(serviceIntent!=null)
@@ -236,7 +268,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 						Toast.makeText(CurrentSessionActivity.this, "Can't add session with same name!", Toast.LENGTH_LONG).show();
 						sessionName = tmp;
 						setTitle(sessionName);
-						
+
 
 					}
 
@@ -252,16 +284,24 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	}
 
 
-	public Session addSession(String name, String pic, long timeStart, long timeEnd) throws BoolNotBoolException{
+	public SessionDataSource.Session addSession(String name, String pic, long timeStart, long timeEnd) {
 
-		Session session = null;
+		SessionDataSource.Session session = null;
 		if(!sessionData.existSession(name)){
 
-			session=new Session(name, pic,timeStart,timeEnd,FallSqlHelper.OPEN,null);
 			try{
-				sessionData.insert(session);
+				sessionData.openNewSession(name, pic, timeStart, timeEnd);
 			}
 			catch(SQLiteConstraintException e){
+				e.printStackTrace();
+			} catch (fallDetectorException.BoolNotBoolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (MoreThanOneOpenSessionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (DublicateNameSessionException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -277,14 +317,8 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		return session;
 	}
 
-	public void closeSession(Session s){
+	public void closeSession(SessionDataSource.Session s){
 		if(sessionData.existCurrentSession())
 			sessionData.closeSession(s);
 	}
-
-
-
-
-
-
 }

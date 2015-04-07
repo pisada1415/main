@@ -7,8 +7,8 @@ package pisada.database;
 
 import java.util.ArrayList;
 
+import pisada.database.SessionDataSource.Session;
 import pisada.fallDetector.Acquisition;
-import pisada.fallDetector.Session;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;

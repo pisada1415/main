@@ -9,6 +9,7 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 
 	private static final String DATABASE_NAME="fall.db";
 	private static final int DATABASE_VERSION=1;
+	public static final int NO_VALUE_FOR_TIME_COLUMN=-1;
 	
 
 	//DEFINIZIONE TABELLA SESSIONE
@@ -20,18 +21,22 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	public static final String SESSION_CLOSE_COLUMN="Close";
 	public static final String SESSION_DURATION="Duration";
 	public static final String SESSION_STOP_TIME_PREFERENCE="StopTimePreference";
+	public static final String SESSION_PAUSE_COLUMN="Pause";
 	public static final int CLOSE=1;
 	public static final int OPEN=0;
+	public static final int PAUSE=1;
+	public static final int RUNNING=0;
 
 	public static final String CREATE_SESSION_TABLE=
 			"CREATE TABLE IF NOT EXISTS "+SESSION_TABLE+"("
 					+SESSION_NAME+ " TEXT PRIMARY KEY, "
 					+SESSION_START_TIME+ " INTEGER NOT NULL, "
-					+SESSION_END_TIME+ " INTEGER, "
+					+SESSION_END_TIME+ " INTEGER DEFAULT -1, "
 					+SESSION_IMG+" TEXT, "
-					+SESSION_CLOSE_COLUMN+ " INTEGER NOT NULL, "
-					+SESSION_DURATION+" INTEGER NOT NULL, "
-					+SESSION_STOP_TIME_PREFERENCE+" INTEGER, "
+					+SESSION_CLOSE_COLUMN+ " INTEGER DEFAULT 0, "
+					+SESSION_PAUSE_COLUMN+ " INTEGER DEFAULT 0, "
+					+SESSION_DURATION+" INTEGER DEFAULT 0, "
+					+SESSION_STOP_TIME_PREFERENCE+" INTEGER DEFAULT -1, "
 					+ "CHECK("+SESSION_CLOSE_COLUMN+" = "+0+" OR "+SESSION_CLOSE_COLUMN+" = "+1+"));";
 
 	//DEFINIZIONE TABELLA AQUISIZIONE

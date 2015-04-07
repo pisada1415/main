@@ -7,11 +7,9 @@ import java.util.Calendar;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.R;
 import pisada.fallDetector.ServiceReceiver;
-import pisada.fallDetector.Session;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.os.SystemClock;
@@ -120,7 +118,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 
-	public CurrentSessionCardAdapter(Activity activity, long time, boolean startChron) {
+	public CurrentSessionCardAdapter(Activity activity, long time, boolean startChron, long pauseTime) {
 
 		this.activity=activity;
 		c = Calendar.getInstance();
@@ -131,6 +129,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		cardContentList.add(1, new CardContent());
 		timeSessionUp = time;
 		startChronometerOnStart = startChron;
+		if(timePause != 0)
+			duration.setBase(SystemClock.elapsedRealtime() - timePause);
 	}
 
 

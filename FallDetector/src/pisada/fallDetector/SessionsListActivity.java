@@ -11,22 +11,22 @@ package pisada.fallDetector;
 import java.util.ArrayList;
 
 
-import android.app.Notification;
-import android.app.PendingIntent;
-import android.content.Intent;
 
+import fallDetectorException.BoolNotBoolException;
+import fallDetectorException.MoreThanOneOpenSessionException;
+import pisada.database.SessionDataSource.Session;
 import pisada.database.AcquisitionDataSource;
 import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.recycler.SessionListCardAdapter;
 import android.support.v7.app.ActionBarActivity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -39,7 +39,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.LayoutManager;
-import pisada.database.BoolNotBoolException;
 
 
 
@@ -198,12 +197,11 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 		if(!sessionData.existSession(name)){
 
-			Session session=new Session(name,"NONE",System.currentTimeMillis(),0,FallSqlHelper.OPEN,null);
 			try{
-				sessionData.insert(session);
-				cardAdapter.addNewSession(session);
+				
+				cardAdapter.addNewSession(sessionData.openNewSession(name,"NONE",System.currentTimeMillis()));
 			}
-			catch(SQLiteConstraintException e){
+			catch(Exception e){
 				e.printStackTrace();
 			}
 

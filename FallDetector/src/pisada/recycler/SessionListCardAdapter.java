@@ -5,9 +5,9 @@ import java.util.ArrayList;
 
 import pisada.database.AcquisitionDataSource;
 import pisada.database.SessionDataSource;
+import pisada.database.SessionDataSource.Session;
 import pisada.fallDetector.Acquisition;
 import pisada.fallDetector.R;
-import pisada.fallDetector.Session;
 import pisada.fallDetector.SessionsListActivity;
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
@@ -24,6 +24,8 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+
 public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 	private ArrayList<Session> sessionList;
@@ -85,7 +87,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		this.activity=activity;
 		this.sessionData=new SessionDataSource(activity);
 		this.rView=rView;
-		sessionData.open();
 
 		this.sessionList=sessionData.sessions();
 		sessionList.add(0,new Session());
@@ -105,7 +106,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	@Override
 	public void onBindViewHolder(ViewHolder holder, int i) {
 
-		Session currSession=sessionData.currentSession();
+	Session currSession=sessionData.currentSession();
 		switch(i) {
 		case 0: 
 			if(sessionData.existCurrentSession()){
@@ -124,7 +125,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		}
 
 		OldSessionHolder Oholder=(OldSessionHolder) holder;
-		Session session = sessionList.get(i);
+	Session session = sessionList.get(i);
 		Oholder.vName.setText("Name: "+session.getName()+"\nStart Time: "+session.getStartTime()+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
 
 	}

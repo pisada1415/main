@@ -20,13 +20,10 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".SessionsListActivity"
-
-            android:label="@string/title_activity_sessions_list" 
-            
-           
-           android:windowSoftInputMode="stateHidden|adjustResize" >
-            
+            android:label="@string/title_activity_sessions_list"
+            android:windowSoftInputMode="stateHidden|adjustResize" >
         </activity>
+
         <activity
             android:name=".SessionDetailsActivity"
             android:label="@string/title_activity_session" >
