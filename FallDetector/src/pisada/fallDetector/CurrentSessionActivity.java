@@ -41,7 +41,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 
 	private static Intent serviceIntent;
 	RecyclerView rView;
-	CurrentSessionCardAdapter cardAdapter;
+	private static CurrentSessionCardAdapter cardAdapter;
 	SessionDataSource.Session currentSession; //ooOOOOooOooOOOOH!
 	private static SessionDataSource sessionData;
 	private static AcquisitionDataSource acquisitionData;
@@ -311,5 +311,10 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	public void closeSession(SessionDataSource.Session s){
 		if(sessionData.existCurrentSession())
 			sessionData.closeSession(s);
+	}
+	
+	public CurrentSessionCardAdapter getAdapter()
+	{
+		return this.cardAdapter;
 	}
 }

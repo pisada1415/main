@@ -6,6 +6,7 @@ import java.util.Calendar;
 
 import pisada.database.AcquisitionDataSource;
 import pisada.database.SessionDataSource;
+import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -29,6 +30,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
+import fallDetectorException.DublicateNameSessionException;
 
 /*
  * funzionamento del gps:
@@ -415,6 +417,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 				//
 				//
 				//
+			}
+			
+			if(Math.sqrt(x*x + y*y + z*z) > 20){ //provvisorio, sarà sostituito da danielalgorithm
+				
+				if(connectedAc != null && connectedAc instanceof CurrentSessionCardAdapter){
+					
+					((CurrentSessionCardAdapter)connectedAc).addFallToCardList(x,y,z,System.currentTimeMillis());
+				}
 			}
 			/*
 			 * if(fall){

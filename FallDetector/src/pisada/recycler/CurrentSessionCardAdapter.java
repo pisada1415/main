@@ -119,7 +119,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		public FallsHolder(View v) {
 			super(v);
 			fallThumbnail=(ImageView) v.findViewById(R.id.thumbnail_fall);
-			fallTime=(Button) v.findViewById(R.id.fall_time);
+			fallTime=(TextView) v.findViewById(R.id.fall_time);
 			fallPosition=(TextView) v.findViewById(R.id.position);
 		}
 
@@ -155,10 +155,11 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		}
 		else{
+			CardContent fall = cardContentList.get(i);
 			FallsHolder Oholder=(FallsHolder) holder;
 			Oholder.fallThumbnail.setImageBitmap(getBitmapFromData(lastFallThumbnailData));
-			Oholder.fallPosition.setText("posizione");
-			Oholder.fallTime.setText("tempo");
+			Oholder.fallPosition.setText("no giusti "+ fall.getX() + fall.getY() + fall.getZ() );
+			Oholder.fallTime.setText("tempo: " + fall.getTime());
 
 		}
 
@@ -189,8 +190,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	}
 	public void addItem(CardContent c) {//DIVENTERà FALL
 
-		cardContentList.add(c);
-		notifyItemInserted(1);
+		cardContentList.add(cardContentList.size(),c);
+		notifyItemInserted(cardContentList.size()-1);
 
 	}
 
@@ -272,7 +273,12 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		duration.stop();
 	}
 	
-	
+	public void addFallToCardList(double x, double y, double z, long time)
+	{
+		cardContentList.add(new CardContent(x,y,z,time));
+		notifyItemInserted(cardContentList.size()-1);
+		
+	}
 	
 
 }
