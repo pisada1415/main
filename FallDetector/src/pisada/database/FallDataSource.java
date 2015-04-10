@@ -148,8 +148,8 @@ public class FallDataSource {
 	//RITORNA TUTTE E ACQUISIZIONI DI UNA CADUTA
 	public ArrayList<Acquisition> fallAcquisitions(Fall fall){
 		ArrayList<Acquisition> list=new ArrayList<Acquisition>();
-		String WHERE=" WHERE "+FallSqlHelper.FALL_FSESSION+" = '"+fall.getSession().getName()+"'"+" AND "+FallSqlHelper.FALL_TIME+" = "+fall.getTime();
-		Cursor cursor= database.rawQuery("SELECT * FROM "+FallSqlHelper.FALL_TABLE+WHERE+" ORDER BY "+FallSqlHelper.FALL_TIME+" DESC",null );
+		String WHERE=" WHERE "+FallSqlHelper.ACQUISITION_ASESSION+" = '"+fall.getSession().getName()+"'"+" AND "+FallSqlHelper.ACQUISITION_FALL_TIME+" = "+fall.getTime();
+		Cursor cursor= database.rawQuery("SELECT * FROM "+FallSqlHelper.ACQUISITION_TABLE+" "+WHERE+" ORDER BY "+FallSqlHelper.ACQUISITION_TIME+" DESC",null );
 		while(cursor.moveToNext()){
 			list.add(cursorToAcquisition(cursor));
 		}
