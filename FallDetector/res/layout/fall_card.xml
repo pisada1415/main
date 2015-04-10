@@ -4,20 +4,35 @@
     android:id="@+id/first_card_new_session"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp"
-    card_view:cardCornerRadius="4dp" >
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="5dp"
+    android:layout_marginLeft="15dp"
+    android:layout_marginRight="15dp"
+    card_view:cardCornerRadius="8dp"
+    card_view:cardElevation="14dp" >
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
         
-        
+        <TextView
+            android:id="@+id/fall_event_occurred"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_margin="5dp"
+            android:gravity="center"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/red"
+            android:text="@string/fall_event_occurred" 
+            android:textSize="20sp" />
         <ImageView
         android:id="@+id/thumbnail_fall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/fall_event_occurred"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_margin="5dp"
         android:src="@drawable/ic_launcher" />
         
@@ -25,6 +40,7 @@
             android:id="@+id/fall_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/fall_event_occurred"
             android:layout_toRightOf="@id/thumbnail_fall"
             android:layout_toEndOf="@id/thumbnail_fall"
             android:text="@string/time_elapsed" 

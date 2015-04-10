@@ -1,17 +1,13 @@
 package pisada.fallDetector;
 
-/*
- * problemi:
- * 
- */
-import fallDetectorException.DublicateNameSessionException;
-import fallDetectorException.MoreThanOneOpenSessionException;
+
 import pisada.database.AcquisitionDataSource;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.sqlite.SQLiteConstraintException;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -22,20 +18,22 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-/*
- * 
- * connect dovrà anche inizializzare il timer che manda indietro qui il tempo passato da quando
- * è stata inizializzata la session.
- *  
- * sistemare le fall che devono inizializzare schede se avvengono 
- * 
- * salvare la session quando viene premuto stop (per ora, poi ci sarà limite di tempo interno al service).
- * 
- *  GETTO LA DATA E ORA PARTENZA SESSION DAL DB, INIZIALIZZO TIMER NELLA UI CON QUEL VALORE, PLAY DEL CRONOMETRO QUANDO APRO ACTIVITY
- * 
- * NOME SESSION NELLA ACTIONBAR MODIFICABILE CON IL TASTO OPZIONI OVERFLOW
- */
 import android.widget.Toast;
+import fallDetectorException.DublicateNameSessionException;
+import fallDetectorException.MoreThanOneOpenSessionException;
+
+/*
+ *
+ * 
+ * 
+ * TODO:
+ * 	QUANDO VIENE RUOTATA LA VIEW DEVE RICARICARE TUTTE LE FALLS DAL DATABASE NELL'ADAPTER.
+ * 
+ * 
+ * TEMPO LIMITE POI LA SESSION SI CHIUDE DA SOLA.
+ * 
+ */
+
 
 public class CurrentSessionActivity extends ActionBarActivity{
 
@@ -67,6 +65,11 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	
 		if(sessionData.existCurrentSession()){
 			sessionName = sessionData.currentSession().getName();
+			
+			
+			//TODO CARICARE LE CADUTE RELATIVE ALLA CURRENTSESSION dal database NELL'ADAPTER.
+			
+			
 			if(!sessionData.currentSession().isOnPause())
 				startChronometerOnStartActivity = true; //FA SI CHE PARTA IL CRONOMETRO AL LANCIO DELL'ACTIVITY
 			
@@ -118,14 +121,14 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		super.onPause();
 		sessionData.close();
 		acquisitionData.close();
-		ForegroundService.disconnect(); //disconnette l'activity connessa
+		ForegroundService.disconnect(cardAdapter); //disconnette l'activity connessa
 	}
 
 	@Override
 	public void onResume()
 	{
 		super.onResume();
-		if(!ForegroundService.isConnected())
+		if(!ForegroundService.isConnected(cardAdapter))
 			ForegroundService.connect(cardAdapter);
 		sessionData.open();
 		acquisitionData.open();
@@ -211,6 +214,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	//METODO CHIAMATO DAL TASTO STOP NELLA PRIMA CARD
 	public void stopService(View v) {
 		cardAdapter.stopChronometer();
+		cardAdapter.clearFalls();
 		
 		if(sessionData.existCurrentSession())
 			closeSession(sessionData.currentSession());
@@ -286,13 +290,10 @@ public class CurrentSessionActivity extends ActionBarActivity{
 			catch(SQLiteConstraintException e){
 				e.printStackTrace();
 			} catch (fallDetectorException.BoolNotBoolException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (MoreThanOneOpenSessionException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (DublicateNameSessionException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -315,6 +316,14 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	
 	public CurrentSessionCardAdapter getAdapter()
 	{
-		return this.cardAdapter;
+		return cardAdapter;
+	}
+	
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+	    super.onConfigurationChanged(newConfig);
+	        //Do stuff here
+	    
 	}
 }

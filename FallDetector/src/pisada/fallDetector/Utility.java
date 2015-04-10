@@ -1,8 +1,8 @@
 package pisada.fallDetector;
 
-import android.app.Activity;
+import java.util.Random;
+
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -59,6 +59,23 @@ public class Utility {
 		   if(network_enabled)
 			   return LocationManager.NETWORK_PROVIDER;
 		   return null;
+	}
+	
+	
+	public static int randInt(int min, int max) {
+	    Random rand = new Random();
+	    int randomNum = rand.nextInt((max - min) + 1) + min;
+	    return randomNum;
+	}
+	
+	public static int randomizeToColor(double d)
+	{
+		if(d <= 255)
+			return randInt(0, (int)d);
+		else
+		{
+			return randomizeToColor(d/randInt(1, 3));
+		}
 	}
 	
 	

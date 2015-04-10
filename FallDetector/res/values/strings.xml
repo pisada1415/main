@@ -18,4 +18,7 @@
 	<string name="current_session_name">Current Session Name</string>
 	<string name="rename">Rename session</string>
 	<string name="defaultSessionName">New Session</string>
+	<string name="plotsCardText">x, y, z axis plots</string>
+	
+	<string name="fall_event_occurred">Fall occurred!</string>
 </resources>

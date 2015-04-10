@@ -2,37 +2,40 @@ package pisada.recycler;
 
 public class CardContent {
 
-	private double x;
-	private double y;
-	private double z;
-	private long time;
+	private String pos;
+	private String time;
+	private double thumbnail;
+	private String link;
 	
-	public CardContent(double x, double y, double z, long time)
+	public CardContent(String pos, String link, String time, double thumbnail)
 	{
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.pos = pos;
 		this.time = time;
+		this.thumbnail = thumbnail;
+		this.link = link;
 	}
 	public CardContent()
 	{
 		
 	}
 	
-	public double getX()
+	
+	public String getLink()
 	{
-		return this.x;
+		return this.link;
 	}
-	public double getY()
+	public String getPos()
 	{
-		return this.y;
+		return this.pos;
 	}
-	public double getZ()
-	{
-		return this.z;
-	}
-	public double getTime()
+	
+	public String getTime()
 	{
 		return this.time;
+	}
+	
+	public double getThumbnail()
+	{
+		return this.thumbnail;
 	}
 }

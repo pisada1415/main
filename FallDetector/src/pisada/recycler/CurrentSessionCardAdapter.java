@@ -7,14 +7,18 @@ import java.util.Calendar;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.R;
 import pisada.fallDetector.ServiceReceiver;
+import pisada.fallDetector.Utility;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.Color;
 import android.os.SystemClock;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +51,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	 * first_new_currentsession_card
 	 */
 	public static class FirstCardHolder extends RecyclerView.ViewHolder {
-		private TextView sessionName;
 		private Button startPauseButton;
 		private Button stopButton;
 		
@@ -56,7 +59,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		
 		public FirstCardHolder(View v) {
 			super(v);
-			sessionName = (TextView)v.findViewById(R.id.session_name);
 			startPauseButton = (Button)v.findViewById(R.id.start_pause_button);
 			stopButton = (Button)v.findViewById(R.id.stop_button);
 			duration = (Chronometer) v.findViewById(R.id.chronometer);
@@ -150,24 +152,39 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		if(i==0 || i == 1){ //se sono le prime due non fare niente
 
-
-
-
 		}
 		else{
 			CardContent fall = cardContentList.get(i);
 			FallsHolder Oholder=(FallsHolder) holder;
-			Oholder.fallThumbnail.setImageBitmap(getBitmapFromData(lastFallThumbnailData));
-			Oholder.fallPosition.setText("no giusti "+ fall.getX() + fall.getY() + fall.getZ() );
-			Oholder.fallTime.setText("tempo: " + fall.getTime());
+			Oholder.fallThumbnail.setImageBitmap(getBitmapFromData(fall.getThumbnail()));
+			String link = fall.getLink();
+			Oholder.fallPosition.setText(Html.fromHtml("<a href=\""+ link + "\">" + "Position: " + fall.getPos() + "</a>"));
+			if(link != null){
+				Oholder.fallPosition.setClickable(true);
+			Oholder.fallPosition.setMovementMethod (LinkMovementMethod.getInstance());
+			}
+			//Oholder.fallPosition.setText("Position: "+ fall.getPos());
+			Oholder.fallTime.setText("Time: " + fall.getTime());
 
 		}
 
 	}
 
-	private Bitmap getBitmapFromData(ArrayList<Double> lastFallThumbnailData2) {
+	private Bitmap getBitmapFromData(double data) {
 		// TODO facciamo l'immagine. oppure decidere se metterlo da un'altra parte e memorizzare l'img nel database
-		Bitmap b = Bitmap.createBitmap(100,100,Config.ARGB_4444);
+		Bitmap b = Bitmap.createBitmap(100,100,Config.ARGB_8888);
+		b.eraseColor(android.graphics.Color.GREEN);
+		int rand = Utility.randInt(3, 100);
+		
+		for(int i = 0; i < rand; i++)
+		{
+			int x =Utility.randInt(0, 99);
+			int y = Utility.randInt(0, 99);
+			int r =Utility.randomizeToColor(data);
+			int g = Utility.randomizeToColor(data);
+			int bc = Utility.randomizeToColor(data);
+			b.setPixel(x, y, Color.rgb(r, g, bc));
+		}
 		return b;
 	}
 
@@ -273,10 +290,26 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		duration.stop();
 	}
 	
-	public void addFallToCardList(double x, double y, double z, long time)
+	private void addFallToCardList(String position, String link, String time, long img)
 	{
-		cardContentList.add(new CardContent(x,y,z,time));
+		cardContentList.add(new CardContent(position,link,time, img));
 		notifyItemInserted(cardContentList.size()-1);
+		
+	}
+
+	@Override
+	public void serviceUpdate(String fallPosition, String link, String time, long img) {
+		// TODO se arrivano cadute vengono notificate qui
+		addFallToCardList(fallPosition, link, time, img);
+	}
+	
+	public void clearFalls()
+	{
+		while(cardContentList.size()>2)
+		{
+			cardContentList.remove(2);
+			this.notifyItemRemoved(2);
+		}
 		
 	}
 	

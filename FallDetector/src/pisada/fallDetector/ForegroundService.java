@@ -2,11 +2,13 @@ package pisada.fallDetector;
 
 
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 import pisada.database.AcquisitionDataSource;
 import pisada.database.SessionDataSource;
-import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -29,17 +31,22 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
+import android.text.format.DateFormat;
 import android.widget.Toast;
-import fallDetectorException.DublicateNameSessionException;
 
 /*
+ * 
+ * utilizzo del service:
+ * creare un nuovo intent e avviare il service tramite il comando startService(intent)
+ * se si vuole ricevere update per cadute e acquisizioni:
+ * connettere l'activity al service tramite il metodo ForegroundService.connect(ActivityDaConnettere)
+ * e implementare l'interfaccia ServiceReceiver. Quando hai finito di ricevere dati
+ * chiama: ForegroundService.disconnect(ActivityDaConnettere)
+ * 
+ * 
  * funzionamento del gps:
  * la location viene aggiornata ogni 5 minuti richiedendo la posizione ai provider gps e network.
- * le coordinate vengono poi passate al metodo che invia la notifica della caduta dando la precedenza ai dati in arrivo dal gps.
- * todo: 
- * -usare play service SOLO se disponibili nel dispositivo in uso per avere una location più accurata
- * -geolocator per dire nome del paese in cui si trova oltre alle coordinate (sempre se play services disponibili)
- * 
+ * le coordinate vengono poi passate al metodo dell'activity "connessa" quando avviene una caduta
  * 
  *
  */
@@ -59,13 +66,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private ServiceHandler mServiceHandler;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
-	private static ServiceReceiver connectedAc;
+	private static ArrayList<ServiceReceiver> connectedActs;
 	private LocationListener locationListenerGPS, locationListenerNetwork;
 	private LocationManager lm;
 	private Double latitude = null;
 	private Double longitude = null;
 	private Calendar c;
-	private int counterGPSUpdate = 5; //per attivare subito la ricerca della posizione
+	private int counterGPSUpdate = 50; //per attivare subito la ricerca della posizione
 	private Handler uiHandler;
 	private Criteria criteria;
 	private String bestProvider;
@@ -86,6 +93,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		
 		/*
 		 * this method is called when another component (activity) requests the service
 		 * to start.
@@ -97,6 +105,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
 
+		
 		//APRO CONNESSIONI AL DATABASE
 		if(acquisitionData == null){
 			acquisitionData=new AcquisitionDataSource(this);
@@ -275,22 +284,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		if(sessionDataSource == null){
 			sessionDataSource = new SessionDataSource(this);
 		}
-		/*new Thread(new Runnable(){
-			@Override
-			public void run()
-			{
-				while(!stop){
-					
-						storeDuration();
-					try {
-						Thread.sleep(1000); //precisione di un secondo +-
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		}).start();*/
+		
 	}
 
 	@Override
@@ -394,11 +388,11 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 			c = Calendar.getInstance();
 
-			if(connected) //&& connectedAc == null
-			{
-				long time = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
-				connectedAc.serviceUpdate(x, y, z, time);
-			}
+		if(connectedActs.size() > 0){
+			long time = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
+			for(ServiceReceiver sr : connectedActs)
+				sr.serviceUpdate(x, y, z, time);
+		}
 			/*
 			 * qui prendi i dati dell'accelerometro e li passi in danielAlgorithm 
 			 * sotto forma di "roba"
@@ -420,10 +414,42 @@ public class ForegroundService extends Service implements SensorEventListener {
 			}
 			
 			if(Math.sqrt(x*x + y*y + z*z) > 20){ //provvisorio, sarà sostituito da danielalgorithm
-				
-				if(connectedAc != null && connectedAc instanceof CurrentSessionCardAdapter){
+				Location locationGPS = lm.getLastKnownLocation(GPSProvider);
+				Location locationNetwork = lm.getLastKnownLocation(networkProvider);
+
+				if(locationNetwork != null || locationGPS != null){
+				latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
+				longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
+				}
+				if(connectedActs.size() > 0){
 					
-					((CurrentSessionCardAdapter)connectedAc).addFallToCardList(x,y,z,System.currentTimeMillis());
+					String position;
+					String link = null;
+					long fallTime = System.currentTimeMillis();
+					
+					if(latitude != null && longitude != null){
+						position = "" + latitude + ", " + longitude;
+						link = "https://www.google.com/maps/@" + latitude+","+longitude + ",13z";
+
+					}
+					else
+						position = "Not available";
+					
+					
+					//TODO STORE fallTime e position per la caduta
+					
+					
+					SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy_hh:mm:ss");
+
+				    // milliseconds to date 
+				     Calendar calendar = Calendar.getInstance();
+				     calendar.setTimeInMillis(fallTime);
+				     Date date = calendar.getTime();
+					String formattedTime = formatter.format(date);
+					
+					
+					for(ServiceReceiver sr : connectedActs)
+					sr.serviceUpdate(position, link, formattedTime, fallTime);
 				}
 			}
 			/*
@@ -435,7 +461,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 			 * getApplication().startActivity(launchImOK);
 			 * (sarebbe bello fosse un dialog più che un'activity)
 			 */
-			//TODO storetoDB(time, x, y, z); per salvare i dati nel DataBase
 
 		}
 	}
@@ -449,19 +474,23 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	public static void connect(ServiceReceiver connectedActivity)
 	{
-		connectedAc = connectedActivity;
-		connected = true;
+		if(connectedActs == null)
+			connectedActs = new ArrayList<ServiceReceiver>();
+		connectedActs.add(connectedActivity);
+		
 	}
 
-	public static void disconnect()
+	public static void disconnect(ServiceReceiver sr)
 	{
-		connectedAc = null;
-		connected = false;
+		connectedActs.remove(sr);
 	}
 
-	public static boolean isConnected()
+	public static boolean isConnected(ServiceReceiver sr)
 	{
-		return connectedAc != null;
+		for(ServiceReceiver s : connectedActs)
+			if(s.equals(sr))
+				return true;
+		return false;
 	}
 
 

@@ -9,6 +9,7 @@ public class Fall {
 	private boolean successNotify;
 	private ArrayList<Double> data;
 	
+	
 	public Fall(String thumbnail, long time, String position, boolean successNotify, ArrayList<Double> data)
 	{
 		this.thumbnail = thumbnail; this.time = time;
