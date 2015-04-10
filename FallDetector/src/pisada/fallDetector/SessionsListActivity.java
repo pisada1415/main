@@ -14,7 +14,6 @@ import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
 import pisada.database.SessionDataSource.Session;
-import pisada.database.AcquisitionDataSource;
 import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.recycler.SessionListCardAdapter;
@@ -51,7 +50,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	private SensorManager mSensorManager;
 	private Sensor mSensor;
 	private static SessionDataSource sessionData;
-	private static AcquisitionDataSource acquisitionData;
 	private long lastToastTime;
 
 
@@ -65,11 +63,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 		//APRO CONNESSIONI AL DATABASE
 		sessionData=new SessionDataSource(this);
-		sessionData.open();
-		acquisitionData=new AcquisitionDataSource(this);
-		acquisitionData.open();
-
-
+		
 		//INIZIALIZZO RECYCLERVIEW
 
 		rView=(RecyclerView) findViewById(R.id.session_list_recycler);
@@ -105,7 +99,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		super.onResume();
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 		sessionData.open();
-		acquisitionData.open();
 	}
 
 
@@ -129,7 +122,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		super.onPause();
 		mSensorManager.unregisterListener(this);
 		sessionData.close();
-		acquisitionData.close();
+
 	}
 
 	@Override
@@ -192,7 +185,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 	public void closeCurrentSession(View v){
 		cardAdapter.closeCurrentSession();
-
 	}
 
 

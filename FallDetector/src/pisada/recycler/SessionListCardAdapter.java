@@ -75,16 +75,13 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		this.activity=activity;
 		this.sessionData=new SessionDataSource(activity);
-		this.rView=rView;
 
 		this.sessionList=sessionData.sessions();
 		sessionList.add(0,new Session());
-
-		if(sessionData.existCurrentSession()){
-			sessionList.set(1, sessionData.currentSession());
+		if(!sessionData.existCurrentSession()){
+			sessionList.add(1,new Session());
 		}
-		else sessionList.add(1,new Session());
-
+		this.rView=rView;
 	}
 
 	@Override
@@ -99,8 +96,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		switch(i) {
 		case 0: 
 			if(sessionData.existCurrentSession()){
-				holder.itemView.setLayoutParams(new LayoutParams(holder.itemView.getWidth(),0));
-				holder.itemView.invalidate();
 			}
 			return;
 
@@ -140,10 +135,12 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			sessionData.closeSession(sessionData.currentSession());
 			sessionList.add(1,sessionData.openNewSession(name, img, startTime));
 			notifyItemInserted(1);
+			notifyItemChanged(0);
 		}
 		else{
 			sessionList.set(1,sessionData.openNewSession(name, img, startTime));
-			notifyItemInserted(1);
+			notifyItemChanged(1);
+			notifyItemChanged(0);
 
 		}
 
@@ -157,7 +154,9 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		if(currSession.isValidSession()) {
 			sessionData.closeSession(currSession);
 			sessionList.add(1,new Session());
-			notifyItemInserted(1);
+			notifyItemChanged(1);
+			notifyItemInserted(2);
+			notifyItemChanged(0);
 		}
 	}
 
