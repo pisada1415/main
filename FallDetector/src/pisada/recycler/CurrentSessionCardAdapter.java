@@ -163,6 +163,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				Oholder.fallPosition.setClickable(true);
 			Oholder.fallPosition.setMovementMethod (LinkMovementMethod.getInstance());
 			}
+			else
+				Oholder.fallPosition.setClickable(false);
 			//Oholder.fallPosition.setText("Position: "+ fall.getPos());
 			Oholder.fallTime.setText("Time: " + fall.getTime());
 

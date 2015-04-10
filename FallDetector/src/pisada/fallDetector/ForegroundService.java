@@ -80,7 +80,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static long totalTime = 0;
 	private static long startTime = 0;
 	private NotificationManager nm;
-
+	private long lastFall = System.currentTimeMillis();
 	private SessionDataSource sessionDataSource;
 	private FallDataSource fallDataSource;
 	private ExpiringList acquisitionList;
@@ -376,6 +376,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
+
 		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			float[] values = event.values;
 
@@ -397,83 +398,101 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 			if(acquisitionList == null)
 				acquisitionList = new ExpiringList();
-			acquisitionList.add(new Acquisition(time, x, y, z));
+			acquisitionList.add(new Acquisition(System.currentTimeMillis(), x, y, z));
 
-			/*
-			 * qui prendi i dati dell'accelerometro e li passi in danielAlgorithm 
-			 * sotto forma di "roba"
-			 */
-			boolean fall = DetectorAlgorithm.danielAlgorithm(x, y, z); //può restituire bool per identificare una caduta, in questo caso qui di seguito lanciamo la classe che notifica e manda email
+						
 
-			if(fall)
-			{
-				Location locationGPS = lm.getLastKnownLocation(GPSProvider);
-				Location locationNetwork = lm.getLastKnownLocation(networkProvider);
+			if(acquisitionList.size()>=1){
+				
+				
+					new Thread(){ //passata immediatamente
+						@Override
+						public void run(){
 
-				latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
-				longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
-				//qui usare latitude e longitude e mandarle al metodo che manderà l'email. considerare che saranno null in caso non ci siano i servizi attivi.
-				//
-				//
-				//
-				//
+							//dentro al service mi costruisco copia della lista e la uso per passarla in giro
+							ArrayList<Acquisition> copiedList = new ArrayList<Acquisition>();
+
+							//QUI CONTROLLO SE ELEMENTO CENTRALE è CADUTA. SE LO è PROCEDO. ALTRIMENTI FINE THREAD
+
+							
+							//TEMPORANEOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+							//MA TUTTA STA ROBA è OK. SOLO L'IF è TEMPORANEO. va fatto se avviene la fall.
+							acquisitionList.stopChanging(true);	
+							int mid = acquisitionList.size()>>>1;
+							Acquisition middle = acquisitionList.get(mid);
+							float objectX = middle.getXaxis(); final float objectY = middle.getYaxis(); final float objectZ = middle.getZaxis();
+							if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 20){ //provvisorio, sarà sostituito da danielalgorithm
+
+															
+								for(Acquisition a : acquisitionList.getList())
+									copiedList.add(a); //copiata la lista in background
+								acquisitionList.stopChanging(false);
+
+
+
+								if(System.currentTimeMillis() - lastFall > 5000)
+								{
+									lastFall = System.currentTimeMillis();
+
+
+									Location locationGPS = lm.getLastKnownLocation(GPSProvider);
+									Location locationNetwork = lm.getLastKnownLocation(networkProvider);
+
+									if(locationNetwork != null || locationGPS != null){
+										latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
+										longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
+									}
+
+									//=====================store nel database=================
+
+									if(fallDataSource == null)
+										fallDataSource = new FallDataSource(ForegroundService.this);
+
+									fallDataSource.insertFall(sessionDataSource.currentSession(), copiedList);
+
+									//=================store nel database (end)===============
+
+
+									if(connectedActs.size() > 0){
+
+										String position;
+										String link = null;
+										final long fallTime = System.currentTimeMillis();
+
+										if(latitude != null && longitude != null){
+											position = "" + latitude + ", " + longitude;
+											link = "https://www.google.com/maps/@" + latitude+"," + longitude + ",13z";
+
+										}
+										else
+											position = "Not available";
+
+										SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy_hh:mm:ss");
+
+										// milliseconds to date 
+										Calendar calendar = Calendar.getInstance();
+										calendar.setTimeInMillis(fallTime);
+										Date date = calendar.getTime();
+										String formattedTime = formatter.format(date);
+
+
+										for(ServiceReceiver sr : connectedActs)
+											sr.serviceUpdate(position, link, formattedTime, fallTime);
+										acquisitionList = new ExpiringList();
+
+									}
+								}
+
+							}
+							else
+								acquisitionList.stopChanging(false);
+						}
+					}.start();
+
+
+				}
 			}
 
-			//il controllo va fatto sul dato di mezzo secondo fa' (metà arraylist)
-
-			int mid = acquisitionList.size() >>> 1; //operazione per avere sempre l'elemento a metà evitando overflow vari.
-			Acquisition middle = acquisitionList.get(mid);
-
-			
-			//TEMPORANEOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-			//MA TUTTA STA ROBA è OK. SOLO L'IF è TEMPORANEO. va fatto se avviene la fall.
-			if(Math.sqrt(middle.getXaxis()*middle.getXaxis() + middle.getYaxis()*middle.getYaxis() + middle.getZaxis()*middle.getZaxis()) > 20){ //provvisorio, sarà sostituito da danielalgorithm
-				Location locationGPS = lm.getLastKnownLocation(GPSProvider);
-				Location locationNetwork = lm.getLastKnownLocation(networkProvider);
-
-				if(locationNetwork != null || locationGPS != null){
-					latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
-					longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
-				}
-				if(connectedActs.size() > 0){
-
-					String position;
-					String link = null;
-					long fallTime = System.currentTimeMillis();
-
-					if(latitude != null && longitude != null){
-						position = "" + latitude + ", " + longitude;
-						link = "https://www.google.com/maps/@" + latitude+","+longitude + ",13z";
-
-					}
-					else
-						position = "Not available";
-
-
-					//TODO STORE fallTime e position per la caduta
-
-					//=====================store nel database=================
-
-					acquisitionList.add(new Acquisition(time, x,y,z));
-					if(fallDataSource == null)
-						fallDataSource = new FallDataSource(this);
-					fallDataSource.insertFall(sessionDataSource.currentSession(), acquisitionList.getList());
-					//=================store nel database (end)===============
-
-
-					SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy_hh:mm:ss");
-
-					// milliseconds to date 
-					Calendar calendar = Calendar.getInstance();
-					calendar.setTimeInMillis(fallTime);
-					Date date = calendar.getTime();
-					String formattedTime = formatter.format(date);
-
-
-					for(ServiceReceiver sr : connectedActs)
-						sr.serviceUpdate(position, link, formattedTime, fallTime);
-				}
-			}
 			/*
 			 * if(fall){
 			 * Intent launchImOK = new Intent(getBaseContext(), ImOK.class);
@@ -485,7 +504,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 			 */
 
 		}
-	}
+	
+
 
 
 

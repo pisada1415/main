@@ -67,7 +67,7 @@ public class FallDataSource {
 	public Fall insertFall(Session session, ArrayList<Acquisition> acquisitionList){
 
 		
-		long time=acquisitionList.get(acquisitionList.size()/2).getTime();
+		long time=acquisitionList.get(acquisitionList.size()>>>1).getTime();
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.FALL_TIME,time);
 		values.put(FallSqlHelper.FALL_FSESSION, session.getName());
