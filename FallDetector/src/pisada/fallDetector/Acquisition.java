@@ -1,4 +1,7 @@
 package pisada.fallDetector;
+
+import pisada.database.FallDataSource.Fall;
+
 //DA FARE
 //Samuele gay
 public class Acquisition {
@@ -6,38 +9,24 @@ public class Acquisition {
 	private float xAxis;
 	private float yAxis;
 	private float zAxis;
-	private String aSession;
-	private int fall;
+	boolean isValid=true;
 
-	public Acquisition(long time,float xAxis,float yAxis, float zAxis, String aSession, int fall){
+	public Acquisition(long time,float xAxis,float yAxis, float zAxis){
 		this.time=time;
 		this.xAxis=xAxis;
 		this.yAxis=yAxis;
 		this.zAxis=zAxis;
-		this.aSession=aSession;
-		this.fall=fall;
-
 	}
 	public Acquisition(){
-		
+		isValid=false;
 	}
 
-	public long time(){	return time;}
-	public float xAxis(){return xAxis;}
-	public float yAxis(){return yAxis;}
-	public float zAxis(){return zAxis;}
-	public boolean booleanFall(){
-		if(fall==0)
-			return false;
-		return true;
-	}
-	public int integerFall(){return fall;}
+	public long getTime(){	return time;}
+	public float getXaxis(){return xAxis;}
+	public float getYaxis(){return yAxis;}
+	public float getZaxis(){return zAxis;}
+	public boolean isValidAcquisition(){return isValid;}
 
-	public String session(){return aSession;}
-	
-	public boolean isValidAcquisition(){
-		return time!=0&&aSession!=null;
-	}
 
 
 }

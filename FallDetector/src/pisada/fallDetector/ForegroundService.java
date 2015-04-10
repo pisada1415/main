@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-import pisada.database.AcquisitionDataSource;
+import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -81,8 +81,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static long startTime = 0;
 	private NotificationManager nm;
 
-	private AcquisitionDataSource acquisitionData;
 	private SessionDataSource sessionDataSource;
+	private FallDataSource fallDataSource;
+	private ExpiringList acquisitionList;
 
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -93,7 +94,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		
+
 		/*
 		 * this method is called when another component (activity) requests the service
 		 * to start.
@@ -105,23 +106,21 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
 
-		
+
 		//APRO CONNESSIONI AL DATABASE
-		if(acquisitionData == null){
-			acquisitionData=new AcquisitionDataSource(this);
-		/*	acquisitionData.open();*/}
+		/*	acquisitionData.open();*/
 		if(sessionDataSource == null){
 			sessionDataSource = new SessionDataSource(this);
-			}
+		}
 
 		//questo fa si che totalTime tenga il tempo per cui la sessione è aperta in totale
 		if(!timeInitialized && sessionDataSource.existCurrentSession()){
-			
-		totalTime = sessionDataSource.sessionDuration(sessionDataSource.currentSession());
-		timeInitialized = true;
-		startTime = System.currentTimeMillis();
+
+			totalTime = sessionDataSource.sessionDuration(sessionDataSource.currentSession());
+			timeInitialized = true;
+			startTime = System.currentTimeMillis();
 		}
-		
+
 		isRunning = true;
 		uiHandler = new Handler();
 		criteria = new Criteria();
@@ -265,7 +264,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		 * when the service is first created, before onStartCommand or onBind are called
 		 * 
 		 */
-		
+
 
 		mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -278,13 +277,10 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// Get the HandlerThread's Looper and use it for our Handler
 		mServiceLooper = thread.getLooper();
 		mServiceHandler = new ServiceHandler(mServiceLooper);
-		if(acquisitionData == null){
-			acquisitionData=new AcquisitionDataSource(this);
-			/*acquisitionData.open();*/}
 		if(sessionDataSource == null){
 			sessionDataSource = new SessionDataSource(this);
 		}
-		
+
 	}
 
 	@Override
@@ -300,7 +296,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 			storeDuration();
 		resetTime();
 		sessionDataSource.close();
-		acquisitionData.close();
+		if(fallDataSource != null)
+			fallDataSource.close();
 		stop = true;
 		mSensorManager.unregisterListener(this);
 		stopLocationUpdates();
@@ -387,12 +384,21 @@ public class ForegroundService extends Service implements SensorEventListener {
 			float z = values[2];
 
 			c = Calendar.getInstance();
-
-		if(connectedActs.size() > 0){
 			long time = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
-			for(ServiceReceiver sr : connectedActs)
-				sr.serviceUpdate(x, y, z, time);
-		}
+
+			if(connectedActs != null && connectedActs.size() > 0){
+				for(ServiceReceiver sr : connectedActs)
+					sr.serviceUpdate(x, y, z, time); //update dell'activity connessa (questo avviene se hai implementato l'interfaccia e fatto connect)
+			}
+
+
+
+			//TODO RIEMPIRE LA FIGA DI LISTA CON I VALORI DI UN SECONDO DI ACQUISIZ
+
+			if(acquisitionList == null)
+				acquisitionList = new ExpiringList();
+			acquisitionList.add(new Acquisition(time, x, y, z));
+
 			/*
 			 * qui prendi i dati dell'accelerometro e li passi in danielAlgorithm 
 			 * sotto forma di "roba"
@@ -412,21 +418,29 @@ public class ForegroundService extends Service implements SensorEventListener {
 				//
 				//
 			}
+
+			//il controllo va fatto sul dato di mezzo secondo fa' (metà arraylist)
+
+			int mid = acquisitionList.size() >>> 1; //operazione per avere sempre l'elemento a metà evitando overflow vari.
+			Acquisition middle = acquisitionList.get(mid);
+
 			
-			if(Math.sqrt(x*x + y*y + z*z) > 20){ //provvisorio, sarà sostituito da danielalgorithm
+			//TEMPORANEOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+			//MA TUTTA STA ROBA è OK. SOLO L'IF è TEMPORANEO. va fatto se avviene la fall.
+			if(Math.sqrt(middle.getXaxis()*middle.getXaxis() + middle.getYaxis()*middle.getYaxis() + middle.getZaxis()*middle.getZaxis()) > 20){ //provvisorio, sarà sostituito da danielalgorithm
 				Location locationGPS = lm.getLastKnownLocation(GPSProvider);
 				Location locationNetwork = lm.getLastKnownLocation(networkProvider);
 
 				if(locationNetwork != null || locationGPS != null){
-				latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
-				longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
+					latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
+					longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
 				}
 				if(connectedActs.size() > 0){
-					
+
 					String position;
 					String link = null;
 					long fallTime = System.currentTimeMillis();
-					
+
 					if(latitude != null && longitude != null){
 						position = "" + latitude + ", " + longitude;
 						link = "https://www.google.com/maps/@" + latitude+","+longitude + ",13z";
@@ -434,22 +448,30 @@ public class ForegroundService extends Service implements SensorEventListener {
 					}
 					else
 						position = "Not available";
-					
-					
+
+
 					//TODO STORE fallTime e position per la caduta
-					
-					
+
+					//=====================store nel database=================
+
+					acquisitionList.add(new Acquisition(time, x,y,z));
+					if(fallDataSource == null)
+						fallDataSource = new FallDataSource(this);
+					fallDataSource.insertFall(sessionDataSource.currentSession(), acquisitionList.getList());
+					//=================store nel database (end)===============
+
+
 					SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy_hh:mm:ss");
 
-				    // milliseconds to date 
-				     Calendar calendar = Calendar.getInstance();
-				     calendar.setTimeInMillis(fallTime);
-				     Date date = calendar.getTime();
+					// milliseconds to date 
+					Calendar calendar = Calendar.getInstance();
+					calendar.setTimeInMillis(fallTime);
+					Date date = calendar.getTime();
 					String formattedTime = formatter.format(date);
-					
-					
+
+
 					for(ServiceReceiver sr : connectedActs)
-					sr.serviceUpdate(position, link, formattedTime, fallTime);
+						sr.serviceUpdate(position, link, formattedTime, fallTime);
 				}
 			}
 			/*
@@ -477,7 +499,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		if(connectedActs == null)
 			connectedActs = new ArrayList<ServiceReceiver>();
 		connectedActs.add(connectedActivity);
-		
+
 	}
 
 	public static void disconnect(ServiceReceiver sr)
@@ -515,7 +537,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
 		//totalTime = System.currentTimeMillis();
 	}
-	
+
 	public static long getSessionDuration(SessionDataSource db)
 	{
 		if(timeInitialized)
@@ -527,9 +549,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 			else
 				return 0;
 		}
-			
+
 	}
-	
+
 	private void resetTime()
 	{
 		timeInitialized = false;

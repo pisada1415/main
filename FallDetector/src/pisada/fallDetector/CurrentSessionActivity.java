@@ -1,7 +1,6 @@
 package pisada.fallDetector;
 
 
-import pisada.database.AcquisitionDataSource;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.AlertDialog;
@@ -42,7 +41,6 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	private static CurrentSessionCardAdapter cardAdapter;
 	SessionDataSource.Session currentSession; //ooOOOOooOooOOOOH!
 	private static SessionDataSource sessionData;
-	private static AcquisitionDataSource acquisitionData;
 	LayoutManager mLayoutManager;
 	String sessionName;
 	String sessionNameDefault;
@@ -61,7 +59,6 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		//INIZIALIZZO DATABASE
 
 		sessionData=new SessionDataSource(this);
-		acquisitionData=new AcquisitionDataSource(this);
 	
 		if(sessionData.existCurrentSession()){
 			sessionName = sessionData.currentSession().getName();
@@ -120,7 +117,6 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	{
 		super.onPause();
 		sessionData.close();
-		acquisitionData.close();
 		ForegroundService.disconnect(cardAdapter); //disconnette l'activity connessa
 	}
 
@@ -131,7 +127,6 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		if(!ForegroundService.isConnected(cardAdapter))
 			ForegroundService.connect(cardAdapter);
 		sessionData.open();
-		acquisitionData.open();
 	}
 
 	//CHIAMATO QUANDO VIENE PREMUTO IL TASTO SOPRA (PLAY/PAUSA)
