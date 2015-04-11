@@ -38,7 +38,9 @@ public class ExpiringList {
 	
 	public Acquisition get(int i)
 	{
-		return this.timerAcquisitionList.get(i);
+		if(timerAcquisitionList.size()>i)
+			return this.timerAcquisitionList.get(i);
+		return null;
 	}
 	
 	public int size()

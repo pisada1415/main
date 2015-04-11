@@ -400,30 +400,29 @@ public class ForegroundService extends Service implements SensorEventListener {
 				acquisitionList = new ExpiringList();
 			acquisitionList.add(new Acquisition(System.currentTimeMillis(), x, y, z));
 
-						
+
 
 			if(acquisitionList.size()>=1){
-				
-				
-					new Thread(){ //passata immediatamente
-						@Override
-						public void run(){
+				new Thread(){ //passata immediatamente
+					@Override
+					public void run(){
 
-							//dentro al service mi costruisco copia della lista e la uso per passarla in giro
-							ArrayList<Acquisition> copiedList = new ArrayList<Acquisition>();
+						//dentro al service mi costruisco copia della lista e la uso per passarla in giro
+						ArrayList<Acquisition> copiedList = new ArrayList<Acquisition>();
 
-							//QUI CONTROLLO SE ELEMENTO CENTRALE è CADUTA. SE LO è PROCEDO. ALTRIMENTI FINE THREAD
+						//QUI CONTROLLO SE ELEMENTO CENTRALE è CADUTA. SE LO è PROCEDO. ALTRIMENTI FINE THREAD
 
-							
-							//TEMPORANEOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-							//MA TUTTA STA ROBA è OK. SOLO L'IF è TEMPORANEO. va fatto se avviene la fall.
-							acquisitionList.stopChanging(true);	
-							int mid = acquisitionList.size()>>>1;
-							Acquisition middle = acquisitionList.get(mid);
+
+						//TEMPORANEOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+						//MA TUTTA STA ROBA è OK. SOLO L'IF è TEMPORANEO. va fatto se avviene la fall.
+						acquisitionList.stopChanging(true);	
+						int mid = acquisitionList.size()>>>1;
+						Acquisition middle = acquisitionList.get(mid);
+						if(middle != null){
 							float objectX = middle.getXaxis(); final float objectY = middle.getYaxis(); final float objectZ = middle.getZaxis();
 							if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 20){ //provvisorio, sarà sostituito da danielalgorithm
 
-															
+
 								for(Acquisition a : acquisitionList.getList())
 									copiedList.add(a); //copiata la lista in background
 								acquisitionList.stopChanging(false);
@@ -487,24 +486,26 @@ public class ForegroundService extends Service implements SensorEventListener {
 							else
 								acquisitionList.stopChanging(false);
 						}
-					}.start();
+						else acquisitionList.stopChanging(true);
+					}
+				}.start();
 
 
-				}
 			}
-
-			/*
-			 * if(fall){
-			 * Intent launchImOK = new Intent(getBaseContext(), ImOK.class);
-			 * launchImOK.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			 * launchImOK.putExtras("latitude", latitude);
-			 * launchImOK.putExtras("longitude", longitude); //se sono null va scritto location non disponibile
-			 * getApplication().startActivity(launchImOK);
-			 * (sarebbe bello fosse un dialog più che un'activity)
-			 */
-
 		}
-	
+
+		/*
+		 * if(fall){
+		 * Intent launchImOK = new Intent(getBaseContext(), ImOK.class);
+		 * launchImOK.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		 * launchImOK.putExtras("latitude", latitude);
+		 * launchImOK.putExtras("longitude", longitude); //se sono null va scritto location non disponibile
+		 * getApplication().startActivity(launchImOK);
+		 * (sarebbe bello fosse un dialog più che un'activity)
+		 */
+
+	}
+
 
 
 
