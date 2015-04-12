@@ -29,7 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements ServiceReceiver {
 
-	private ArrayList<CardContent> cardContentList;
+	private static ArrayList<CardContent> cardContentList;
 	private Activity activity;
 
 	private ArrayList<Double> lastFallThumbnailData;

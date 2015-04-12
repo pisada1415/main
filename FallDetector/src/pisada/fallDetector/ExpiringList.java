@@ -1,54 +1,48 @@
 package pisada.fallDetector;
 
-import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 /*
  * classe che riempie una lista di acquisition e le fa "scadere" dopo un secondo
  * tenendo della lista solo quelle dell'ultimo secondo.
  */
+
+
+/*
+ * FA CAGARE DIO SJDIASDOIJDOIJFOIEWFJOEWIJFOEIJFOIEWJFOIJ
+ */
 public class ExpiringList {
 
-	private final int EXPIRING_TIME = 1000;
-	private ArrayList<Acquisition> timerAcquisitionList;
-	private boolean stopChanging = false;
+	private final int EXPIRING_SIZE = 1000;
+	protected ConcurrentLinkedQueue<Acquisition> timerAcquisitionList ; //NON VA PROTECTED. SOLO PER DEBUG
 	
 	public ExpiringList()
 	{
-		timerAcquisitionList = new ArrayList<Acquisition>();
+		timerAcquisitionList = new ConcurrentLinkedQueue<Acquisition>();
 	}
 	
-	public synchronized void add(Acquisition a)
+	public void enqueue(Acquisition a)
 	{
-		if(!stopChanging){
+		
 		timerAcquisitionList.add(a);
-		new Thread(){
-			@Override
-			public void run()
-			{
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				if(!stopChanging && timerAcquisitionList.size()>0)
-					timerAcquisitionList.remove(0);
-			}
-		}.start();}
+
+		if(size() >= EXPIRING_SIZE)
+			timerAcquisitionList.poll();
+		
+		
+	}
+
+	public Acquisition peek()
+	{
+		return timerAcquisitionList.peek();
 	}
 	
-	public Acquisition get(int i)
-	{
-		if(timerAcquisitionList.size()>i)
-			return this.timerAcquisitionList.get(i);
-		return null;
-	}
 	
 	public int size()
 	{
 		return this.timerAcquisitionList.size();
 	}
 	
-	public ArrayList<Acquisition> getList()
+	public Object[] getArray()
 	{
 		/*
 		ArrayList<Acquisition> list = new ArrayList<Acquisition>();
@@ -56,15 +50,9 @@ public class ExpiringList {
 			list.add(a);
 		return list;
 		*/
-		return this.timerAcquisitionList;
+		return this.timerAcquisitionList.toArray();
 	}
 	
-	public ArrayList<Acquisition> stopChanging(boolean bool)
-	{
-		stopChanging = bool;
-		return this.timerAcquisitionList;
-		
-	}
 
 	
 }
