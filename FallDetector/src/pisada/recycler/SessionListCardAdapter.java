@@ -139,7 +139,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		}
 		else{
 			sessionList.set(1,sessionData.openNewSession(name, img, startTime));
-			notifyItemChanged(1);
+			notifyItemInserted(1);
 			notifyItemChanged(0);
 
 		}
