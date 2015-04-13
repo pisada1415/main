@@ -4,6 +4,8 @@ package pisada.recycler;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import pisada.database.FallDataSource;
+import pisada.database.SessionDataSource;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.R;
 import pisada.fallDetector.ServiceReceiver;
@@ -14,6 +16,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Color;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -145,6 +148,12 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 	}
 
+	Handler mHandler;
+	public void runOnUiThread(Runnable r){
+		if(mHandler == null)
+			mHandler = new Handler();
+		mHandler.post(r);
+	}
 
 
 	@Override
@@ -245,6 +254,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		graphY.invalidate();
 		graphZ.pushValue(new Data(time- millisecStartGraph,z));
 		graphZ.invalidate();
+		
 		}
 	}
 
@@ -303,6 +313,12 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void serviceUpdate(String fallPosition, String link, String time, long img) {
 		// TODO se arrivano cadute vengono notificate qui
 		addFallToCardList(fallPosition, link, time, img);
+	}
+	
+	public void addFall(FallDataSource.Fall f, SessionDataSource.Session s)
+	{
+		String time = Utility.getStringTime(f.getTime());
+		addFallToCardList(""+f.getLat()+f.getLng(), Utility.getMapsLink(f.getLat(), f.getLng()), time, 1083l);
 	}
 	
 	public void clearFalls()

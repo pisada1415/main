@@ -1,6 +1,9 @@
 package pisada.fallDetector;
 
 
+import java.util.ArrayList;
+
+import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.AlertDialog;
@@ -26,7 +29,6 @@ import fallDetectorException.MoreThanOneOpenSessionException;
  * 
  * 
  * TODO:
- * 	QUANDO VIENE RUOTATA LA VIEW DEVE RICARICARE TUTTE LE FALLS DAL DATABASE NELL'ADAPTER.
  * 
  * 
  * TEMPO LIMITE POI LA SESSION SI CHIUDE DA SOLA.
@@ -46,6 +48,8 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	String sessionNameDefault;
 	private boolean startChronometerOnStartActivity = false;
 	private long pauseTime = 0;
+	private FallDataSource fallDataSource;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -56,41 +60,51 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		sessionName = sessionNameDefault;
 		
 		
+		
+		
+		
+				
+				
+				
+				
 		//INIZIALIZZO DATABASE
 
 		sessionData=new SessionDataSource(this);
 	
 		if(sessionData.existCurrentSession()){
-			sessionName = sessionData.currentSession().getName();
+			SessionDataSource.Session currentSession = sessionData.currentSession();
+			sessionName = currentSession.getName();
 			
 			
 			//TODO CARICARE LE CADUTE RELATIVE ALLA CURRENTSESSION dal database NELL'ADAPTER.
 			
 			
-			if(!sessionData.currentSession().isOnPause())
+			if(!currentSession.isOnPause())
 				startChronometerOnStartActivity = true; //FA SI CHE PARTA IL CRONOMETRO AL LANCIO DELL'ACTIVITY
 			
 			
 			//SE CURRENTSESSION NON è IN PAUSA E NON C'è IL SERVICE ATTIVO... FAI PARTIRE IL SERVICE (C'è STATA UNA CHIUSURA INASPETTATA)
-			if(!sessionData.currentSession().isOnPause() && !ForegroundService.isRunning()){
+			if(!currentSession.isOnPause() && !ForegroundService.isRunning()){
 				serviceIntent = new Intent(this, ForegroundService.class);
 				String activeServ = Utility.checkLocationServices(this, true);
 				serviceIntent.putExtra("activeServices", activeServ);
 				startService(serviceIntent);
 				pauseTime = 0;
 			}
+			
+
 			else if(sessionData.currentSession().isOnPause()) //SE INVECE LA CURRENT SESSION è IN PAUSA... 
 			{
 				//INIZIALIZZO IL TEMPO DA CUI IL CRONOMETRO DEVE RIPARTIRE
-				pauseTime = sessionData.sessionDuration(sessionData.currentSession());
+				pauseTime = sessionData.sessionDuration(currentSession);
 				
 				
 				//TODO SETTARE ICONA ADATTA NELL'ADAPTER
 			}
 
-
 		}
 
+		
 		//INIZIALIZZO LA RECYCLERVIEW
 		rView=(RecyclerView) findViewById(R.id.currentsession_list_recycler);
 		rView.setHasFixedSize(true);
@@ -99,6 +113,17 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		mLayoutManager = new LinearLayoutManager(this);
 		rView.setLayoutManager(mLayoutManager);
 		setTitle(sessionName);
+		
+		
+		if(sessionData.existCurrentSession() && sessionData.currentSession().isOnPause()) //SE INVECE LA CURRENT SESSION è IN PAUSA... 
+		{
+			if(fallDataSource == null)
+				fallDataSource = new FallDataSource(CurrentSessionActivity.this);
+			ArrayList<FallDataSource.Fall> cadute = fallDataSource.sessionFalls(sessionData.currentSession());
+			for(FallDataSource.Fall f : cadute){
+				cardAdapter.addFall(f, currentSession);
+			}
+		}
 
 
 	}

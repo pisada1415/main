@@ -9,9 +9,12 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
+import pisada.recycler.CurrentSessionCardAdapter;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -52,6 +55,9 @@ import android.widget.Toast;
  * le coordinate vengono poi passate al metodo dell'activity "connessa" quando avviene una caduta
  * 
  *
+ *
+ *TODO: 
+ *prendere lista cadute e caricarla nella sessione quando apri ed era in pausa
  */
 
 public class ForegroundService extends Service implements SensorEventListener {
@@ -88,6 +94,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private FallDataSource fallDataSource;
 	private ExpiringList acquisitionList;
 	private static Acquisition lastInserted;
+	private static String position, link;
+
 
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -196,8 +204,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 
-
-
 		};
 
 		if(activeService != null && !updatesRemoved){ //chiamato sul thread UI
@@ -272,7 +278,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 		mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		
+
 
 		HandlerThread thread = new HandlerThread("",
 				android.os.Process.THREAD_PRIORITY_FOREGROUND); //almost unkillable
@@ -281,14 +287,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// Get the HandlerThread's Looper and use it for our Handler
 		mServiceLooper = thread.getLooper();
 		mServiceHandler = new ServiceHandler(mServiceLooper);
-		
-		HandlerThread threadListener = new HandlerThread("", android.os.Process.THREAD_PRIORITY_BACKGROUND);
-		threadListener.start();
-		Looper mThreadListenerLooper = threadListener.getLooper();
-		ServiceHandler handler = new ServiceHandler(mThreadListenerLooper);
-		
-		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI, handler/*, mServiceHandler*/);
-		
+
+		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI/*, mServiceHandler*/);
+
 		if(sessionDataSource == null){
 			sessionDataSource = new SessionDataSource(this);
 		}
@@ -397,22 +398,31 @@ public class ForegroundService extends Service implements SensorEventListener {
 	public synchronized void onSensorChanged(SensorEvent event) {
 		/*if(!verifyingSensorData){
 			verifyingSensorData = true;*/
+
 		if(System.currentTimeMillis() - lastSensorChanged >= 1){ //non più di un update ogni millisecondo
 			lastSensorChanged = System.currentTimeMillis();
 
 			if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 				float[] values = event.values;
 
-				float x = values[0];
-				float y = values[1];
-				float z = values[2];
+				final float x = values[0];
+				final float y = values[1];
+				final float z = values[2];
 
 				c = Calendar.getInstance();
-				long time = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
+				final long time = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
 
 				if(connectedActs != null && connectedActs.size() > 0){
-					for(ServiceReceiver sr : connectedActs)
-						sr.serviceUpdate(x, y, z, time); //update dell'activity connessa (questo avviene se hai implementato l'interfaccia e fatto connect)
+					
+					for(final ServiceReceiver sr : connectedActs){
+
+						Runnable r = new Runnable(){@Override public void run() { if(sr != null) sr.serviceUpdate(x, y, z, time);}};
+
+						if(sr instanceof CurrentSessionCardAdapter)
+							((CurrentSessionCardAdapter)sr).runOnUiThread(r);
+						else if(sr instanceof Activity)
+							((Activity)sr).runOnUiThread(r);
+					}
 				}
 
 
@@ -421,112 +431,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 					acquisitionList = new ExpiringList();
 				lastInserted = new Acquisition(System.currentTimeMillis(), x, y, z);
 				if(lastInserted != null)
-				acquisitionList.enqueue(lastInserted); //RIEMPIMENTO LISTA
+					acquisitionList.enqueue(lastInserted); //RIEMPIMENTO LISTA
 
 
 
 				if(acquisitionList.size()>=1){
-
-/*
-					new Thread(){ //passata immediatamente
-						@SuppressLint("NewApi")
-						@Override
-						public synchronized void run(){
-
-							//dentro al service mi costruisco copia della lista e la uso per passarla in giro
-
-*/
-
-
-
-
-							if(System.currentTimeMillis() - lastFall > 2000)
-							{
-
-
-								if(lastInserted != null){
-									float objectX = lastInserted.getXaxis(); final float objectY = lastInserted.getYaxis(); final float objectZ = lastInserted.getZaxis();
-									if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 15){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
-
-
-										/*
-
-											for(Acquisition a : acquisitionList.getList())
-												copiedList.add(a); //copiata la lista in background
-										 */
-
-										//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
-
-										if(DetectorAlgorithm.danielAlgorithm(acquisitionList)){
-											if(System.currentTimeMillis() - lastFall > 2000){
-												lastFall = System.currentTimeMillis();
-												////=====================ASPETTARE 0.5 SECONDI mentre continui a storare nella coda==========================================
-
-												try {
-													Thread.sleep(500);
-												} catch (InterruptedException e) {
-													// TODO Auto-generated catch block
-													e.printStackTrace();
-												}
-												////=========================================================================================================================
-
-
-
-												Location locationGPS = lm.getLastKnownLocation(GPSProvider);
-												Location locationNetwork = lm.getLastKnownLocation(networkProvider);
-
-												if(locationNetwork != null || locationGPS != null){
-													latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
-													longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
-												}
-
-												//=====================store nel database=================
-
-												if(fallDataSource == null)
-													fallDataSource = new FallDataSource(ForegroundService.this);
-
-												ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
-
-												fallDataSource.insertFall(sessionDataSource.currentSession(), cacca);
-
-												//=================store nel database (end)===============
-
-
-												if(connectedActs != null && connectedActs.size() > 0){
-
-													String position;
-													String link = null;
-													final long fallTime = System.currentTimeMillis();
-
-													if(latitude != null && longitude != null){
-														position = "" + latitude + ", " + longitude;
-														link = "https://www.google.com/maps/@" + latitude+"," + longitude + ",13z";
-
-													}
-													else
-														position = "Not available";
-
-													SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy_hh:mm:ss");
-
-													// milliseconds to date 
-													Calendar calendar = Calendar.getInstance();
-													calendar.setTimeInMillis(fallTime);
-													Date date = calendar.getTime();
-													String formattedTime = formatter.format(date);
-
-
-													for(ServiceReceiver sr : connectedActs)
-														sr.serviceUpdate(position, link, formattedTime, fallTime); //TODO provare a fare un nuovo figa di thread che fa sta roba o boh
-													//acquisitionList = new ExpiringList();
-
-												}
-											}
-										}
-									}
-								}
-							}
-					/*	}
-					}.start();*/
+					initializeBGThread().start();
 				}
 			}
 
@@ -575,7 +485,10 @@ public class ForegroundService extends Service implements SensorEventListener {
 	}
 
 
+
 	private void runOnUiThread(Runnable runnable) {
+		if(uiHandler == null)
+			uiHandler = new Handler();
 		uiHandler.post(runnable);
 	}
 
@@ -603,6 +516,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 			return System.currentTimeMillis() - startTime + totalTime;
 		else
 		{
+			
 			if(db.existCurrentSession())
 				return db.sessionDuration(db.currentSession());
 			else
@@ -615,5 +529,112 @@ public class ForegroundService extends Service implements SensorEventListener {
 	{
 		timeInitialized = false;
 	}
+
+
+	public synchronized Thread initializeBGThread()
+	{
+		return new Thread(){ //passata immediatamente
+			@SuppressLint("NewApi")
+			@Override
+			public void run(){
+
+				//dentro al service mi costruisco copia della lista e la uso per passarla in giro
+
+
+
+
+
+
+				if(System.currentTimeMillis() - lastFall > 6000)
+				{
+
+
+					if(lastInserted != null){
+						float objectX = lastInserted.getXaxis(); final float objectY = lastInserted.getYaxis(); final float objectZ = lastInserted.getZaxis();
+						if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 15){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
+
+
+							/*
+
+								for(Acquisition a : acquisitionList.getList())
+									copiedList.add(a); //copiata la lista in background
+							 */
+
+							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
+
+							if(DetectorAlgorithm.danielAlgorithm(acquisitionList)){
+								if(System.currentTimeMillis() - lastFall > 2000){
+									lastFall = System.currentTimeMillis();
+									////=====================ASPETTARE 0.5 SECONDI mentre continui a storare nella coda==========================================
+
+									try {
+										Thread.sleep(500);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									////=========================================================================================================================
+
+
+
+									Location locationGPS = lm.getLastKnownLocation(GPSProvider);
+									Location locationNetwork = lm.getLastKnownLocation(networkProvider);
+
+									if(locationNetwork != null || locationGPS != null){
+										latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
+										longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
+									}
+
+									//=====================store nel database=================
+
+									if(fallDataSource == null)
+										fallDataSource = new FallDataSource(ForegroundService.this);
+
+									ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
+
+									fallDataSource.insertFall(sessionDataSource.currentSession(), cacca);
+
+									//=================store nel database (end)===============
+
+
+									if(connectedActs != null && connectedActs.size() > 0){
+
+										link = null;
+										final long fallTime = System.currentTimeMillis();
+
+										if(latitude != null && longitude != null){
+											position = "" + latitude + ", " + longitude;
+											link = Utility.getMapsLink(latitude, longitude);
+
+										}
+										else
+											position = "Not available";
+
+										final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy_hh:mm:ss");
+
+										
+										final String formattedTime = Utility.getStringTime(fallTime);
+
+									
+										for(final ServiceReceiver sr : connectedActs){
+											Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime, fallTime);}};
+
+											if(sr instanceof CurrentSessionCardAdapter)
+												((CurrentSessionCardAdapter)sr).runOnUiThread(r);
+											else if(sr instanceof Activity)
+												((Activity)sr).runOnUiThread(r);
+										}
+										//acquisitionList = new ExpiringList();
+
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+	}
+
 
 }

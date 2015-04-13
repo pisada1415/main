@@ -1,5 +1,8 @@
 package pisada.fallDetector;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
 
 import android.app.AlertDialog;
@@ -76,6 +79,21 @@ public class Utility {
 		{
 			return randomizeToColor(d/randInt(1, 3));
 		}
+	}
+	
+	public static String getStringTime(long timeMillis)
+	{
+		final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy_hh:mm:ss");
+		// milliseconds to date 
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(timeMillis);
+		Date date = calendar.getTime();
+		return formatter.format(date);
+
+	}
+	
+	public static String getMapsLink(double lat, double lng){
+		return "https://www.google.com/maps/@" + lat+"," + lng + ",13z";
 	}
 	
 	

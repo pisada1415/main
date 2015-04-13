@@ -28,7 +28,8 @@ public class FallDataSource {
 		private Session session;
 		private long time;
 		private boolean isValid=true;
-
+		
+		
 		private Fall(long time,Session session){
 			if(!session.isValidSession()||session==null)throw new InvalidSessionException();
 
@@ -40,7 +41,10 @@ public class FallDataSource {
 		public Fall(){
 			isValid=false;
 		}
+		
 
+		public double getLat(){return 103;}
+		public double getLng(){return 93284;}
 		public long getTime(){return time;}
 		public Session getSession(){return session;}
 	}
