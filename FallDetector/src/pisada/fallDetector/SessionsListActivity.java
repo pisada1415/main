@@ -9,12 +9,14 @@ package pisada.fallDetector;
 //
 //Canaglia
 import java.util.ArrayList;
+import java.util.Random;
 
 
 
 import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
+import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource.Session;
 import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
@@ -82,7 +84,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 		//APRO CONNESSIONI AL DATABASE
 		sessionData=new SessionDataSource(this);
-		
+
 		//INIZIALIZZO RECYCLERVIEW
 
 		rView=(RecyclerView) findViewById(R.id.session_list_recycler);
@@ -98,11 +100,8 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
-
-
-
-
 	}
+
 
 
 	@Override

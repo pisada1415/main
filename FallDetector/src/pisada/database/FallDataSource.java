@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Random;
 
 import fallDetectorException.InvalidSessionException;
 import pisada.database.SessionDataSource.Session;
@@ -20,6 +21,7 @@ public class FallDataSource {
 	private String[] fallColumns = {FallSqlHelper.FALL_TIME, FallSqlHelper.FALL_FSESSION};
 	private String[] acquisitionColumns = {FallSqlHelper.ACQUISITION_TIME,FallSqlHelper.ACQUISITION_FALL_TIME, FallSqlHelper.ACQUISITION_ASESSION, FallSqlHelper.ACQUISITION_XAXIS, FallSqlHelper.ACQUISITION_YAXIS, FallSqlHelper.ACQUISITION_ZAXIS};
 	private Context context;
+
 
 
 
@@ -70,8 +72,11 @@ public class FallDataSource {
 	//INSERISCE UNA NUOVA CADUTA DATA UNA SESSIONE E UNA LISTA DI ACQUISIZIONI(passarla ordinata in funzione del tempo che se no è da ordinare ogni volta)
 	public Fall insertFall(Session session, ArrayList<Acquisition> acquisitionList){
 
-		
-		long time=acquisitionList.get(acquisitionList.size()>>>1).getTime();
+
+		Random random=new Random();
+
+		long time=acquisitionList.get(acquisitionList.size()-1).getTime();
+
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.FALL_TIME,time);
 		values.put(FallSqlHelper.FALL_FSESSION, session.getName());
@@ -82,22 +87,34 @@ public class FallDataSource {
 		}
 		return fall;
 
-
 	}
 
 	//PRIVATO -INSERISCE ACQUISIZIONE NEL DATABASE
 	private void insertAcquisition(Fall fall,Acquisition a){
 
+			ContentValues values=new ContentValues();
+			values.put(FallSqlHelper.ACQUISITION_TIME,a.getTime());
+			values.put(FallSqlHelper.ACQUISITION_FALL_TIME, fall.getTime());
+			values.put(FallSqlHelper.ACQUISITION_ASESSION,fall.getSession().getName());
+			values.put(FallSqlHelper.ACQUISITION_XAXIS, a.getXaxis());
+			values.put(FallSqlHelper.ACQUISITION_YAXIS, a.getYaxis());
+			values.put(FallSqlHelper.ACQUISITION_ZAXIS,a.getZaxis());
+			database.insert(FallSqlHelper.ACQUISITION_TABLE, null, values);
+			a.setFall(fall);
+			a.setSession(fall.getSession());
 
-		ContentValues values=new ContentValues();
-		values.put(FallSqlHelper.ACQUISITION_TIME,a.getTime());
-		values.put(FallSqlHelper.ACQUISITION_FALL_TIME, fall.getTime());
-		values.put(FallSqlHelper.ACQUISITION_ASESSION,fall.getSession().getName());
-		values.put(FallSqlHelper.ACQUISITION_XAXIS, a.getXaxis());
-		values.put(FallSqlHelper.ACQUISITION_YAXIS, a.getYaxis());
-		values.put(FallSqlHelper.ACQUISITION_ZAXIS,a.getZaxis());
-		database.insert(FallSqlHelper.ACQUISITION_TABLE, null, values);
+	}
 
+	private Acquisition getAcquisition(Fall fall,long acquisitionTime){
+
+
+		String where=FallSqlHelper.ACQUISITION_ASESSION+" = '"+fall.getSession().getName()+"' AND "+FallSqlHelper.ACQUISITION_FALL_TIME+ " = "+fall.getTime()+" AND "+FallSqlHelper.ACQUISITION_TIME+" = "+acquisitionTime;
+		Cursor cursor=database.query(FallSqlHelper.ACQUISITION_TABLE, acquisitionColumns,where, null,null,null,null);
+		if(cursor.getCount()==0) return null;
+		cursor.moveToFirst();
+		Acquisition a=cursorToAcquisition(cursor);
+		cursor.close();
+		return a;
 	}
 
 	//RITORNA LA CADUTA DATA LA CHIAVE
@@ -160,20 +177,20 @@ public class FallDataSource {
 		cursor.close();
 		return list;
 	}
-	
+
 	//RITORNA TUTTE LE CADUDE DELLA SESSIONE
 	public ArrayList<Acquisition> sessionAcquisitions(Session s){
 		ArrayList<Acquisition> acquisitions=new ArrayList<Acquisition>();
 		ArrayList<Fall> falls= sessionFalls(s);
-		
+
 		for(Fall f: falls){
 			for(Acquisition a: fallAcquisitions(f)){
 				acquisitions.add(a);
 			}
 		}
-		
+
 		return acquisitions;
-	
+
 	}
 
 	//PRIVATO -TRASFORMA RIGA CURSORE IN OGGETTO CADUTA

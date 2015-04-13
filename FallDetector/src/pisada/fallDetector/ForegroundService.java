@@ -93,8 +93,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private SessionDataSource sessionDataSource;
 	private FallDataSource fallDataSource;
 	private ExpiringList acquisitionList;
-	private static Acquisition lastInserted;
 	private static String position, link;
+	private final int TIME_BETWEEN_FALLS = 5000;
 
 
 	@Override
@@ -429,6 +429,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 				if(acquisitionList == null)
 					acquisitionList = new ExpiringList();
+				Acquisition lastInserted;
 				lastInserted = new Acquisition(System.currentTimeMillis(), x, y, z);
 				if(lastInserted != null)
 					acquisitionList.enqueue(lastInserted); //RIEMPIMENTO LISTA
@@ -436,7 +437,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 				if(acquisitionList.size()>=1){
-					initializeBGThread().start();
+					initializeBGThread(lastInserted).start();
 				}
 			}
 
@@ -531,39 +532,24 @@ public class ForegroundService extends Service implements SensorEventListener {
 	}
 
 
-	public synchronized Thread initializeBGThread()
+	public synchronized Thread initializeBGThread(Acquisition a)
 	{
-		return new Thread(){ //passata immediatamente
+		return new BackgroundThread(a){ //passata immediatamente
 			@SuppressLint("NewApi")
 			@Override
 			public void run(){
 
-				//dentro al service mi costruisco copia della lista e la uso per passarla in giro
-
-
-
-
-
-
-				if(System.currentTimeMillis() - lastFall > 6000)
+				if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS)
 				{
-
-
+					Acquisition lastInserted = this.getAcquisition();
 					if(lastInserted != null){
 						float objectX = lastInserted.getXaxis(); final float objectY = lastInserted.getYaxis(); final float objectZ = lastInserted.getZaxis();
 						if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 15){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
 
-
-							/*
-
-								for(Acquisition a : acquisitionList.getList())
-									copiedList.add(a); //copiata la lista in background
-							 */
-
 							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
 
 							if(DetectorAlgorithm.danielAlgorithm(acquisitionList)){
-								if(System.currentTimeMillis() - lastFall > 2000){
+								if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS){
 									lastFall = System.currentTimeMillis();
 									////=====================ASPETTARE 0.5 SECONDI mentre continui a storare nella coda==========================================
 
@@ -576,6 +562,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 									////=========================================================================================================================
 
 
+									//================================PARTE GPS=====================================================
 
 									Location locationGPS = lm.getLastKnownLocation(GPSProvider);
 									Location locationNetwork = lm.getLastKnownLocation(networkProvider);
@@ -584,9 +571,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 										latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
 										longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
 									}
+									//===========================FINE PARTE GPS=====================================================
+									
 
 									//=====================store nel database=================
 
+									System.out.println("TENTATIVO STORE NEL DB A "+ System.currentTimeMillis());
 									if(fallDataSource == null)
 										fallDataSource = new FallDataSource(ForegroundService.this);
 
@@ -596,7 +586,10 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 									//=================store nel database (end)===============
 
-
+									
+									acquisitionList = new ExpiringList(); //REINIZIALIZZO
+									
+									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI=================================
 									if(connectedActs != null && connectedActs.size() > 0){
 
 										link = null;
@@ -610,8 +603,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 										else
 											position = "Not available";
 
-										final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy_hh:mm:ss");
-
 										
 										final String formattedTime = Utility.getStringTime(fallTime);
 
@@ -624,9 +615,10 @@ public class ForegroundService extends Service implements SensorEventListener {
 											else if(sr instanceof Activity)
 												((Activity)sr).runOnUiThread(r);
 										}
-										//acquisitionList = new ExpiringList();
+										
 
 									}
+									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================
 								}
 							}
 						}
