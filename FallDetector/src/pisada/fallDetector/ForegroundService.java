@@ -2,13 +2,10 @@ package pisada.fallDetector;
 
 
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Random;
 
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
@@ -30,6 +27,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -37,7 +35,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
-import android.text.format.DateFormat;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /*
@@ -71,6 +69,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static boolean connected = false;
 	private static boolean isRunning = false;
 	private static boolean timeInitialized = false;
+	private static Acquisition lastInserted;
 	private Looper mServiceLooper;
 	private ServiceHandler mServiceHandler;
 	private SensorManager mSensorManager;
@@ -95,7 +94,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private ExpiringList acquisitionList;
 	private static String position, link;
 	private final int TIME_BETWEEN_FALLS = 5000;
-
+	private BackgroundTask bgrTask;
 
 	@Override
 	public void onStart(Intent intent, int startId) {
@@ -398,7 +397,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	public synchronized void onSensorChanged(SensorEvent event) {
 		/*if(!verifyingSensorData){
 			verifyingSensorData = true;*/
-
+		waitingAcquisition = false;
 		if(System.currentTimeMillis() - lastSensorChanged >= 1){ //non più di un update ogni millisecondo
 			lastSensorChanged = System.currentTimeMillis();
 
@@ -413,7 +412,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 				final long time = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
 
 				if(connectedActs != null && connectedActs.size() > 0){
-					
+
 					for(final ServiceReceiver sr : connectedActs){
 
 						Runnable r = new Runnable(){@Override public void run() { if(sr != null) sr.serviceUpdate(x, y, z, time);}};
@@ -429,15 +428,20 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 				if(acquisitionList == null)
 					acquisitionList = new ExpiringList();
-				Acquisition lastInserted;
+				
+				Random r = new Random();
 				lastInserted = new Acquisition(System.currentTimeMillis(), x, y, z);
 				if(lastInserted != null)
 					acquisitionList.enqueue(lastInserted); //RIEMPIMENTO LISTA
 
 
 
-				if(acquisitionList.size()>=1){
-					initializeBGThread(lastInserted).start();
+				if(acquisitionList.size()>=800){
+					//initializeBGThread(lastInserted).start();
+					if(bgrTask == null){
+						bgrTask = new BackgroundTask(); 
+						bgrTask.execute(acquisitionList);
+					}
 				}
 			}
 
@@ -517,7 +521,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 			return System.currentTimeMillis() - startTime + totalTime;
 		else
 		{
-			
+
 			if(db.existCurrentSession())
 				return db.sessionDuration(db.currentSession());
 			else
@@ -531,7 +535,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		timeInitialized = false;
 	}
 
-
+/*
 	public synchronized Thread initializeBGThread(Acquisition a)
 	{
 		return new BackgroundThread(a){ //passata immediatamente
@@ -572,7 +576,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 										longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
 									}
 									//===========================FINE PARTE GPS=====================================================
-									
+
 
 									//=====================store nel database=================
 
@@ -586,9 +590,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 									//=================store nel database (end)===============
 
-									
+
 									acquisitionList = new ExpiringList(); //REINIZIALIZZO
-									
+
 									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI=================================
 									if(connectedActs != null && connectedActs.size() > 0){
 
@@ -603,10 +607,10 @@ public class ForegroundService extends Service implements SensorEventListener {
 										else
 											position = "Not available";
 
-										
+
 										final String formattedTime = Utility.getStringTime(fallTime);
 
-									
+
 										for(final ServiceReceiver sr : connectedActs){
 											Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime, fallTime);}};
 
@@ -615,7 +619,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 											else if(sr instanceof Activity)
 												((Activity)sr).runOnUiThread(r);
 										}
-										
+
 
 									}
 									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================
@@ -627,6 +631,185 @@ public class ForegroundService extends Service implements SensorEventListener {
 			}
 		};
 	}
+
+*/
+
+
+
+	boolean waitingAcquisition;
+
+
+//passo una pila e il primo acquisito è il primo da tolgliere
+
+	private class BackgroundTask extends AsyncTask<ExpiringList, Void, String> {
+
+		@SuppressLint("NewApi")
+		@Override
+		protected String doInBackground(ExpiringList... params) {
+
+
+
+
+			ExpiringList list = params[0]; //VERIFICARE CHE NON SIA UNA COPIA
+
+
+
+			while(true){
+
+
+				/*
+				 * PROVARE SENZA WAIT QUI VEDERE COSA SUCCEDE QUANDO VA TUTTO VELOCE.
+				 * IN TEORIA ANCHE CON LISTA CORTA DOVREBBERO ESSERE TUTTE ACQUISIZIONI NUOVE
+				 */
+				while(waitingAcquisition || acquisitionList.size() < 500){
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				}
+				waitingAcquisition = true;
+
+
+				if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS)
+				{
+					/*
+					Acquisition lastInserted = acquisitionList.peek(); /////=list.peek()
+					*/
+					if(lastInserted != null){
+						float objectX = lastInserted.getXaxis(); final float objectY = lastInserted.getYaxis(); final float objectZ = lastInserted.getZaxis();
+						if(true || Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 15){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
+
+							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
+
+							if(DetectorAlgorithm.danielAlgorithm(acquisitionList)){
+								if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS){
+									lastFall = System.currentTimeMillis();
+									////=====================ASPETTARE 0.5 SECONDI mentre continui a storare nella coda==========================================
+
+									try {
+										Thread.sleep(500);
+									} catch (InterruptedException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									////=========================================================================================================================
+
+
+									//================================PARTE GPS=====================================================
+
+									Location locationGPS = lm.getLastKnownLocation(GPSProvider);
+									Location locationNetwork = lm.getLastKnownLocation(networkProvider);
+
+									if(locationNetwork != null || locationGPS != null){
+										latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
+										longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
+									}
+									//===========================FINE PARTE GPS=====================================================
+
+
+									//=====================store nel database=================
+
+									System.out.println("TENTATIVO STORE NEL DB A "+ System.currentTimeMillis());
+									if(fallDataSource == null)
+										fallDataSource = new FallDataSource(ForegroundService.this);
+
+									ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
+
+									fallDataSource.insertFall(sessionDataSource.currentSession(), cacca);
+
+									//=================store nel database (end)===============
+
+
+									acquisitionList = new ExpiringList(); //REINIZIALIZZO
+
+									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI=================================
+									if(connectedActs != null && connectedActs.size() > 0){
+
+										link = null;
+										final long fallTime = System.currentTimeMillis();
+
+										if(latitude != null && longitude != null){
+											position = "" + latitude + ", " + longitude;
+											link = Utility.getMapsLink(latitude, longitude);
+
+										}
+										else
+											position = "Not available";
+
+
+										final String formattedTime = Utility.getStringTime(fallTime);
+
+
+										for(final ServiceReceiver sr : connectedActs){
+											Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime, fallTime);}};
+
+											if(sr instanceof CurrentSessionCardAdapter)
+												((CurrentSessionCardAdapter)sr).runOnUiThread(r);
+											else if(sr instanceof Activity)
+												((Activity)sr).runOnUiThread(r);
+										}
+
+
+									}
+									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================
+								}
+							}
+						}
+					}
+				}
+
+
+
+
+
+
+
+
+				if(stop==true)
+					break;
+
+
+
+
+
+			}
+
+
+
+
+
+
+			return "Executed";
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+
+		}
+
+		@Override
+		protected void onPreExecute() {}
+
+		@Override
+		protected void onProgressUpdate(Void... values) {}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }
