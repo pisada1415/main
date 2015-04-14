@@ -46,11 +46,15 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	public static final String FALL_TABLE="FALL"; 
 	public static final String FALL_TIME="FallTime";
 	public static final String FALL_FSESSION="FallSession";
+	public static final String FALL_LNG="Lng";
+	public static final String FALL_LAT="Lat";
 
 	public static final String CREATE_FALL_TABLE=	
 			"CREATE TABLE IF NOT EXISTS "+FALL_TABLE+"("+
 					FALL_TIME+" INTEGER, "+
 					FALL_FSESSION+" TEXT,"+
+					FALL_LAT+" REAL NOT NULL,"+
+					FALL_LNG+" REAL NOT NULL,"+
 					"PRIMARY KEY ("+FALL_TIME+","+FALL_FSESSION+") "+
 					"FOREIGN KEY ("+FALL_FSESSION+") REFERENCES "+SESSION_TABLE+"("+SESSION_NAME+")"+
 					");";
