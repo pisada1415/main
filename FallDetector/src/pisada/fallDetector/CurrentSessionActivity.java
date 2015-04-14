@@ -141,7 +141,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	public void onPause()
 	{
 		super.onPause();
-		sessionData.close();
+		sessionData.close(); //TODO BOH
 		ForegroundService.disconnect(cardAdapter); //disconnette l'activity connessa
 	}
 

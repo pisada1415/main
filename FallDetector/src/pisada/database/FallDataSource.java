@@ -91,7 +91,7 @@ public class FallDataSource {
 
 	//PRIVATO -INSERISCE ACQUISIZIONE NEL DATABASE
 	private void insertAcquisition(Fall fall,Acquisition a){
-
+		
 			ContentValues values=new ContentValues();
 			values.put(FallSqlHelper.ACQUISITION_TIME,a.getTime());
 			values.put(FallSqlHelper.ACQUISITION_FALL_TIME, fall.getTime());
@@ -100,8 +100,7 @@ public class FallDataSource {
 			values.put(FallSqlHelper.ACQUISITION_YAXIS, a.getYaxis());
 			values.put(FallSqlHelper.ACQUISITION_ZAXIS,a.getZaxis());
 			database.insert(FallSqlHelper.ACQUISITION_TABLE, null, values);
-			a.setFall(fall);
-			a.setSession(fall.getSession());
+			
 
 	}
 
@@ -110,7 +109,10 @@ public class FallDataSource {
 
 		String where=FallSqlHelper.ACQUISITION_ASESSION+" = '"+fall.getSession().getName()+"' AND "+FallSqlHelper.ACQUISITION_FALL_TIME+ " = "+fall.getTime()+" AND "+FallSqlHelper.ACQUISITION_TIME+" = "+acquisitionTime;
 		Cursor cursor=database.query(FallSqlHelper.ACQUISITION_TABLE, acquisitionColumns,where, null,null,null,null);
-		if(cursor.getCount()==0) return null;
+		if(cursor.getCount()==0) {
+			cursor.close();
+			return null;
+		}
 		cursor.moveToFirst();
 		Acquisition a=cursorToAcquisition(cursor);
 		cursor.close();
@@ -211,7 +213,12 @@ public class FallDataSource {
 		float xAxis=cursor.getFloat(cursor.getColumnIndex(FallSqlHelper.ACQUISITION_XAXIS));
 		float yAxis=cursor.getFloat(cursor.getColumnIndex(FallSqlHelper.ACQUISITION_YAXIS));
 		float zAxis=cursor.getFloat(cursor.getColumnIndex(FallSqlHelper.ACQUISITION_ZAXIS));
-		return new Acquisition(time, xAxis,yAxis,zAxis);
+		long fallTime=cursor.getLong(cursor.getColumnIndex(FallSqlHelper.ACQUISITION_FALL_TIME));
+		String sName=cursor.getString(cursor.getColumnIndex(FallSqlHelper.ACQUISITION_ASESSION));
+		Acquisition a = new Acquisition(time, xAxis,yAxis,zAxis);
+		a.setSession(sessionData.getSession(sName));
+		a.setFall(getFall(fallTime,a.getSession()));
+		return a;
 	}
 
 }

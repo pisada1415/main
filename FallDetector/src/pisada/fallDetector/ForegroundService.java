@@ -2,6 +2,7 @@ package pisada.fallDetector;
 
 
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -35,7 +36,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /*
@@ -88,12 +88,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static long totalTime = 0;
 	private static long startTime = 0;
 	private NotificationManager nm;
-	private long lastFall = System.currentTimeMillis() - 5000;
+	private long lastFall = System.currentTimeMillis() - 2000;
 	private SessionDataSource sessionDataSource;
 	private FallDataSource fallDataSource;
 	private ExpiringList acquisitionList;
 	private static String position, link;
-	private final int TIME_BETWEEN_FALLS = 5000;
+	private final int TIME_BETWEEN_FALLS = 2000;
 	private BackgroundTask bgrTask;
 
 	@Override
@@ -397,10 +397,28 @@ public class ForegroundService extends Service implements SensorEventListener {
 	public synchronized void onSensorChanged(SensorEvent event) {
 		/*if(!verifyingSensorData){
 			verifyingSensorData = true;*/
-		waitingAcquisition = false;
+		
 		if(System.currentTimeMillis() - lastSensorChanged >= 1){ //non più di un update ogni millisecondo
 			lastSensorChanged = System.currentTimeMillis();
-
+			
+			
+			if(acquisitionList == null)
+				acquisitionList = new ExpiringList();
+			
+			if(bgrTask == null)
+				bgrTask = new BackgroundTask();
+			if(acquisitionList.size()>=800){
+				//initializeBGThread(lastInserted).start();
+				if(bgrTask.getStatus()!= AsyncTask.Status.RUNNING){
+					
+					bgrTask.execute(acquisitionList);
+				}
+			}
+			
+			//update accettato nella prima riga, sveglio l'asynctask:
+			if(bgrTask.getPause())
+				bgrTask.wakeUp();
+			
 			if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 				float[] values = event.values;
 
@@ -424,24 +442,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 					}
 				}
 
-
-
-				if(acquisitionList == null)
-					acquisitionList = new ExpiringList();
+				long timeNow = System.currentTimeMillis();
 				
-				Random r = new Random();
-				lastInserted = new Acquisition(System.currentTimeMillis(), x, y, z);
-				if(lastInserted != null)
+				if(lastInserted == null || timeNow > lastInserted.getTime()){
+					lastInserted = new Acquisition(timeNow, x, y, z);
 					acquisitionList.enqueue(lastInserted); //RIEMPIMENTO LISTA
 
-
-
-				if(acquisitionList.size()>=800){
-					//initializeBGThread(lastInserted).start();
-					if(bgrTask == null){
-						bgrTask = new BackgroundTask(); 
-						bgrTask.execute(acquisitionList);
-					}
 				}
 			}
 
@@ -535,114 +541,31 @@ public class ForegroundService extends Service implements SensorEventListener {
 		timeInitialized = false;
 	}
 
-/*
-	public synchronized Thread initializeBGThread(Acquisition a)
-	{
-		return new BackgroundThread(a){ //passata immediatamente
-			@SuppressLint("NewApi")
-			@Override
-			public void run(){
-
-				if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS)
-				{
-					Acquisition lastInserted = this.getAcquisition();
-					if(lastInserted != null){
-						float objectX = lastInserted.getXaxis(); final float objectY = lastInserted.getYaxis(); final float objectZ = lastInserted.getZaxis();
-						if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 15){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
-
-							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
-
-							if(DetectorAlgorithm.danielAlgorithm(acquisitionList)){
-								if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS){
-									lastFall = System.currentTimeMillis();
-									////=====================ASPETTARE 0.5 SECONDI mentre continui a storare nella coda==========================================
-
-									try {
-										Thread.sleep(500);
-									} catch (InterruptedException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-									////=========================================================================================================================
-
-
-									//================================PARTE GPS=====================================================
-
-									Location locationGPS = lm.getLastKnownLocation(GPSProvider);
-									Location locationNetwork = lm.getLastKnownLocation(networkProvider);
-
-									if(locationNetwork != null || locationGPS != null){
-										latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
-										longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
-									}
-									//===========================FINE PARTE GPS=====================================================
-
-
-									//=====================store nel database=================
-
-									System.out.println("TENTATIVO STORE NEL DB A "+ System.currentTimeMillis());
-									if(fallDataSource == null)
-										fallDataSource = new FallDataSource(ForegroundService.this);
-
-									ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
-
-									fallDataSource.insertFall(sessionDataSource.currentSession(), cacca);
-
-									//=================store nel database (end)===============
-
-
-									acquisitionList = new ExpiringList(); //REINIZIALIZZO
-
-									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI=================================
-									if(connectedActs != null && connectedActs.size() > 0){
-
-										link = null;
-										final long fallTime = System.currentTimeMillis();
-
-										if(latitude != null && longitude != null){
-											position = "" + latitude + ", " + longitude;
-											link = Utility.getMapsLink(latitude, longitude);
-
-										}
-										else
-											position = "Not available";
-
-
-										final String formattedTime = Utility.getStringTime(fallTime);
-
-
-										for(final ServiceReceiver sr : connectedActs){
-											Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime, fallTime);}};
-
-											if(sr instanceof CurrentSessionCardAdapter)
-												((CurrentSessionCardAdapter)sr).runOnUiThread(r);
-											else if(sr instanceof Activity)
-												((Activity)sr).runOnUiThread(r);
-										}
-
-
-									}
-									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================
-								}
-							}
-						}
-					}
-				}
-			}
-		};
-	}
-
-*/
-
-
-
-	boolean waitingAcquisition;
-
-
-//passo una pila e il primo acquisito è il primo da tolgliere
 
 	private class BackgroundTask extends AsyncTask<ExpiringList, Void, String> {
 
+		private String INTERRUPTOR = "tatanka";
+		private boolean pause = false;
+		
+		
+	    public void pauseMyTask() {
+	    	
+	      pause = true;
+	    }
+		
+	    
+	    public void wakeUp() {
+	      synchronized (INTERRUPTOR){
+		    
+	        INTERRUPTOR.notify();
+	      }
+	    }
+	    
+	    
+	    public boolean getPause() {
+	      return pause;
+	    }
+	    
 		@SuppressLint("NewApi")
 		@Override
 		protected String doInBackground(ExpiringList... params) {
@@ -656,23 +579,29 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 			while(true){
 
+				if (pause) {
+					synchronized (INTERRUPTOR) {
+						try {
+
+							// --- sleep tile wake-up method will be called --
+							INTERRUPTOR.wait();
+
+
+						} catch (InterruptedException e) {e.printStackTrace();}
+						pause = false;
+					}
+				}
 
 				/*
 				 * PROVARE SENZA WAIT QUI VEDERE COSA SUCCEDE QUANDO VA TUTTO VELOCE.
 				 * IN TEORIA ANCHE CON LISTA CORTA DOVREBBERO ESSERE TUTTE ACQUISIZIONI NUOVE
 				 */
-				while(waitingAcquisition || acquisitionList.size() < 500){
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-
-				}
-				waitingAcquisition = true;
-
-
+				//WAITINGACQUISITION
+				
+				
+				
+				
+				
 				if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS)
 				{
 					/*
@@ -680,7 +609,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 					*/
 					if(lastInserted != null){
 						float objectX = lastInserted.getXaxis(); final float objectY = lastInserted.getYaxis(); final float objectZ = lastInserted.getZaxis();
-						if(true || Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 15){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
+						if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 17){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
 
 							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
 
@@ -712,14 +641,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 									//=====================store nel database=================
 
-									System.out.println("TENTATIVO STORE NEL DB A "+ System.currentTimeMillis());
 									if(fallDataSource == null)
 										fallDataSource = new FallDataSource(ForegroundService.this);
 
 									ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
-
+									
+									System.out.println("-----------INSERT FALL DATABASE-----------");
 									fallDataSource.insertFall(sessionDataSource.currentSession(), cacca);
-
+									
 									//=================store nel database (end)===============
 
 
@@ -771,7 +700,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 				if(stop==true)
 					break;
 
-
+				//sempre e comunque, lo metto in sleep
+				pauseMyTask();
 
 
 
