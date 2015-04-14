@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/first_card_new_session"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    card_view:cardCornerRadius="4dp" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+      
+        <Button
+            android:id="@+id/start_pause_button"
+            android:layout_width="300dp"
+            android:layout_height="100dp"
+            
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="70dp"
+            android:background="@drawable/session_add_button"
+            android:onClick="playPauseService" />
+        <Button
+            android:id="@+id/stop_button"
+            android:layout_width="300dp"
+            android:layout_height="100dp"
+            android:layout_below="@id/start_pause_button"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/session_add_button"
+            android:onClick="stopService" />
+        
+        
+        
+        
+        <Chronometer
+            android:id="@+id/chronometer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+             android:layout_below="@id/stop_button"
+            android:layout_centerHorizontal="true"
+            android:text="" />
+        
+        
+        
+        
+        
+        
+
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/start_pause_button"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="145dp"
+            android:src="@drawable/ic_launcher" />
+        
+        <TextView
+            android:id="@+id/info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/thumbnail"
+            android:layout_centerHorizontal="true"
+            android:text="@string/info"
+            android:textSize="20sp" />
+
+        
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

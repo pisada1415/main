@@ -2,15 +2,23 @@
 <resources>
 
     <string name="app_name">FallDetector</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_sessions_list">SessionsListActivity</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_session">SessionActivity</string>
     <string name="title_activity_current_session">CurrentSessionActivity</string>
     <string name="title_activity_fall_details">FallDetailsActivity</string>
     <string name="title_activity_preferences">PreferencesActivity</string>
-    
-    <string name="new_session">Click for new session</string>
 
+	<string name="detecting">Detecting…</string>
+
+    <string name="new_session">Click for new session</string>
+    <string name="time_elapsed">00:00:00</string>
+	<string name="info">info.</string>
+	<string name="position">position</string>
+	<string name="current_session_name">Current Session Name</string>
+	<string name="rename">Rename session</string>
+	<string name="defaultSessionName">New Session</string>
+	<string name="plotsCardText">x, y, z axis plots</string>
+	
+	<string name="fall_event_occurred">Fall occurred!</string>
 </resources>

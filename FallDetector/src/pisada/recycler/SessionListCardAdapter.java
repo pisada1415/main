@@ -31,7 +31,9 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		private TextView vName;
 		public OldSessionHolder(View v) {
 			super(v);
+
 			vName =  (TextView) v.findViewById(R.id.nameText);
+
 		}
 	}
 
@@ -44,9 +46,11 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		public NewSessionHolder(View v) {
 			super(v);
+
 			this.newSessionText=(TextView) v.findViewById(R.id.new_session_text);
 			this.addSessionButton=(Button) v.findViewById(R.id.add_session_button);
 			this.typeSession=(EditText) v.findViewById(R.id.type_session);
+
 			if(sessionData.existCurrentSession()){
 				v.setLayoutParams(new LayoutParams(v.getWidth(),0));
 			}
@@ -135,16 +139,17 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			sessionData.closeSession(sessionData.currentSession());
 			sessionList.add(1,sessionData.openNewSession(name, img, startTime));
 			notifyItemInserted(1);
+
 			notifyItemChanged(0);
+
 		}
+
 		else{
 			sessionList.set(1,sessionData.openNewSession(name, img, startTime));
 			notifyItemInserted(1);
 			notifyItemChanged(0);
 
 		}
-
-
 
 	}
 

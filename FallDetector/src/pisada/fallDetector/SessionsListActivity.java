@@ -11,6 +11,7 @@ package pisada.fallDetector;
 import java.util.ArrayList;
 import java.util.Random;
 
+
 import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
@@ -21,12 +22,14 @@ import pisada.database.SessionDataSource;
 import pisada.recycler.SessionListCardAdapter;
 import android.support.v7.app.ActionBarActivity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.sqlite.SQLiteConstraintException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -57,10 +60,25 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 
 
+	Intent serviceIntent;
+
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sessions_list);
+
+		//===============================================
+		//service debug start
+		//===============================================
+		
+		
+		serviceIntent = new Intent(this, ForegroundService.class);
+		startService(serviceIntent);	
+		//===============================================
+		//service debug end
+		//===============================================
+
 
 
 		//APRO CONNESSIONI AL DATABASE
@@ -80,8 +98,9 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-		
+
 	}
+
 
 
 
@@ -109,6 +128,14 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+			if(serviceIntent!=null)
+				stopService(serviceIntent);
+			return true;
+		}
+		if(id == R.id.action_settings_2)
+		{
+			if(serviceIntent!=null)
+				startService(serviceIntent);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -158,8 +185,10 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 	}
 	public void addSession(View v) throws BoolNotBoolException{
+
 		EditText editName=(EditText) findViewById(R.id.type_session);
 		String name=editName.getText().toString();
+
 
 		if(name.equalsIgnoreCase("")){
 			if(System.currentTimeMillis()-lastToastTime>2000){
