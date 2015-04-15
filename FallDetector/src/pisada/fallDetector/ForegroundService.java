@@ -1,5 +1,10 @@
 package pisada.fallDetector;
-
+/*
+ * PROBLEMA DATABASE LOCKED: PIù THREAD CHE ACCEDONO A STESSO OGGETTO: USA SYNCHRONIZED
+ * OPPURE: PIù HEPER NELLO STESSO FILE.
+ * 
+ * -->oggetti statici per il database, usati da tutti, sempre e solo con metodi synchronized
+ */
 
 
 import java.io.File;
@@ -89,13 +94,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static long startTime = 0;
 	private NotificationManager nm;
 	private long lastFall = System.currentTimeMillis() - 2000;
-	private SessionDataSource sessionDataSource;
-	private FallDataSource fallDataSource;
+	private static SessionDataSource sessionDataSource;
+	private static FallDataSource fallDataSource;
 	private ExpiringList acquisitionList;
 	private static String position, link;
 	private final int TIME_BETWEEN_FALLS = 2000;
 	private BackgroundTask bgrTask;
-
+	protected static final int MAX_SENSOR_UPDATE_RATE = 10; //ogni quanti millisecondi update
 	@Override
 	public void onStart(Intent intent, int startId) {
 
@@ -297,11 +302,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	@Override
 	public void onDestroy() {
-		/*
-		 * clean everything up
-		 */
+		
 
-		/*deve mandare in pausa la session
+		/*TODO deve mandare in pausa la session
 		 * 
 		 */
 		if(sessionDataSource.existCurrentSession())
@@ -398,7 +401,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		/*if(!verifyingSensorData){
 			verifyingSensorData = true;*/
 		
-		if(System.currentTimeMillis() - lastSensorChanged >= 1){ //non più di un update ogni millisecondo
+		if(System.currentTimeMillis() - lastSensorChanged >= MAX_SENSOR_UPDATE_RATE){ //non più di un update ogni 10 millisecondi
 			lastSensorChanged = System.currentTimeMillis();
 			
 			
@@ -407,7 +410,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 			
 			if(bgrTask == null)
 				bgrTask = new BackgroundTask();
-			if(acquisitionList.size()>=800){
+			if(acquisitionList.size()>=10){
 				//initializeBGThread(lastInserted).start();
 				if(bgrTask.getStatus()!= AsyncTask.Status.RUNNING){
 					
@@ -646,14 +649,15 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 									ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
 									
-									System.out.println("-----------INSERT FALL DATABASE-----------");
-									fallDataSource.insertFall(sessionDataSource.currentSession(), cacca);
+								
+									//INSERIMENTO DEL DATABASE FATTO IN UN THREAD SEPARATO
+									databaseSaver(fallDataSource, sessionDataSource.currentSession(), cacca);
+									
 									
 									//=================store nel database (end)===============
 
-
+									
 									acquisitionList = new ExpiringList(); //REINIZIALIZZO
-
 									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI=================================
 									if(connectedActs != null && connectedActs.size() > 0){
 
@@ -668,11 +672,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 										else
 											position = "Not available";
 
+										
 
 										final String formattedTime = Utility.getStringTime(fallTime);
 
-
 										for(final ServiceReceiver sr : connectedActs){
+											
 											Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime, fallTime);}};
 
 											if(sr instanceof CurrentSessionCardAdapter)
@@ -730,10 +735,45 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 
+	private static void databaseSaver(final FallDataSource fds, final SessionDataSource.Session s, final ArrayList<Acquisition> al)
+	{
+		new Thread(new Runnable(){
+			@Override
+			public void run(){
+				fds.insertFall(s, al);
+			}
+		}).start();
+	}
 
 
 
-
+	//TODO magari mettiamo un interfaccia per inizializzare il db ecc
+	private void initFallData()
+	{
+		synchronized(ForegroundService.fallDataSource){
+			fallDataSource = new FallDataSource(ForegroundService.this);
+		}
+	}
+	private void openFallData()
+	{
+		synchronized(ForegroundService.fallDataSource){
+			fallDataSource.open();
+		}
+	}
+	private void closeFallData()
+	{
+		synchronized(ForegroundService.fallDataSource){
+			fallDataSource.close();
+		}
+	}
+	private void addFallToFallData(final FallDataSource fds, final SessionDataSource.Session s, final ArrayList<Acquisition> al)
+	{//TODO
+		synchronized(ForegroundService.fallDataSource){
+			databaseSaver(fds,s, al);
+		}
+	}
+	
+	
 
 
 

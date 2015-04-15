@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ExpiringList {
 
-	private final int EXPIRING_SIZE = 1000;
+	private final int EXPIRING_SIZE = 1000 / ForegroundService.MAX_SENSOR_UPDATE_RATE;
 	protected ConcurrentLinkedQueue<Acquisition> timerAcquisitionList ; //NON VA PROTECTED. SOLO PER DEBUG
 	
 	public ExpiringList()

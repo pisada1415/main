@@ -153,6 +153,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		if(mHandler == null)
 			mHandler = new Handler();
 		mHandler.post(r);
+		
 	}
 
 
@@ -306,6 +307,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	{
 		cardContentList.add(new CardContent(position,link,time, img));
 		notifyItemInserted(cardContentList.size()-1);
+		System.out.println("AGGIUNTO A CARDVIEW");
 		
 	}
 
