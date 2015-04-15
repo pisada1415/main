@@ -30,8 +30,8 @@ public class FallDataSource {
 		private Session session;
 		private long time;
 		private boolean isValid=true;
-		
-		
+
+
 		private Fall(long time,Session session){
 			if(!session.isValidSession()||session==null)throw new InvalidSessionException();
 
@@ -43,7 +43,7 @@ public class FallDataSource {
 		public Fall(){
 			isValid=false;
 		}
-		
+
 
 		public double getLat(){return 103;}
 		public double getLng(){return 93284;}
@@ -56,10 +56,12 @@ public class FallDataSource {
 
 
 	public FallDataSource(Context context){
-		databaseHelper=new FallSqlHelper(context);
-		sessionData=new SessionDataSource(context);
-		this.context=context;
-		open();
+		synchronized(FallDataSource.class){
+			databaseHelper=new FallSqlHelper(context);
+			sessionData=new SessionDataSource(context);
+			this.context=context;
+			open();
+		}
 	}
 
 	public void open(){
@@ -91,16 +93,16 @@ public class FallDataSource {
 
 	//PRIVATO -INSERISCE ACQUISIZIONE NEL DATABASE
 	private void insertAcquisition(Fall fall,Acquisition a){
-		
-			ContentValues values=new ContentValues();
-			values.put(FallSqlHelper.ACQUISITION_TIME,a.getTime());
-			values.put(FallSqlHelper.ACQUISITION_FALL_TIME, fall.getTime());
-			values.put(FallSqlHelper.ACQUISITION_ASESSION,fall.getSession().getName());
-			values.put(FallSqlHelper.ACQUISITION_XAXIS, a.getXaxis());
-			values.put(FallSqlHelper.ACQUISITION_YAXIS, a.getYaxis());
-			values.put(FallSqlHelper.ACQUISITION_ZAXIS,a.getZaxis());
-			database.insert(FallSqlHelper.ACQUISITION_TABLE, null, values);
-			
+
+		ContentValues values=new ContentValues();
+		values.put(FallSqlHelper.ACQUISITION_TIME,a.getTime());
+		values.put(FallSqlHelper.ACQUISITION_FALL_TIME, fall.getTime());
+		values.put(FallSqlHelper.ACQUISITION_ASESSION,fall.getSession().getName());
+		values.put(FallSqlHelper.ACQUISITION_XAXIS, a.getXaxis());
+		values.put(FallSqlHelper.ACQUISITION_YAXIS, a.getYaxis());
+		values.put(FallSqlHelper.ACQUISITION_ZAXIS,a.getZaxis());
+		database.insert(FallSqlHelper.ACQUISITION_TABLE, null, values);
+
 
 	}
 

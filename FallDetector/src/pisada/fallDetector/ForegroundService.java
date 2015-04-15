@@ -94,8 +94,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static long startTime = 0;
 	private NotificationManager nm;
 	private long lastFall = System.currentTimeMillis() - 2000;
-	private static SessionDataSource sessionDataSource;
-	private static FallDataSource fallDataSource;
+	private  SessionDataSource sessionDataSource;
+	private  FallDataSource fallDataSource;
 	private ExpiringList acquisitionList;
 	private static String position, link;
 	private final int TIME_BETWEEN_FALLS = 2000;
@@ -126,13 +126,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 		//APRO CONNESSIONI AL DATABASE
 		/*	acquisitionData.open();*/
 		if(sessionDataSource == null){
-			sessionDataSource = new SessionDataSource(this);
+			initSessionData();;
 		}
 
 		//questo fa si che totalTime tenga il tempo per cui la sessione è aperta in totale
-		if(!timeInitialized && sessionDataSource.existCurrentSession()){
+		if(!timeInitialized && existsCurrentSession()){
 
-			totalTime = sessionDataSource.sessionDuration(sessionDataSource.currentSession());
+			totalTime = sessionDuration(currentSession());
 			timeInitialized = true;
 			startTime = System.currentTimeMillis();
 		}
@@ -295,7 +295,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI/*, mServiceHandler*/);
 
 		if(sessionDataSource == null){
-			sessionDataSource = new SessionDataSource(this);
+			initSessionData();
 		}
 
 	}
@@ -412,6 +412,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 				bgrTask = new BackgroundTask();
 			if(acquisitionList.size()>=10){
 				//initializeBGThread(lastInserted).start();
+			
 				if(bgrTask.getStatus()!= AsyncTask.Status.RUNNING){
 					
 					bgrTask.execute(acquisitionList);
@@ -419,7 +420,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 			}
 			
 			//update accettato nella prima riga, sveglio l'asynctask:
-			if(bgrTask.getPause())
+			boolean pause = bgrTask.getPause();
+			System.out.println("pause is " + pause);
+			if(pause)
 				bgrTask.wakeUp();
 			
 			if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
@@ -507,38 +510,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	}
 
 
-	/*
-	 * viene chiusa la sessione e poi viene comunque chiamato ondestroy sulla sessione
-	 * già chiusa che risulta null nel database. perché ondestroy contiene storeduration.
-	 * soluzioni:
-	 * try - catch (poco elegante)
-	 */
-	/*protected static void storeDuration(SessionDataSource sessionData)
-	{
-		sessionData.updateSessionDuration(sessionData.currentSession(), System.currentTimeMillis() - totalTime);
-	}*/
-	private void storeDuration()
-	{
-		if(sessionDataSource.existCurrentSession())
-			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
-		//totalTime = System.currentTimeMillis();
-	}
-
-	public static long getSessionDuration(SessionDataSource db)
-	{
-		if(timeInitialized)
-			return System.currentTimeMillis() - startTime + totalTime;
-		else
-		{
-
-			if(db.existCurrentSession())
-				return db.sessionDuration(db.currentSession());
-			else
-				return 0;
-		}
-
-	}
-
+	
 	private void resetTime()
 	{
 		timeInitialized = false;
@@ -548,18 +520,18 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private class BackgroundTask extends AsyncTask<ExpiringList, Void, String> {
 
 		private String INTERRUPTOR = "tatanka";
-		private boolean pause = false;
+		private boolean pause = true;
 		
 		
 	    public void pauseMyTask() {
-	    	
+	    	System.out.println("messo in pausa qui e pausa messo true");
 	      pause = true;
 	    }
 		
 	    
 	    public void wakeUp() {
 	      synchronized (INTERRUPTOR){
-		    
+		    System.out.println("comando notify lanciato");
 	        INTERRUPTOR.notify();
 	      }
 	    }
@@ -587,11 +559,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 						try {
 
 							// --- sleep tile wake-up method will be called --
+							System.out.println("pausa qui");
 							INTERRUPTOR.wait();
-
+							System.out.println("ripartito qui");
 
 						} catch (InterruptedException e) {e.printStackTrace();}
 						pause = false;
+						System.out.println("pause messo false");
 					}
 				}
 
@@ -746,8 +720,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 	}
 
 
-
-	//TODO magari mettiamo un interfaccia per inizializzare il db ecc
+/*
+	
 	private void initFallData()
 	{
 		synchronized(ForegroundService.fallDataSource){
@@ -773,13 +747,124 @@ public class ForegroundService extends Service implements SensorEventListener {
 		}
 	}
 	
+	private void initSessionData()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+			sessionDataSource = new SessionDataSource(ForegroundService.this);
+		}
+	}
+	private void openSessionData()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+			sessionDataSource.open();
+		}
+	}
+	private void closeSessionData()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+			sessionDataSource.close();
+		}
+	}
+	public static long getSessionDataSessionDuration(SessionDataSource db)
+	{//TODO
+		synchronized(ForegroundService.sessionDataSource){
+			if(timeInitialized)
+				return System.currentTimeMillis() - startTime + totalTime;
+			else
+			{
+
+				if(db.existCurrentSession())
+					return db.sessionDuration(db.currentSession());
+				else
+					return 0;
+			}
+		}
+	}
 	
+	private void storeDuration()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+		if(sessionDataSource.existCurrentSession())
+			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
+		//totalTime = System.currentTimeMillis();
+		}
+	}
+	
+	private boolean existsCurrentSession()
+	{
+		synchronized(ForegroundService.sessionDataSource)
+		{
+			return sessionDataSource.existCurrentSession();
+		}
+	}
+	
+	private long sessionDuration(SessionDataSource.Session s){
+		synchronized(ForegroundService.sessionDataSource){
+			return sessionDataSource.sessionDuration(s);
+		}
+	}
+	
+	private SessionDataSource.Session currentSession()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+			return sessionDataSource.currentSession();
+		}
+	}
+	
+	/*
+	 * CONTINUARE A SCAMBIARE LE CHIAMATE AI METODI DI SESSIONDATASOURCE CON QUELLI SYNC
+	 */
+	
+	
+	public static long getSessionDuration(SessionDataSource db)
+	{//TODO
+			if(timeInitialized)
+				return System.currentTimeMillis() - startTime + totalTime;
+			else
+			{
 
-
-
-
-
-
-
+				if(db.existCurrentSession())
+					return db.sessionDuration(db.currentSession());
+				else
+					return 0;
+			}
+		
+	}
+	
+	
+	
+	private void initSessionData()
+	{
+			sessionDataSource = new SessionDataSource(ForegroundService.this);
+		
+	}
+	
+	private void storeDuration()
+	{
+		
+		if(sessionDataSource.existCurrentSession())
+			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
+		//totalTime = System.currentTimeMillis();
+		
+	}
+	
+	private boolean existsCurrentSession()
+	{
+		
+			return sessionDataSource.existCurrentSession();
+		
+	}
+	
+	private long sessionDuration(SessionDataSource.Session s){
+			return sessionDataSource.sessionDuration(s);
+		
+	}
+	
+	private SessionDataSource.Session currentSession()
+	{
+			return sessionDataSource.currentSession();
+		
+	}
+	
 
 }

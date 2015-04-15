@@ -9,7 +9,8 @@
     android:layout_marginLeft="15dp"
     android:layout_marginRight="15dp"
     card_view:cardCornerRadius="8dp"
-    card_view:cardElevation="14dp" >
+    card_view:cardElevation="14dp"
+    card_view:cardBackgroundColor="@color/foregroundGrey" >
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -40,6 +41,7 @@
             android:id="@+id/fall_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/lightBlue"
             android:layout_below="@id/fall_event_occurred"
             android:layout_toRightOf="@id/thumbnail_fall"
             android:layout_toEndOf="@id/thumbnail_fall"
@@ -50,6 +52,7 @@
             android:id="@+id/position"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/lightBlue"
             android:layout_toRightOf="@id/thumbnail_fall"
             android:layout_toEndOf="@id/thumbnail_fall"
             android:layout_below="@id/fall_time"

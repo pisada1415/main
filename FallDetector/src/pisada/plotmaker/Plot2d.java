@@ -3,6 +3,7 @@ package pisada.plotmaker;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
+import pisada.fallDetector.R;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -26,6 +27,7 @@ public class Plot2d extends View {
 	
 	private final int MAX_VALUES_STORED = 100;
 	private DecimalFormat formatter;
+	private Context context;
 	/*
 	 * defData is a default value (like the first of the list) which is meant to initialize 
 	 * the min values
@@ -35,6 +37,7 @@ public class Plot2d extends View {
 	
 	public Plot2d(Context context, Data defData) {
 		super(context);
+		this.context = context;
 		paint = new Paint();
 		minX = defData.getX();
 		minY = defData.getY();
@@ -76,14 +79,14 @@ public class Plot2d extends View {
 	//	int yAxisInPixels = toPixelInt(canvasWidth, minX, maxX, yAxis);
 		int yAxisInPixels = 10; //valore fissato sullo schermo indipendente dai valori di x
 		paint.setStrokeWidth(2);
-		canvas.drawARGB(255, 255, 255, 255); //white background
+		canvas.drawRGB(39, 39, 39); //white background
 		
 		for (int i = 0; i < valuesInPixel.size()-1; i++) {
-			paint.setColor(Color.DKGRAY);
+			paint.setColor(getResources().getColor(R.color.lightBlue));
 			canvas.drawLine(valuesInPixel.get(i).getX(),canvasHeight-valuesInPixel.get(i).getY(),valuesInPixel.get(i+1).getX(),canvasHeight-valuesInPixel.get(i+1).getY(),paint);
 		}
 		
-		paint.setColor(Color.BLACK);
+		paint.setColor(Color.WHITE);
 		canvas.drawLine(0,canvasHeight-xAxisInPixels,canvasWidth,canvasHeight-xAxisInPixels,paint);
 		canvas.drawLine(yAxisInPixels,0,yAxisInPixels,canvasHeight,paint);
 		
