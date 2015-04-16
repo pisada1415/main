@@ -7,11 +7,8 @@ package pisada.fallDetector;
  */
 
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import pisada.database.FallDataSource;
@@ -35,6 +32,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -215,8 +213,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 			bestProvider = lm.getBestProvider(criteria, true); 
-			lm.requestLocationUpdates(bestProvider, 5000, 0/*50*/, locationListenerGPS); //if gps is available
-			lm.requestLocationUpdates(networkProvider, 5000, 0/*50*/, locationListenerNetwork); //always updates location with network: it's faster
+			lm.requestLocationUpdates(bestProvider, 5000, 500, locationListenerGPS); //if gps is available
+			lm.requestLocationUpdates(networkProvider, 5000, 500, locationListenerNetwork); //always updates location with network: it's faster
 
 		}
 
@@ -271,6 +269,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		return null;
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public void onCreate() {
 
@@ -292,8 +291,10 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// Get the HandlerThread's Looper and use it for our Handler
 		mServiceLooper = thread.getLooper();
 		mServiceHandler = new ServiceHandler(mServiceLooper);
-
-		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI/*, mServiceHandler*/);
+		if(Build.VERSION.SDK_INT>=19)
+			mSensorManager.registerListener(this, mAccelerometer, 10000, 1000); //fa risparmiare un po' di batteria se sei fortunato e hai android KK+
+		else
+			mSensorManager.registerListener(this, mAccelerometer, 10000);
 
 		if(sessionDataSource == null){
 			initSessionData();
@@ -363,8 +364,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 							@Override
 							public void run() {
 								if(!updatesRemoved){
-									lm.requestLocationUpdates(GPSProvider, 5000, 0/*50*/, locationListenerGPS);
-									lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 0/*50*/, locationListenerNetwork);
+									lm.requestLocationUpdates(GPSProvider, 5000, 500, locationListenerGPS);
+									lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000,  500, locationListenerNetwork);
 								}
 							}
 						});
@@ -396,7 +397,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	 * BISOGNA COMUNQUE FERMARE LA LISTA MENTRE SI CONTROLLA E INVIA PER VERIFICA CADUTA ALTRIMENTI ARRIVA DIVERSA! 
 	 * 
 	 * */
-	@SuppressLint("NewApi")
+	
 	@Override
 	public synchronized void onSensorChanged(SensorEvent event) {
 		/*if(!verifyingSensorData){
@@ -542,7 +543,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	      return pause;
 	    }
 	    
-		@SuppressLint("NewApi")
+		
 		@Override
 		protected String doInBackground(ExpiringList... params) {
 
@@ -617,9 +618,11 @@ public class ForegroundService extends Service implements SensorEventListener {
 										fallDataSource = new FallDataSource(ForegroundService.this);
 
 									long timeNow = System.currentTimeMillis();
+									System.out.println("salvataggio nel database iniziato");
+									databaseSaver(fallDataSource, sessionDataSource.currentSession(), acquisitionList.getQueue(), latitude, longitude);
+									System.out.println("salvataggio nel database completato");
 
-									fallDataSource.insertFall(sessionDataSource.currentSession(), acquisitionList.getQueue(), latitude, longitude);
-									System.out.println("ci abbiamo messo "+ (System.currentTimeMillis() - timeNow) + "per salvare una fall");
+									System.out.println("ci abbiamo messo "+ (System.currentTimeMillis() - timeNow) + " millisec. per salvare una fall");
 
 
 
@@ -751,6 +754,17 @@ public class ForegroundService extends Service implements SensorEventListener {
 			return sessionDataSource.currentSession();
 		
 	}
+	
+	private static void databaseSaver(final FallDataSource fds, final SessionDataSource.Session s, final ConcurrentLinkedQueue<Acquisition> al, final double lat, final double lng)
+	{
+		new Thread(new Runnable(){
+			@Override
+			public void run(){
+				fds.insertFall(s, al, lat, lng);
+			}
+		}).start();
+	}
+
 	
 
 }
