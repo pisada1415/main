@@ -618,11 +618,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 										fallDataSource = new FallDataSource(ForegroundService.this);
 
 									long timeNow = System.currentTimeMillis();
-									System.out.println("salvataggio nel database iniziato");
 									databaseSaver(fallDataSource, sessionDataSource.currentSession(), acquisitionList.getQueue(), latitude, longitude);
-									System.out.println("salvataggio nel database completato");
 
-									System.out.println("ci abbiamo messo "+ (System.currentTimeMillis() - timeNow) + " millisec. per salvare una fall");
 
 
 
