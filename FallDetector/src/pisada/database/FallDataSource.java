@@ -13,6 +13,8 @@ import pisada.database.SessionDataSource.Session;
 import pisada.fallDetector.Acquisition;
 import android.content.ContentValues;
 import android.content.Context;
+
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -94,6 +96,7 @@ public class FallDataSource {
 				time=a.getTime();
 				break;
 			}
+			i++;
 		}
 
 		ContentValues values=new ContentValues();
