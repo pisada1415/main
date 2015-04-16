@@ -716,9 +716,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 									if(fallDataSource == null)
 										fallDataSource = new FallDataSource(ForegroundService.this);
 
-									ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
+								//	ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
 
-									fallDataSource.insertFall(sessionDataSource.currentSession(), cacca, 1010,1010);
+									fallDataSource.insertFall(sessionDataSource.currentSession(), acquisitionList.getQueue(), 1010,1010);
 
 									//=================store nel database (end)===============
 

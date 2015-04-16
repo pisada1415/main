@@ -46,7 +46,7 @@ public class ExpiringList {
 		return this.timerAcquisitionList.toArray();
 	}
 	
-
+public ConcurrentLinkedQueue<Acquisition> getQueue(){return timerAcquisitionList;}
 	
 }
 
