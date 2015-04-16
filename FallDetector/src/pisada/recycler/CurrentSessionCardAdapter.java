@@ -320,7 +320,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void addFall(FallDataSource.Fall f, SessionDataSource.Session s)
 	{
 		String time = Utility.getStringTime(f.getTime());
-		addFallToCardList(""+f.getLat() + ", " +f.getLng(), Utility.getMapsLink(f.getLat(), f.getLng()), time, 1083l);
+		String position;
+		position = (f.getLat() != -1 && f.getLng() != -1) ? "" + f.getLat() + ", " + f.getLng() : "Not available";
+		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), time, 1083l);
 	}
 	
 	public void clearFalls()

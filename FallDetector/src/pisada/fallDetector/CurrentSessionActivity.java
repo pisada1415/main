@@ -1,6 +1,8 @@
 package pisada.fallDetector;
 
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 
 import pisada.database.FallDataSource;
@@ -59,13 +61,6 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		sessionNameDefault = getResources().getString(R.string.defaultSessionName);
 		sessionName = sessionNameDefault;
 		
-		
-		
-		
-		
-				
-				
-				
 				
 		//INIZIALIZZO DATABASE
 
@@ -151,7 +146,16 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		super.onResume();
 		if(!ForegroundService.isConnected(cardAdapter))
 			ForegroundService.connect(cardAdapter);
+		try{
 		sessionData.open();
+		}
+		catch(Exception e)
+		{
+			StringWriter errors = new StringWriter();
+			e.printStackTrace(new PrintWriter(errors));
+			
+			Toast.makeText(this, errors.toString(), Toast.LENGTH_LONG).show();
+		}
 	}
 
 	//CHIAMATO QUANDO VIENE PREMUTO IL TASTO SOPRA (PLAY/PAUSA)
