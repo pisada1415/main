@@ -85,6 +85,7 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 
 	public FallSqlHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		
 
 	}
 
@@ -94,7 +95,7 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 		db.execSQL(CREATE_SESSION_TABLE);
 		db.execSQL(CREATE_FALL_TABLE);
 		db.execSQL(CREATE_ACQUISITION_TABLE);
-
+		    
 	}
 
 

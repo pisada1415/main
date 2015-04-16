@@ -316,8 +316,15 @@ public class SessionDataSource {
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_NAME+" = '"+name+
 				"' WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");
-		s.setName(name);
 
+		database.execSQL("UPDATE "+FallSqlHelper.FALL_TABLE
+				+ " SET "+ FallSqlHelper.FALL_FSESSION+" = '"+name+
+				"' WHERE "+FallSqlHelper.FALL_FSESSION+" = '"+s.getName()+"';");
+		
+		database.execSQL("UPDATE "+FallSqlHelper.ACQUISITION_TABLE
+				+ " SET "+ FallSqlHelper.ACQUISITION_ASESSION+" = '"+name+
+				"' WHERE "+FallSqlHelper.ACQUISITION_ASESSION+" = '"+s.getName()+"';");
+		s.setName(name);
 	}
 
 	public void setSessionOnPause(Session s){
