@@ -1,11 +1,18 @@
 package pisada.fallDetector;
+/*
+ * PROBLEMA DATABASE LOCKED: PIù THREAD CHE ACCEDONO A STESSO OGGETTO: USA SYNCHRONIZED
+ * OPPURE: PIù HEPER NELLO STESSO FILE.
+ * 
+ * -->oggetti statici per il database, usati da tutti, sempre e solo con metodi synchronized
+ */
 
 
-
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
@@ -35,7 +42,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /*
@@ -88,14 +94,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static long totalTime = 0;
 	private static long startTime = 0;
 	private NotificationManager nm;
-	private long lastFall = System.currentTimeMillis() - 5000;
-	private SessionDataSource sessionDataSource;
-	private FallDataSource fallDataSource;
+	private long lastFall = System.currentTimeMillis() - 2000;
+	private  SessionDataSource sessionDataSource;
+	private  FallDataSource fallDataSource;
 	private ExpiringList acquisitionList;
 	private static String position, link;
-	private final int TIME_BETWEEN_FALLS = 5000;
+	private final int TIME_BETWEEN_FALLS = 2000;
 	private BackgroundTask bgrTask;
-
+	protected static final int MAX_SENSOR_UPDATE_RATE = 10; //ogni quanti millisecondi update
 	@Override
 	public void onStart(Intent intent, int startId) {
 
@@ -121,13 +127,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 		//APRO CONNESSIONI AL DATABASE
 		/*	acquisitionData.open();*/
 		if(sessionDataSource == null){
-			sessionDataSource = new SessionDataSource(this);
+			initSessionData();;
 		}
 
 		//questo fa si che totalTime tenga il tempo per cui la sessione è aperta in totale
-		if(!timeInitialized && sessionDataSource.existCurrentSession()){
+		if(!timeInitialized && existsCurrentSession()){
 
-			totalTime = sessionDataSource.sessionDuration(sessionDataSource.currentSession());
+			totalTime = sessionDuration(currentSession());
 			timeInitialized = true;
 			startTime = System.currentTimeMillis();
 		}
@@ -290,18 +296,16 @@ public class ForegroundService extends Service implements SensorEventListener {
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI/*, mServiceHandler*/);
 
 		if(sessionDataSource == null){
-			sessionDataSource = new SessionDataSource(this);
+			initSessionData();
 		}
 
 	}
 
 	@Override
 	public void onDestroy() {
-		/*
-		 * clean everything up
-		 */
+		
 
-		/*deve mandare in pausa la session
+		/*TODO deve mandare in pausa la session
 		 * 
 		 */
 		if(sessionDataSource.existCurrentSession())
@@ -397,10 +401,31 @@ public class ForegroundService extends Service implements SensorEventListener {
 	public synchronized void onSensorChanged(SensorEvent event) {
 		/*if(!verifyingSensorData){
 			verifyingSensorData = true;*/
-		waitingAcquisition = false;
-		if(System.currentTimeMillis() - lastSensorChanged >= 1){ //non più di un update ogni millisecondo
+		
+		if(System.currentTimeMillis() - lastSensorChanged >= MAX_SENSOR_UPDATE_RATE){ //non più di un update ogni 10 millisecondi
 			lastSensorChanged = System.currentTimeMillis();
-
+			
+			
+			if(acquisitionList == null)
+				acquisitionList = new ExpiringList();
+			
+			if(bgrTask == null)
+				bgrTask = new BackgroundTask();
+			if(acquisitionList.size()>=10){
+				//initializeBGThread(lastInserted).start();
+			
+				if(bgrTask.getStatus()!= AsyncTask.Status.RUNNING){
+					
+					bgrTask.execute(acquisitionList);
+				}
+			}
+			
+			//update accettato nella prima riga, sveglio l'asynctask:
+			boolean pause = bgrTask.getPause();
+			System.out.println("pause is " + pause);
+			if(pause)
+				bgrTask.wakeUp();
+			
 			if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 				float[] values = event.values;
 
@@ -424,24 +449,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 					}
 				}
 
-
-
-				if(acquisitionList == null)
-					acquisitionList = new ExpiringList();
+				long timeNow = System.currentTimeMillis();
 				
-				Random r = new Random();
-				lastInserted = new Acquisition(System.currentTimeMillis(), x, y, z);
-				if(lastInserted != null)
+				if(lastInserted == null || timeNow > lastInserted.getTime()){
+					lastInserted = new Acquisition(timeNow, x, y, z);
 					acquisitionList.enqueue(lastInserted); //RIEMPIMENTO LISTA
 
-
-
-				if(acquisitionList.size()>=800){
-					//initializeBGThread(lastInserted).start();
-					if(bgrTask == null){
-						bgrTask = new BackgroundTask(); 
-						bgrTask.execute(acquisitionList);
-					}
 				}
 			}
 
@@ -498,151 +511,37 @@ public class ForegroundService extends Service implements SensorEventListener {
 	}
 
 
-	/*
-	 * viene chiusa la sessione e poi viene comunque chiamato ondestroy sulla sessione
-	 * già chiusa che risulta null nel database. perché ondestroy contiene storeduration.
-	 * soluzioni:
-	 * try - catch (poco elegante)
-	 */
-	/*protected static void storeDuration(SessionDataSource sessionData)
-	{
-		sessionData.updateSessionDuration(sessionData.currentSession(), System.currentTimeMillis() - totalTime);
-	}*/
-	private void storeDuration()
-	{
-		if(sessionDataSource.existCurrentSession())
-			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
-		//totalTime = System.currentTimeMillis();
-	}
-
-	public static long getSessionDuration(SessionDataSource db)
-	{
-		if(timeInitialized)
-			return System.currentTimeMillis() - startTime + totalTime;
-		else
-		{
-
-			if(db.existCurrentSession())
-				return db.sessionDuration(db.currentSession());
-			else
-				return 0;
-		}
-
-	}
-
+	
 	private void resetTime()
 	{
 		timeInitialized = false;
 	}
 
-/*
-	public synchronized Thread initializeBGThread(Acquisition a)
-	{
-		return new BackgroundThread(a){ //passata immediatamente
-			@SuppressLint("NewApi")
-			@Override
-			public void run(){
-
-				if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS)
-				{
-					Acquisition lastInserted = this.getAcquisition();
-					if(lastInserted != null){
-						float objectX = lastInserted.getXaxis(); final float objectY = lastInserted.getYaxis(); final float objectZ = lastInserted.getZaxis();
-						if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 15){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
-
-							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
-
-							if(DetectorAlgorithm.danielAlgorithm(acquisitionList)){
-								if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS){
-									lastFall = System.currentTimeMillis();
-									////=====================ASPETTARE 0.5 SECONDI mentre continui a storare nella coda==========================================
-
-									try {
-										Thread.sleep(500);
-									} catch (InterruptedException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-									////=========================================================================================================================
-
-
-									//================================PARTE GPS=====================================================
-
-									Location locationGPS = lm.getLastKnownLocation(GPSProvider);
-									Location locationNetwork = lm.getLastKnownLocation(networkProvider);
-
-									if(locationNetwork != null || locationGPS != null){
-										latitude = locationGPS != null ? locationGPS.getLatitude() : locationNetwork.getLatitude();
-										longitude = locationGPS != null ? locationGPS.getLongitude() : locationNetwork.getLongitude();
-									}
-									//===========================FINE PARTE GPS=====================================================
-
-
-									//=====================store nel database=================
-
-									System.out.println("TENTATIVO STORE NEL DB A "+ System.currentTimeMillis());
-									if(fallDataSource == null)
-										fallDataSource = new FallDataSource(ForegroundService.this);
-
-									ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
-
-									fallDataSource.insertFall(sessionDataSource.currentSession(), cacca);
-
-									//=================store nel database (end)===============
-
-
-									acquisitionList = new ExpiringList(); //REINIZIALIZZO
-
-									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI=================================
-									if(connectedActs != null && connectedActs.size() > 0){
-
-										link = null;
-										final long fallTime = System.currentTimeMillis();
-
-										if(latitude != null && longitude != null){
-											position = "" + latitude + ", " + longitude;
-											link = Utility.getMapsLink(latitude, longitude);
-
-										}
-										else
-											position = "Not available";
-
-
-										final String formattedTime = Utility.getStringTime(fallTime);
-
-
-										for(final ServiceReceiver sr : connectedActs){
-											Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime, fallTime);}};
-
-											if(sr instanceof CurrentSessionCardAdapter)
-												((CurrentSessionCardAdapter)sr).runOnUiThread(r);
-											else if(sr instanceof Activity)
-												((Activity)sr).runOnUiThread(r);
-										}
-
-
-									}
-									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================
-								}
-							}
-						}
-					}
-				}
-			}
-		};
-	}
-
-*/
-
-
-
-	boolean waitingAcquisition;
-
-
-//passo una pila e il primo acquisito è il primo da tolgliere
 
 	private class BackgroundTask extends AsyncTask<ExpiringList, Void, String> {
 
+		private String INTERRUPTOR = "tatanka";
+		private boolean pause = true;
+		
+		
+	    public void pauseMyTask() {
+	    	System.out.println("messo in pausa qui e pausa messo true");
+	      pause = true;
+	    }
+		
+	    
+	    public void wakeUp() {
+	      synchronized (INTERRUPTOR){
+		    System.out.println("comando notify lanciato");
+	        INTERRUPTOR.notify();
+	      }
+	    }
+	    
+	    
+	    public boolean getPause() {
+	      return pause;
+	    }
+	    
 		@SuppressLint("NewApi")
 		@Override
 		protected String doInBackground(ExpiringList... params) {
@@ -656,23 +555,31 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 			while(true){
 
+				if (pause) {
+					synchronized (INTERRUPTOR) {
+						try {
+
+							// --- sleep tile wake-up method will be called --
+							System.out.println("pausa qui");
+							INTERRUPTOR.wait();
+							System.out.println("ripartito qui");
+
+						} catch (InterruptedException e) {e.printStackTrace();}
+						pause = false;
+						System.out.println("pause messo false");
+					}
+				}
 
 				/*
 				 * PROVARE SENZA WAIT QUI VEDERE COSA SUCCEDE QUANDO VA TUTTO VELOCE.
 				 * IN TEORIA ANCHE CON LISTA CORTA DOVREBBERO ESSERE TUTTE ACQUISIZIONI NUOVE
 				 */
-				while(waitingAcquisition || acquisitionList.size() < 500){
-				try {
-					Thread.sleep(1);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-
-				}
-				waitingAcquisition = true;
-
-
+				//WAITINGACQUISITION
+				
+				
+				
+				
+				
 				if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS)
 				{
 					/*
@@ -680,7 +587,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 					*/
 					if(lastInserted != null){
 						float objectX = lastInserted.getXaxis(); final float objectY = lastInserted.getYaxis(); final float objectZ = lastInserted.getZaxis();
-						if(true || Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 15){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
+						if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 17){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
 
 							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
 
@@ -712,19 +619,16 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 									//=====================store nel database=================
 
-									System.out.println("TENTATIVO STORE NEL DB A "+ System.currentTimeMillis());
 									if(fallDataSource == null)
 										fallDataSource = new FallDataSource(ForegroundService.this);
 
-								//	ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
 
 									fallDataSource.insertFall(sessionDataSource.currentSession(), acquisitionList.getQueue(), 1010,1010);
 
-									//=================store nel database (end)===============
 
 
+									
 									acquisitionList = new ExpiringList(); //REINIZIALIZZO
-
 									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI=================================
 									if(connectedActs != null && connectedActs.size() > 0){
 
@@ -739,11 +643,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 										else
 											position = "Not available";
 
+										
 
 										final String formattedTime = Utility.getStringTime(fallTime);
 
-
 										for(final ServiceReceiver sr : connectedActs){
+											
 											Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime, fallTime);}};
 
 											if(sr instanceof CurrentSessionCardAdapter)
@@ -771,7 +676,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 				if(stop==true)
 					break;
 
-
+				//sempre e comunque, lo metto in sleep
+				pauseMyTask();
 
 
 
@@ -800,16 +706,162 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 
+	private static void databaseSaver(final FallDataSource fds, final SessionDataSource.Session s, final ConcurrentLinkedQueue<Acquisition> al, final double lat,final double lng)
+	{
+		new Thread(new Runnable(){
+			@Override
+			public void run(){
+				fds.insertFall(s, al,lat,lng);
+			}
+		}).start();
+	}
 
 
+/*
+	
+	private void initFallData()
+	{
+		synchronized(ForegroundService.fallDataSource){
+			fallDataSource = new FallDataSource(ForegroundService.this);
+		}
+	}
+	private void openFallData()
+	{
+		synchronized(ForegroundService.fallDataSource){
+			fallDataSource.open();
+		}
+	}
+	private void closeFallData()
+	{
+		synchronized(ForegroundService.fallDataSource){
+			fallDataSource.close();
+		}
+	}
+	private void addFallToFallData(final FallDataSource fds, final SessionDataSource.Session s, final ArrayList<Acquisition> al)
+	{//TODO
+		synchronized(ForegroundService.fallDataSource){
+			databaseSaver(fds,s, al);
+		}
+	}
+	
+	private void initSessionData()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+			sessionDataSource = new SessionDataSource(ForegroundService.this);
+		}
+	}
+	private void openSessionData()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+			sessionDataSource.open();
+		}
+	}
+	private void closeSessionData()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+			sessionDataSource.close();
+		}
+	}
+	public static long getSessionDataSessionDuration(SessionDataSource db)
+	{//TODO
+		synchronized(ForegroundService.sessionDataSource){
+			if(timeInitialized)
+				return System.currentTimeMillis() - startTime + totalTime;
+			else
+			{
 
+				if(db.existCurrentSession())
+					return db.sessionDuration(db.currentSession());
+				else
+					return 0;
+			}
+		}
+	}
+	
+	private void storeDuration()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+		if(sessionDataSource.existCurrentSession())
+			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
+		//totalTime = System.currentTimeMillis();
+		}
+	}
+	
+	private boolean existsCurrentSession()
+	{
+		synchronized(ForegroundService.sessionDataSource)
+		{
+			return sessionDataSource.existCurrentSession();
+		}
+	}
+	
+	private long sessionDuration(SessionDataSource.Session s){
+		synchronized(ForegroundService.sessionDataSource){
+			return sessionDataSource.sessionDuration(s);
+		}
+	}
+	
+	private SessionDataSource.Session currentSession()
+	{
+		synchronized(ForegroundService.sessionDataSource){
+			return sessionDataSource.currentSession();
+		}
+	}
+	
+	/*
+	 * CONTINUARE A SCAMBIARE LE CHIAMATE AI METODI DI SESSIONDATASOURCE CON QUELLI SYNC
+	 */
+	
+	
+	public static long getSessionDuration(SessionDataSource db)
+	{//TODO
+			if(timeInitialized)
+				return System.currentTimeMillis() - startTime + totalTime;
+			else
+			{
 
-
-
-
-
-
-
-
+				if(db.existCurrentSession())
+					return db.sessionDuration(db.currentSession());
+				else
+					return 0;
+			}
+		
+	}
+	
+	
+	
+	private void initSessionData()
+	{
+			sessionDataSource = new SessionDataSource(ForegroundService.this);
+		
+	}
+	
+	private void storeDuration()
+	{
+		
+		if(sessionDataSource.existCurrentSession())
+			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
+		//totalTime = System.currentTimeMillis();
+		
+	}
+	
+	private boolean existsCurrentSession()
+	{
+		
+			return sessionDataSource.existCurrentSession();
+		
+	}
+	
+	private long sessionDuration(SessionDataSource.Session s){
+			return sessionDataSource.sessionDuration(s);
+		
+	}
+	
+	private SessionDataSource.Session currentSession()
+	{
+			return sessionDataSource.currentSession();
+		
+	}
+	
 
 }

@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
-    card_view:cardCornerRadius="4dp" >
+    card_view:cardCornerRadius="4dp" 
+    card_view:cardBackgroundColor="@color/foregroundGrey">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -37,6 +38,7 @@
             android:id="@+id/chronometer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/lightBlue"
              android:layout_below="@id/stop_button"
             android:layout_centerHorizontal="true"
             android:text="" />
@@ -63,6 +65,7 @@
             android:layout_below="@id/thumbnail"
             android:layout_centerHorizontal="true"
             android:text="@string/info"
+            android:textColor="@color/lightBlue"
             android:textSize="20sp" />
 
         

@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
-    card_view:cardCornerRadius="4dp" >
+    card_view:cardCornerRadius="4dp" 
+    card_view:cardBackgroundColor="@color/foregroundGrey">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,6 +18,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:textColor="@color/lightBlue"
                 android:text="@string/plotsCardText"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         <LinearLayout

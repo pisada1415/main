@@ -83,17 +83,20 @@ public class SessionDataSource {
 
 
 	public SessionDataSource(Context context){
-		databaseHelper=new FallSqlHelper(context);
-		this.context=context;
-		open();
-		if(sessionList.size()==0){
-			Cursor cursor= database.rawQuery("SELECT * FROM "+FallSqlHelper.SESSION_TABLE+" ORDER BY "+FallSqlHelper.SESSION_START_TIME+" DESC",null );
-			if(cursor.getCount()!=0)
-				while(cursor.moveToNext()){
-					Session s=cursorToSession(cursor);
-					sessionList.add(s);
-				}
-			cursor.close();
+		synchronized(SessionDataSource.class)
+		{		
+			databaseHelper=new FallSqlHelper(context);
+			this.context=context;
+			open();
+			if(sessionList.size()==0){
+				Cursor cursor= database.rawQuery("SELECT * FROM "+FallSqlHelper.SESSION_TABLE+" ORDER BY "+FallSqlHelper.SESSION_START_TIME+" DESC",null );
+				if(cursor.getCount()!=0)
+					while(cursor.moveToNext()){
+						Session s=cursorToSession(cursor);
+						sessionList.add(s);
+					}
+				cursor.close();
+			}
 		}
 	}
 	public void open() throws SQLException {
@@ -309,7 +312,7 @@ public class SessionDataSource {
 	public void renameSession(Session s,String name){
 
 		if(!s.isValidSession())throw new InvalidSessionException();
-		
+
 		database.execSQL("UPDATE "+FallSqlHelper.SESSION_TABLE
 				+ " SET "+ FallSqlHelper.SESSION_NAME+" = '"+name+
 				"' WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");

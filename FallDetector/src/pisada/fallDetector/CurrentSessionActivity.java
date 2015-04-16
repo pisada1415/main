@@ -76,7 +76,6 @@ public class CurrentSessionActivity extends ActionBarActivity{
 			sessionName = currentSession.getName();
 			
 			
-			//TODO CARICARE LE CADUTE RELATIVE ALLA CURRENTSESSION dal database NELL'ADAPTER.
 			
 			
 			if(!currentSession.isOnPause())
@@ -115,11 +114,12 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		setTitle(sessionName);
 		
 		
-		if(sessionData.existCurrentSession() && sessionData.currentSession().isOnPause()) //SE INVECE LA CURRENT SESSION è IN PAUSA... 
+		if(sessionData.existCurrentSession()) //SE INVECE LA CURRENT SESSION è IN PAUSA... 
 		{
 			if(fallDataSource == null)
 				fallDataSource = new FallDataSource(CurrentSessionActivity.this);
 			ArrayList<FallDataSource.Fall> cadute = fallDataSource.sessionFalls(sessionData.currentSession());
+			if(cadute != null) //OCCHIO POTREBBE NASCONDERE PROBLEMI
 			for(FallDataSource.Fall f : cadute){
 				cardAdapter.addFall(f, currentSession);
 			}
@@ -141,7 +141,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	public void onPause()
 	{
 		super.onPause();
-		sessionData.close();
+		sessionData.close(); //TODO BOH
 		ForegroundService.disconnect(cardAdapter); //disconnette l'activity connessa
 	}
 
