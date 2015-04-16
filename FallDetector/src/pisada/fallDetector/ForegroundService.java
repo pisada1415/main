@@ -569,12 +569,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 					}
 				}
 
-				/*
-				 * PROVARE SENZA WAIT QUI VEDERE COSA SUCCEDE QUANDO VA TUTTO VELOCE.
-				 * IN TEORIA ANCHE CON LISTA CORTA DOVREBBERO ESSERE TUTTE ACQUISIZIONI NUOVE
-				 */
-				//WAITINGACQUISITION
-				
 				
 				
 				
