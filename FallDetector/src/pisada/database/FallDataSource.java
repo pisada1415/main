@@ -61,6 +61,7 @@ public class FallDataSource {
 		public long getTime(){return time;}
 		public Session getSession(){return session;}
 		public boolean isValid(){return isValid;}
+		public String getSessionName(){return session.getName();}
 
 	}
 
@@ -98,7 +99,8 @@ public class FallDataSource {
 			}
 			i++;
 		}
-
+//se volete riprodurre lo stream dovete diciamo, chiedere anche il permesso di accedere alla rete, anche questo è un permesso.k
+		
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.FALL_TIME,time);
 		values.put(FallSqlHelper.FALL_FSESSION, session.getName());
