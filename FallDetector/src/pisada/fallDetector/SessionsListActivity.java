@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 
-
 import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
@@ -101,6 +100,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
 	}
+
 
 
 

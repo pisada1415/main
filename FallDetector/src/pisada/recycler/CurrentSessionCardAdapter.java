@@ -307,7 +307,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	{
 		cardContentList.add(new CardContent(position,link,time, img));
 		notifyItemInserted(cardContentList.size()-1);
-		System.out.println("AGGIUNTO A CARDVIEW");
+		
 		
 	}
 
@@ -320,7 +320,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void addFall(FallDataSource.Fall f, SessionDataSource.Session s)
 	{
 		String time = Utility.getStringTime(f.getTime());
-		addFallToCardList(""+f.getLat()+f.getLng(), Utility.getMapsLink(f.getLat(), f.getLng()), time, 1083l);
+		addFallToCardList(""+f.getLat() + ", " +f.getLng(), Utility.getMapsLink(f.getLat(), f.getLng()), time, 1083l);
 	}
 	
 	public void clearFalls()

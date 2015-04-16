@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
@@ -82,8 +83,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static ArrayList<ServiceReceiver> connectedActs;
 	private LocationListener locationListenerGPS, locationListenerNetwork;
 	private LocationManager lm;
-	private Double latitude = null;
-	private Double longitude = null;
+	private Double latitude = -1d;
+	private Double longitude = -1d;
 	private Calendar c;
 	private int counterGPSUpdate = 50; //per attivare subito la ricerca della posizione
 	private Handler uiHandler;
@@ -421,7 +422,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 			
 			//update accettato nella prima riga, sveglio l'asynctask:
 			boolean pause = bgrTask.getPause();
-			System.out.println("pause is " + pause);
+			
 			if(pause)
 				bgrTask.wakeUp();
 			
@@ -524,14 +525,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 		
 		
 	    public void pauseMyTask() {
-	    	System.out.println("messo in pausa qui e pausa messo true");
+	    	
 	      pause = true;
 	    }
 		
 	    
 	    public void wakeUp() {
 	      synchronized (INTERRUPTOR){
-		    System.out.println("comando notify lanciato");
+		  
 	        INTERRUPTOR.notify();
 	      }
 	    }
@@ -559,13 +560,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 						try {
 
 							// --- sleep tile wake-up method will be called --
-							System.out.println("pausa qui");
+							
 							INTERRUPTOR.wait();
-							System.out.println("ripartito qui");
+							
 
 						} catch (InterruptedException e) {e.printStackTrace();}
 						pause = false;
-						System.out.println("pause messo false");
+					
 					}
 				}
 
@@ -615,16 +616,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 									if(fallDataSource == null)
 										fallDataSource = new FallDataSource(ForegroundService.this);
 
-									ArrayList<Acquisition> cacca = new ArrayList<Acquisition>(Arrays.asList(Arrays.copyOf(acquisitionList.getArray(), acquisitionList.getArray().length, Acquisition[].class))); //TODO cambiare metodo db per salvare coda direttamente
-									
-								
-									//INSERIMENTO DEL DATABASE FATTO IN UN THREAD SEPARATO
-									databaseSaver(fallDataSource, sessionDataSource.currentSession(), cacca);
-									
-									
-									//=================store nel database (end)===============
+									long timeNow = System.currentTimeMillis();
 
-									
+									fallDataSource.insertFall(sessionDataSource.currentSession(), acquisitionList.getQueue(), latitude, longitude);
+									System.out.println("ci abbiamo messo "+ (System.currentTimeMillis() - timeNow) + "per salvare una fall");
+
+
+
 									acquisitionList = new ExpiringList(); //REINIZIALIZZO
 									//==============================INVIO ALLE ACTIVITY CONNESSE I DATI=================================
 									if(connectedActs != null && connectedActs.size() > 0){
@@ -702,112 +700,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 
-
-	private static void databaseSaver(final FallDataSource fds, final SessionDataSource.Session s, final ArrayList<Acquisition> al)
-	{
-		new Thread(new Runnable(){
-			@Override
-			public void run(){
-				fds.insertFall(s, al);
-			}
-		}).start();
-	}
-
-
-/*
-	
-	private void initFallData()
-	{
-		synchronized(ForegroundService.fallDataSource){
-			fallDataSource = new FallDataSource(ForegroundService.this);
-		}
-	}
-	private void openFallData()
-	{
-		synchronized(ForegroundService.fallDataSource){
-			fallDataSource.open();
-		}
-	}
-	private void closeFallData()
-	{
-		synchronized(ForegroundService.fallDataSource){
-			fallDataSource.close();
-		}
-	}
-	private void addFallToFallData(final FallDataSource fds, final SessionDataSource.Session s, final ArrayList<Acquisition> al)
-	{//TODO
-		synchronized(ForegroundService.fallDataSource){
-			databaseSaver(fds,s, al);
-		}
-	}
-	
-	private void initSessionData()
-	{
-		synchronized(ForegroundService.sessionDataSource){
-			sessionDataSource = new SessionDataSource(ForegroundService.this);
-		}
-	}
-	private void openSessionData()
-	{
-		synchronized(ForegroundService.sessionDataSource){
-			sessionDataSource.open();
-		}
-	}
-	private void closeSessionData()
-	{
-		synchronized(ForegroundService.sessionDataSource){
-			sessionDataSource.close();
-		}
-	}
-	public static long getSessionDataSessionDuration(SessionDataSource db)
-	{//TODO
-		synchronized(ForegroundService.sessionDataSource){
-			if(timeInitialized)
-				return System.currentTimeMillis() - startTime + totalTime;
-			else
-			{
-
-				if(db.existCurrentSession())
-					return db.sessionDuration(db.currentSession());
-				else
-					return 0;
-			}
-		}
-	}
-	
-	private void storeDuration()
-	{
-		synchronized(ForegroundService.sessionDataSource){
-		if(sessionDataSource.existCurrentSession())
-			sessionDataSource.updateSessionDuration(sessionDataSource.currentSession(), System.currentTimeMillis() - startTime);
-		//totalTime = System.currentTimeMillis();
-		}
-	}
-	
-	private boolean existsCurrentSession()
-	{
-		synchronized(ForegroundService.sessionDataSource)
-		{
-			return sessionDataSource.existCurrentSession();
-		}
-	}
-	
-	private long sessionDuration(SessionDataSource.Session s){
-		synchronized(ForegroundService.sessionDataSource){
-			return sessionDataSource.sessionDuration(s);
-		}
-	}
-	
-	private SessionDataSource.Session currentSession()
-	{
-		synchronized(ForegroundService.sessionDataSource){
-			return sessionDataSource.currentSession();
-		}
-	}
-	
-	/*
-	 * CONTINUARE A SCAMBIARE LE CHIAMATE AI METODI DI SESSIONDATASOURCE CON QUELLI SYNC
-	 */
 	
 	
 	public static long getSessionDuration(SessionDataSource db)

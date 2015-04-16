@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import fallDetectorException.InvalidSessionException;
 import pisada.database.SessionDataSource.Session;
@@ -18,9 +20,10 @@ public class FallDataSource {
 	private SQLiteDatabase database;
 	private FallSqlHelper databaseHelper;
 	private SessionDataSource sessionData;
-	private String[] fallColumns = {FallSqlHelper.FALL_TIME, FallSqlHelper.FALL_FSESSION};
+	private String[] fallColumns = {FallSqlHelper.FALL_TIME, FallSqlHelper.FALL_FSESSION,FallSqlHelper.FALL_LAT,FallSqlHelper.FALL_LNG};
 	private String[] acquisitionColumns = {FallSqlHelper.ACQUISITION_TIME,FallSqlHelper.ACQUISITION_FALL_TIME, FallSqlHelper.ACQUISITION_ASESSION, FallSqlHelper.ACQUISITION_XAXIS, FallSqlHelper.ACQUISITION_YAXIS, FallSqlHelper.ACQUISITION_ZAXIS};
 	private Context context;
+
 
 
 
@@ -29,14 +32,20 @@ public class FallDataSource {
 
 		private Session session;
 		private long time;
+		private double lng;
+		private double lat;
 		private boolean isValid=true;
 
 
-		private Fall(long time,Session session){
+		private Fall(long time,Session session, double lat, double lng){
+
+
 			if(!session.isValidSession()||session==null)throw new InvalidSessionException();
 
 			this.session=session;
 			this.time=time;
+			this.lng=lng;
+			this.lat=lat;
 
 		}
 
@@ -45,10 +54,12 @@ public class FallDataSource {
 		}
 
 
-		public double getLat(){return 103;}
-		public double getLng(){return 93284;}
+		public double getLat(){return lat;}
+		public double getLng(){return lng;}
 		public long getTime(){return time;}
 		public Session getSession(){return session;}
+		public boolean isValid(){return isValid;}
+
 	}
 
 
@@ -72,18 +83,26 @@ public class FallDataSource {
 	}
 
 	//INSERISCE UNA NUOVA CADUTA DATA UNA SESSIONE E UNA LISTA DI ACQUISIZIONI(passarla ordinata in funzione del tempo che se no è da ordinare ogni volta)
-	public Fall insertFall(Session session, ArrayList<Acquisition> acquisitionList){
+	public Fall insertFall(Session session, ConcurrentLinkedQueue<Acquisition> acquisitionList, double lat, double lng){
 
 
-		Random random=new Random();
-
-		long time=acquisitionList.get(acquisitionList.size()-1).getTime();
+		long time=0;
+		int i=0;
+		int size=acquisitionList.size();
+		for(Acquisition a: acquisitionList){
+			if(i==size/2) {
+				time=a.getTime();
+				break;
+			}
+		}
 
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.FALL_TIME,time);
 		values.put(FallSqlHelper.FALL_FSESSION, session.getName());
+		values.put(FallSqlHelper.FALL_LAT, lat);
+		values.put(FallSqlHelper.FALL_LNG, lng);
 		database.insert(FallSqlHelper.FALL_TABLE,null,values);
-		Fall fall=new Fall(time, session);
+		Fall fall=new Fall(time, session,lat, lng);
 		for(Acquisition a: acquisitionList){
 			insertAcquisition(fall, a);
 		}
@@ -94,6 +113,8 @@ public class FallDataSource {
 	//PRIVATO -INSERISCE ACQUISIZIONE NEL DATABASE
 	private void insertAcquisition(Fall fall,Acquisition a){
 
+
+
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.ACQUISITION_TIME,a.getTime());
 		values.put(FallSqlHelper.ACQUISITION_FALL_TIME, fall.getTime());
@@ -102,6 +123,10 @@ public class FallDataSource {
 		values.put(FallSqlHelper.ACQUISITION_YAXIS, a.getYaxis());
 		values.put(FallSqlHelper.ACQUISITION_ZAXIS,a.getZaxis());
 		database.insert(FallSqlHelper.ACQUISITION_TABLE, null, values);
+		a.setFall(fall);
+		a.setSession(fall.getSession());
+
+
 
 
 	}
@@ -203,8 +228,10 @@ public class FallDataSource {
 
 		long time=cursor.getLong(cursor.getColumnIndex(FallSqlHelper.FALL_TIME));
 		Session session=sessionData.getSession(cursor.getString(cursor.getColumnIndex(FallSqlHelper.FALL_FSESSION)));
+		double lat=cursor.getDouble(cursor.getColumnIndex(FallSqlHelper.FALL_LAT));
+		double lng=cursor.getDouble(cursor.getColumnIndex(FallSqlHelper.FALL_LNG));
 
-		return new Fall(time,session);
+		return new Fall(time,session,lat,lng);
 
 	}
 
