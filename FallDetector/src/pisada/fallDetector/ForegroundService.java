@@ -49,7 +49,7 @@ import android.widget.Toast;
  * connettere l'activity al service tramite il metodo ForegroundService.connect(ActivityDaConnettere)
  * e implementare l'interfaccia ServiceReceiver. Quando hai finito di ricevere dati
  * chiama: ForegroundService.disconnect(ActivityDaConnettere)
- * 
+ * MAX_SENSOR_UPDATE_RATE permette di risparmiare su calcoli computazionali, memoria e batteria
  * 
  * funzionamento del gps:
  * la location viene aggiornata ogni 5 minuti richiedendo la posizione ai provider gps e network.
@@ -59,12 +59,13 @@ import android.widget.Toast;
  *
  *TODO: 
  *prendere lista cadute e caricarla nella sessione quando apri ed era in pausa
+ *provare a rimettere onsensorchanged su altro thread! sta facendo troppo su UI.
  */
 
 public class ForegroundService extends Service implements SensorEventListener {
 
-	protected static final int MAX_SENSOR_UPDATE_RATE = 10; //ogni quanti millisecondi update
-	private final int TIME_BETWEEN_FALLS = 2000, CYCLES_FOR_LOCATION_REQUESTS = 50, SERVICE_SLEEP_TIME = 5000; 
+	protected static final int MAX_SENSOR_UPDATE_RATE = 50; //ogni quanti millisecondi update
+	private final int TIME_BETWEEN_FALLS = 2000, CYCLES_FOR_LOCATION_REQUESTS = 50, SERVICE_SLEEP_TIME = 5000, MIN_TIME_LOCATION_UPDATES = 5000, MIN_DISTANCE_LOCATION_UPDATES = 500; 
 
 	private final String GPSProvider = LocationManager.GPS_PROVIDER;
 	private final String networkProvider = LocationManager.NETWORK_PROVIDER;
@@ -157,8 +158,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 			}
 
 			@Override
-			public void onStatusChanged(String provider, int status,
-					Bundle extras) {
+			public void onStatusChanged(String provider, int status,Bundle extras) {
 
 			}
 
@@ -171,10 +171,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 			public void onProviderDisabled(String provider) {
 
 			}
-
-
-
-
 
 		};
 
@@ -210,8 +206,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 			bestProvider = lm.getBestProvider(criteria, true); 
-			lm.requestLocationUpdates(bestProvider, 5000, 500, locationListenerGPS); //if gps is available
-			lm.requestLocationUpdates(networkProvider, 5000, 500, locationListenerNetwork); //always updates location with network: it's faster
+			lm.requestLocationUpdates(bestProvider, MIN_TIME_LOCATION_UPDATES, MIN_DISTANCE_LOCATION_UPDATES, locationListenerGPS); //if gps is available
+			lm.requestLocationUpdates(networkProvider, MIN_TIME_LOCATION_UPDATES, MIN_DISTANCE_LOCATION_UPDATES, locationListenerNetwork); //always updates location with network: it's faster
 
 		}
 
@@ -286,9 +282,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 		mServiceLooper = thread.getLooper();
 		mServiceHandler = new ServiceHandler(mServiceLooper);
 		if(Build.VERSION.SDK_INT>=19)
-			mSensorManager.registerListener(this, mAccelerometer, 10000, 1000); //fa risparmiare un po' di batteria se sei fortunato e hai android KK+
+			mSensorManager.registerListener(this, mAccelerometer, MAX_SENSOR_UPDATE_RATE * 1000, 1000); //fa risparmiare un po' di batteria se sei fortunato e hai android KK+
 		else
-			mSensorManager.registerListener(this, mAccelerometer, 10000);
+			mSensorManager.registerListener(this, mAccelerometer, MAX_SENSOR_UPDATE_RATE * 1000);
 
 		if(sessionDataSource == null){
 			sessionDataSource = new SessionDataSource(ForegroundService.this);
@@ -358,8 +354,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 							@Override
 							public void run() {
 								if(!locationUpdatesRemoved){
-									lm.requestLocationUpdates(GPSProvider, 5000, 500, locationListenerGPS);
-									lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000,  500, locationListenerNetwork);
+									lm.requestLocationUpdates(GPSProvider, MIN_TIME_LOCATION_UPDATES, MIN_DISTANCE_LOCATION_UPDATES, locationListenerGPS);
+									lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_LOCATION_UPDATES,  MIN_DISTANCE_LOCATION_UPDATES, locationListenerNetwork);
 								}
 							}
 						});
@@ -386,13 +382,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 
-
+long lastUpdate = System.currentTimeMillis();
 	@SuppressLint("NewApi")
 	@Override
 	public synchronized void onSensorChanged(SensorEvent event) {
 
 
-		if(System.currentTimeMillis() - lastSensorChanged >= MAX_SENSOR_UPDATE_RATE){ //non più di un update ogni 10 millisecondi
+		if(System.currentTimeMillis() - lastSensorChanged >= MAX_SENSOR_UPDATE_RATE){ //non più di un update ogni MAX_SENSOR_UPDATE_RATE millisecondi
 			lastSensorChanged = System.currentTimeMillis();
 
 			if(acquisitionList == null)
@@ -403,7 +399,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 			/*
 			 * richiedo almeno 10 elementi nella lista per far partire tutto
 			 */
-			if(acquisitionList.size()>=10){
+			if(acquisitionList.size()>=1){
 				if(bgrTask.getStatus()!= AsyncTask.Status.RUNNING){
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
 						bgrTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
