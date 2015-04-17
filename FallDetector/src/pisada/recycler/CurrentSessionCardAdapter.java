@@ -17,6 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Color;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -152,7 +153,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	Handler mHandler;
 	public void runOnUiThread(Runnable r){
 		if(mHandler == null)
-			mHandler = new Handler();
+			mHandler = new Handler(Looper.getMainLooper());
 		mHandler.post(r);
 		
 	}

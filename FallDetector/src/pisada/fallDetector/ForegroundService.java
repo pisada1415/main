@@ -64,7 +64,7 @@ import android.widget.Toast;
 
 public class ForegroundService extends Service implements SensorEventListener {
 
-	protected static final int MAX_SENSOR_UPDATE_RATE = 50; //ogni quanti millisecondi update
+	protected static final int MAX_SENSOR_UPDATE_RATE = 10; //ogni quanti millisecondi update
 	private final int TIME_BETWEEN_FALLS = 2000, CYCLES_FOR_LOCATION_REQUESTS = 50, SERVICE_SLEEP_TIME = 5000, MIN_TIME_LOCATION_UPDATES = 5000, MIN_DISTANCE_LOCATION_UPDATES = 500; 
 
 	private final String GPSProvider = LocationManager.GPS_PROVIDER;
@@ -281,10 +281,16 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// Get the HandlerThread's Looper and use it for our Handler
 		mServiceLooper = thread.getLooper();
 		mServiceHandler = new ServiceHandler(mServiceLooper);
+		
+		HandlerThread mHandlerThread = new HandlerThread("sensorThread");
+		mHandlerThread.start();
+		Handler sensorHandler = new Handler(mHandlerThread.getLooper());
+		
+		
 		if(Build.VERSION.SDK_INT>=19)
-			mSensorManager.registerListener(this, mAccelerometer, MAX_SENSOR_UPDATE_RATE * 1000, 1000); //fa risparmiare un po' di batteria se sei fortunato e hai android KK+
+			mSensorManager.registerListener(this, mAccelerometer, MAX_SENSOR_UPDATE_RATE * 1000, 1000, sensorHandler); //fa risparmiare un po' di batteria se sei fortunato e hai android KK+
 		else
-			mSensorManager.registerListener(this, mAccelerometer, MAX_SENSOR_UPDATE_RATE * 1000);
+			mSensorManager.registerListener(this, mAccelerometer, MAX_SENSOR_UPDATE_RATE * 1000, sensorHandler);
 
 		if(sessionDataSource == null){
 			sessionDataSource = new SessionDataSource(ForegroundService.this);
