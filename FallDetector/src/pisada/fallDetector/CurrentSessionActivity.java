@@ -33,7 +33,7 @@ import fallDetectorException.MoreThanOneOpenSessionException;
  * TODO:
  * 
  * 
- * TEMPO LIMITE POI LA SESSION SI CHIUDE DA SOLA.
+ * TEMPO LIMITE POI LA SESSION SI CHIUDE DA SOLA. (nel service)
  * 
  */
 
@@ -41,17 +41,18 @@ import fallDetectorException.MoreThanOneOpenSessionException;
 public class CurrentSessionActivity extends ActionBarActivity{
 
 	private static Intent serviceIntent;
-	RecyclerView rView;
-	private static CurrentSessionCardAdapter cardAdapter;
-	SessionDataSource.Session currentSession; //ooOOOOooOooOOOOH!
 	private static SessionDataSource sessionData;
-	LayoutManager mLayoutManager;
-	String sessionName;
-	String sessionNameDefault;
+	private static CurrentSessionCardAdapter cardAdapter;
+
+	private RecyclerView rView;
+	private LayoutManager mLayoutManager;
+	private String sessionName, sessionNameDefault;
 	private boolean startChronometerOnStartActivity = false;
 	private long pauseTime = 0;
-	private FallDataSource fallDataSource;
 	
+	private FallDataSource fallDataSource;
+	private SessionDataSource.Session currentSession; 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -115,8 +116,8 @@ public class CurrentSessionActivity extends ActionBarActivity{
 				fallDataSource = new FallDataSource(CurrentSessionActivity.this);
 			ArrayList<FallDataSource.Fall> cadute = fallDataSource.sessionFalls(sessionData.currentSession());
 			if(cadute != null) //OCCHIO POTREBBE NASCONDERE PROBLEMI
-			for(FallDataSource.Fall f : cadute){
-				cardAdapter.addFall(f, currentSession);
+			for(int i = cadute.size()-1; i >= 0; i--){
+				cardAdapter.addFall(cadute.get(i), currentSession);
 			}
 		}
 
@@ -125,7 +126,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
+		//aggiunge elementi all'action bar se presenti
 		getMenuInflater().inflate(R.menu.current_session, menu);
 		return true;
 	}
@@ -137,15 +138,23 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	{
 		super.onPause();
 		sessionData.close(); //TODO BOH
-		ForegroundService.disconnect(cardAdapter); //disconnette l'activity connessa
+	}
+	
+	@Override
+	public void onDestroy()
+	{
+		super.onDestroy();
+		ForegroundService.disconnect(cardAdapter);//disconnette l'activity connessa
 	}
 
 	@Override
 	public void onResume()
 	{
 		super.onResume();
-		if(!ForegroundService.isConnected(cardAdapter))
+		if(!ForegroundService.isConnected(cardAdapter)){
 			ForegroundService.connect(cardAdapter);
+			System.out.println("connesso da riga 156");
+		}
 		try{
 		sessionData.open();
 		}

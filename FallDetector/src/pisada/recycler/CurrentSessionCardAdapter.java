@@ -136,7 +136,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		this.activity=activity;
 		c = Calendar.getInstance();
-		ForegroundService.connect(this);
+		if(!ForegroundService.isConnected(this))
+			ForegroundService.connect(this);
 		millisecStartGraph = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
 		cardContentList = new ArrayList<CardContent>();
 		cardContentList.add(0,new CardContent());
