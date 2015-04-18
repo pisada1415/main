@@ -336,6 +336,12 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 		
 	}
+
+
+	@Override
+	public void sessionTimeOut() {
+		//NON NECESSARIO QUI
+	}
 	
 
 }

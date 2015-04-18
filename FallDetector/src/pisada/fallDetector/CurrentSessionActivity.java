@@ -38,7 +38,7 @@ import fallDetectorException.MoreThanOneOpenSessionException;
  */
 
 
-public class CurrentSessionActivity extends ActionBarActivity{
+public class CurrentSessionActivity extends ActionBarActivity implements ServiceReceiver{
 
 	private static Intent serviceIntent;
 	private static SessionDataSource sessionData;
@@ -57,7 +57,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_current_session);
-
+		
 		serviceIntent = new Intent(this, ForegroundService.class);
 		sessionNameDefault = getResources().getString(R.string.defaultSessionName);
 		sessionName = sessionNameDefault;
@@ -120,7 +120,10 @@ public class CurrentSessionActivity extends ActionBarActivity{
 				cardAdapter.addFall(cadute.get(i), currentSession);
 			}
 		}
-
+		
+		if(!ForegroundService.isConnected(this)){
+			ForegroundService.connect(this);
+		}
 
 	}
 
@@ -137,6 +140,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	public void onPause()
 	{
 		super.onPause();
+		ForegroundService.disconnect(this);
 		sessionData.close(); //TODO BOH
 	}
 	
@@ -144,6 +148,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	public void onDestroy()
 	{
 		super.onDestroy();
+		ForegroundService.disconnect(this);
 		ForegroundService.disconnect(cardAdapter);//disconnette l'activity connessa
 	}
 
@@ -153,7 +158,9 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		super.onResume();
 		if(!ForegroundService.isConnected(cardAdapter)){
 			ForegroundService.connect(cardAdapter);
-			System.out.println("connesso da riga 156");
+		}
+		if(!ForegroundService.isConnected(this)){
+			ForegroundService.connect(this);
 		}
 		try{
 		sessionData.open();
@@ -250,7 +257,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		cardAdapter.clearFalls();
 		
 		if(sessionData.existCurrentSession())
-			closeSession(sessionData.currentSession());
+			sessionData.closeSession(sessionData.currentSession());
 		if(serviceIntent!=null)
 			stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
 
@@ -342,10 +349,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 		return session;
 	}
 
-	public void closeSession(SessionDataSource.Session s){
-		if(sessionData.existCurrentSession())
-			sessionData.closeSession(s);
-	}
+	
 	
 	public CurrentSessionCardAdapter getAdapter()
 	{
@@ -358,5 +362,25 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	    super.onConfigurationChanged(newConfig);
 	        //Do stuff here
 	    
+	}
+
+	@Override
+	public void serviceUpdate(float x, float y, float z, long time) {
+		// non da usare qui
+		
+	}
+
+	@Override
+	public void serviceUpdate(String fallPosition, String link, String time,
+			long img) {
+		// non da usare qui
+		
+	}
+
+	@Override
+	public void sessionTimeOut() {
+		if(serviceIntent != null)
+			stopService(serviceIntent);
+		
 	}
 }

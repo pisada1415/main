@@ -59,14 +59,14 @@ import android.widget.Toast;
  *
  *TODO: 
  *prendere lista cadute e caricarla nella sessione quando apri ed era in pausa
- *provare a rimettere onsensorchanged su altro thread! sta facendo troppo su UI.
  */
 
 public class ForegroundService extends Service implements SensorEventListener {
 
 	protected static final int MAX_SENSOR_UPDATE_RATE = 10; //ogni quanti millisecondi update
 	private final int TIME_BETWEEN_FALLS = 2000, CYCLES_FOR_LOCATION_REQUESTS = 50, SERVICE_SLEEP_TIME = 5000, MIN_TIME_LOCATION_UPDATES = 5000, MIN_DISTANCE_LOCATION_UPDATES = 500; 
-
+	private long TIMEOUT_SESSION = 86400000; //24h
+	
 	private final String GPSProvider = LocationManager.GPS_PROVIDER;
 	private final String networkProvider = LocationManager.NETWORK_PROVIDER;
 
@@ -345,7 +345,11 @@ public class ForegroundService extends Service implements SensorEventListener {
 					running = true;
 					/*
 					 * the service keeps running as long as this statement is cycling 
-					 * the check for the service to stop occurs every 5 seconds (to save battery)
+					 * the check for the service to stop occurs every SERVICE_SLEEP_TIME/1000 seconds (to save battery)
+					 */
+					
+					/*
+					 * TODO qui aggiorniamo tutte le variabili che possono variare in base alle preferenze (es: TIMEOUT_SESSION)
 					 */
 
 					if(activeService == null){
@@ -368,6 +372,22 @@ public class ForegroundService extends Service implements SensorEventListener {
 					}
 
 
+					/*
+					 *qui check se la sessione rispetta la durata massima, se la sfora, chiuderla
+					 */
+					if((sessionDataSource != null && getSessionDuration(sessionDataSource) > TIMEOUT_SESSION) && (connectedActs != null && connectedActs.size() > 0)){
+
+						for(final ServiceReceiver sr : connectedActs){
+							if(sr instanceof Activity){
+								Runnable r = new Runnable(){@Override public void run() { if(sr != null) sr.sessionTimeOut();}};
+								((Activity)sr).runOnUiThread(r);
+							}
+						}
+						if(sessionDataSource.existCurrentSession())
+							sessionDataSource.closeSession(sessionDataSource.currentSession());
+						
+					}
+					
 
 					try {
 						Thread.sleep(SERVICE_SLEEP_TIME);
@@ -568,9 +588,6 @@ long lastUpdate = System.currentTimeMillis();
 				}
 
 
-
-
-
 				if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS)
 				{
 
@@ -615,12 +632,10 @@ long lastUpdate = System.currentTimeMillis();
 
 
 								//=====================STORE NEL DATABASE (INIZIO)=================
-
 								if(fallDataSource == null)
 									fallDataSource = new FallDataSource(ForegroundService.this);
-
+								//TODO AGGIUNGERE CONTROLLO ESISTE CURRENT SESSION? MA NON HA SENSO
 								databaseFallSaver(fallDataSource, sessionDataSource.currentSession(), acquisitionList.getQueue(), latitude, longitude);
-
 								//=====================STORE NEL DATABASE(FINE)====================
 
 
