@@ -25,6 +25,16 @@
                 android:gravity="center"
                 android:text="DIooooooo"
                 android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/old_details_button"
+                android:layout_width="50dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_gravity="end"
+                android:text="Details"
+                android:textSize="14sp" />
+                
         </LinearLayout>
     
     </android.support.v7.widget.CardView>
