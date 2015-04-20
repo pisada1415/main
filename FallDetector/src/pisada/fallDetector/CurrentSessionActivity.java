@@ -137,7 +137,7 @@ public class CurrentSessionActivity extends ActionBarActivity{
 	public void onPause()
 	{
 		super.onPause();
-		sessionData.close(); //TODO BOH
+	
 	}
 	
 	@Override

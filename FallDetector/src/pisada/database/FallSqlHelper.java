@@ -10,6 +10,7 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	private static final String DATABASE_NAME="fall.db";
 	private static final int DATABASE_VERSION=1;
 	public static final int NO_VALUE_FOR_TIME_COLUMN=-1;
+	private static FallSqlHelper helper;
 
 
 	//DEFINIZIONE TABELLA SESSIONE
@@ -82,12 +83,19 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 					"FOREIGN KEY ("+ACQUISITION_FALL_TIME+","+ACQUISITION_ASESSION+") REFERENCES "+FALL_TABLE+"("+FALL_TIME+","+FALL_FSESSION+") ON UPDATE CASCADE ON DELETE CASCADE"+
 					");";
 
+	public static synchronized FallSqlHelper getIstance(Context context){
+		if(helper==null){
+			helper=new FallSqlHelper(context.getApplicationContext());
 
-	public FallSqlHelper(Context context) {
+		}
+		return helper;
+	}
+
+	private FallSqlHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		
 
 	}
+
 
 	//CREA TABELLE 
 	@Override
@@ -95,7 +103,7 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 		db.execSQL(CREATE_SESSION_TABLE);
 		db.execSQL(CREATE_FALL_TABLE);
 		db.execSQL(CREATE_ACQUISITION_TABLE);
-		    
+
 	}
 
 

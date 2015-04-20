@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import fallDetectorException.InvalidSessionException;
 import pisada.database.SessionDataSource.Session;
-import pisada.fallDetector.Acquisition;
 import android.content.ContentValues;
 import android.content.Context;
 
@@ -71,7 +70,7 @@ public class FallDataSource {
 
 	public FallDataSource(Context context){
 		synchronized(FallDataSource.class){
-			databaseHelper=new FallSqlHelper(context);
+			if(databaseHelper==null) databaseHelper=FallSqlHelper.getIstance(context);
 			sessionData=new SessionDataSource(context);
 			this.context=context;
 			open();
@@ -81,9 +80,7 @@ public class FallDataSource {
 	public void open(){
 		database=databaseHelper.getWritableDatabase();
 	}
-	public void close(){
-		databaseHelper.close();
-	}
+
 
 	//INSERISCE UNA NUOVA CADUTA DATA UNA SESSIONE E UNA LISTA DI ACQUISIZIONI(passarla ordinata in funzione del tempo che se no è da ordinare ogni volta)
 	public Fall insertFall(Session session, ConcurrentLinkedQueue<Acquisition> acquisitionList, double lat, double lng){

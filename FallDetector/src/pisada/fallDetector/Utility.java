@@ -9,6 +9,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.widget.Toast;
@@ -96,6 +100,13 @@ public class Utility {
 		return "https://www.google.com/maps/@" + lat+"," + lng + ",13z";
 	}
 	
+	public static Bitmap createImage(int sessionNumber){
+		Bitmap icon=Bitmap.createBitmap(200, 200, Config.RGB_565);
+		Canvas canvas=new Canvas(icon);
+		Paint paint=new Paint();
+		canvas.drawLine(0,0, 100, 100, paint);
+		return icon;
 	
+	}
 	
 }

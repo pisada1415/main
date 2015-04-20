@@ -1,5 +1,7 @@
 package pisada.fallDetector;
 
+import pisada.database.Acquisition;
+
 public class DetectorAlgorithm {
 
 	
