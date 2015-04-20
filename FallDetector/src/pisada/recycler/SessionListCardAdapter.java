@@ -4,14 +4,18 @@ package pisada.recycler;
 import java.util.ArrayList;
 
 import fallDetectorException.DublicateNameSessionException;
+import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.database.SessionDataSource.Session;
 import pisada.fallDetector.R;
+import pisada.fallDetector.SessionDetailsActivity;
 import pisada.fallDetector.SessionsListActivity;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
@@ -29,10 +33,12 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 	public static class OldSessionHolder extends RecyclerView.ViewHolder {
 		private TextView vName;
+		private Button btn;
 		public OldSessionHolder(View v) {
 			super(v);
 
 			vName =  (TextView) v.findViewById(R.id.nameText);
+			btn=(Button) v.findViewById(R.id.old_details_button);
 
 		}
 	}
@@ -108,14 +114,23 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				CurrentSessionHolder cHolder=(CurrentSessionHolder) holder;
 				cHolder.sessionName.setText(currSession.getName()+"\n Close: "+currSession.booleanIsClose());
 				cHolder.sessionStart.setText(String.valueOf(currSession.getStartTime()).toString());
+
 			}
 			return;
 		}
 
 		OldSessionHolder Oholder=(OldSessionHolder) holder;
-		Session session = sessionList.get(i);
+		final Session session = sessionList.get(i);
 		Oholder.vName.setText("Name: "+session.getName()+"\nStart Time: "+session.getStartTime()+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
+		Oholder.btn.setOnClickListener(new OnClickListener(){
 
+			@Override
+			public void onClick(View v) {
+				Intent intent=new Intent(activity,SessionDetailsActivity.class);
+				intent.putExtra(FallSqlHelper.SESSION_NAME, session.getName());
+				activity.startActivity(intent);
+			}
+		});
 	}
 
 	@Override
@@ -138,18 +153,13 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		if(sessionData.existCurrentSession()){
 			sessionData.closeSession(sessionData.currentSession());
 			sessionList.add(1,sessionData.openNewSession(name, img, startTime));
-			notifyItemInserted(1);
-
-			notifyItemChanged(0);
-
 		}
 
 		else{
 			sessionList.set(1,sessionData.openNewSession(name, img, startTime));
-			notifyItemInserted(1);
 			notifyItemChanged(0);
-
 		}
+	
 
 	}
 
@@ -159,10 +169,8 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		if(currSession.isValidSession()) {
 			sessionData.closeSession(currSession);
 			sessionList.add(1,new Session());
-			notifyItemChanged(1);
-			notifyItemInserted(2);
-			notifyItemChanged(0);
 		}
+	
 	}
 
 	@Override

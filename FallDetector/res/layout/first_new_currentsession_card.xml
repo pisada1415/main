@@ -20,7 +20,7 @@
             
             android:layout_centerHorizontal="true"
             android:layout_marginTop="70dp"
-            android:background="@drawable/session_add_button"
+            android:background="@drawable/button_selector_playpause"
             android:onClick="playPauseService" />
         <Button
             android:id="@+id/stop_button"
@@ -28,7 +28,7 @@
             android:layout_height="100dp"
             android:layout_below="@id/start_pause_button"
             android:layout_centerHorizontal="true"
-            android:background="@drawable/session_add_button"
+            android:background="@drawable/button_selector_stop"
             android:onClick="stopService" />
         
         

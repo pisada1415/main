@@ -33,7 +33,6 @@
             android:layout_width="match_parent"
             android:layout_height="120dp"
             android:layout_below="@id/current_session_start_text"
-            android:background="@drawable/s5"
             android:gravity="center"
             android:onClick="closeCurrentSession"
             android:text="Chiudi sessione"

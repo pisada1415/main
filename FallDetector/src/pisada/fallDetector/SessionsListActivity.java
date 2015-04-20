@@ -68,17 +68,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sessions_list);
 
-		//===============================================
-		//service debug start
-		//===============================================
 		
-		
-		serviceIntent = new Intent(this, ForegroundService.class);
-		startService(serviceIntent);	
-		//===============================================
-		//service debug end
-		//===============================================
-
 
 
 		//APRO CONNESSIONI AL DATABASE

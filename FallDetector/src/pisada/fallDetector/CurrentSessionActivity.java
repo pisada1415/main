@@ -130,6 +130,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		
 		actionBar = getSupportActionBar();
 		actionBar.setHomeButtonEnabled(true);
+		actionBar.setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
