@@ -20,28 +20,33 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".SessionsListActivity"
-            android:label="@string/title_activity_sessions_list"
             android:windowSoftInputMode="stateHidden|adjustResize" >
-
-           
-        </activity>
-
-        <activity
-            android:name=".SessionDetailsActivity"
-            android:label="@string/title_activity_session" >
-            
-        </activity>
-        <activity
-            android:name=".CurrentSessionActivity"
-            android:configChanges="orientation|screenSize"
-             >
-              <intent-filter >
+ 			<intent-filter >
 
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+           
         </activity>
+
+        <activity
+            android:name=".SessionDetailsActivity"
+           >
+        </activity>
+        <activity
+            android:name="test.TestActivity"
+            android:configChanges="orientation|screenSize"
+             >
+               
+        </activity>
+        <activity 
+            android:name=".CurrentSessionActivity"
+            android:configChanges="orientation|screenSize"
+            >
+           
+        </activity>
+        
         <activity
             android:name=".FallDetailsActivity"
             android:label="@string/title_activity_fall_details" >

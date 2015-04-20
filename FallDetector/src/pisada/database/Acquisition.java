@@ -1,7 +1,8 @@
-package pisada.fallDetector;
+package pisada.database;
 
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource.Session;
+
 
 //DA FARE
 //Samuele gay

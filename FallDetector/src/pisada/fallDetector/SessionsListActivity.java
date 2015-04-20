@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 
+
 import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
@@ -56,19 +57,15 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	private Sensor mSensor;
 	private static SessionDataSource sessionData;
 	private long lastToastTime;
-
-
-
-
 	Intent serviceIntent;
 
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sessions_list);
 
-		
+
 
 
 		//APRO CONNESSIONI AL DATABASE
@@ -107,6 +104,8 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		super.onResume();
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 		sessionData.open();
+		cardAdapter.check();
+		cardAdapter.notifyDataSetChanged();
 	}
 
 
@@ -137,7 +136,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 		super.onPause();
 		mSensorManager.unregisterListener(this);
-		sessionData.close();
+
 
 	}
 
@@ -175,34 +174,16 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 	}
 	public void addSession(View v) throws BoolNotBoolException{
-
-		EditText editName=(EditText) findViewById(R.id.type_session);
-		String name=editName.getText().toString();
-
-
-		if(name.equalsIgnoreCase("")){
-			if(System.currentTimeMillis()-lastToastTime>2000){
-				Toast.makeText(this, "Inserire un nome per la nuova sessione", 2000).show();
-				lastToastTime=System.currentTimeMillis();
-			}
-			return;
-		}
+		Intent  intent=new Intent(this, CurrentSessionActivity.class);
+		startActivity(intent);
 
 
-		try{
-			cardAdapter.addNewSession(name,"NONE",System.currentTimeMillis());
-		}
-		catch(DublicateNameSessionException e){
-			if(System.currentTimeMillis()-lastToastTime>2000){
-				Toast.makeText(this, "Esiste già una sessione con questo nome", 2000).show();
-				lastToastTime=System.currentTimeMillis();
-			}
-
-		}
 	}
 
-	public void closeCurrentSession(View v){
-		cardAdapter.closeCurrentSession();
+	public void currentSessionDetails(View v){
+		Intent  intent=new Intent(this, CurrentSessionActivity.class);
+		startActivity(intent);
+
 	}
 
 

@@ -7,7 +7,6 @@ import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.InvalidSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
-import pisada.fallDetector.Acquisition;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -85,7 +84,8 @@ public class SessionDataSource {
 	public SessionDataSource(Context context){
 		synchronized(SessionDataSource.class)
 		{		
-			databaseHelper=new FallSqlHelper(context);
+			if(databaseHelper==null) databaseHelper=FallSqlHelper.getIstance(context);
+			
 			this.context=context;
 			open();
 			if(sessionList.size()==0){
@@ -103,10 +103,6 @@ public class SessionDataSource {
 		database = databaseHelper.getWritableDatabase();
 	}
 
-
-	public void close() {
-		databaseHelper.close();
-	}
 
 	//NUOVA SESSIONE CON STOPTIME PREFERENCE
 	public Session openNewSession(String name,String img, long startTime,long stopTimePreference) throws BoolNotBoolException, MoreThanOneOpenSessionException, DublicateNameSessionException{

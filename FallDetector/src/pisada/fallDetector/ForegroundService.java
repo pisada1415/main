@@ -10,6 +10,8 @@ package pisada.fallDetector;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import pisada.database.Acquisition;
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
@@ -215,7 +217,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		Context context = getApplicationContext();
 		Intent notificationIntent = new Intent(context, CurrentSessionActivity.class);
 		notificationIntent.setAction(Intent.ACTION_MAIN);
-	    notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+		notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 		PendingIntent contentIntent = PendingIntent.getActivity(context,
 				717232, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -281,12 +283,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// Get the HandlerThread's Looper and use it for our Handler
 		mServiceLooper = thread.getLooper();
 		mServiceHandler = new ServiceHandler(mServiceLooper);
-		
+
 		HandlerThread mHandlerThread = new HandlerThread("sensorThread");
 		mHandlerThread.start();
 		Handler sensorHandler = new Handler(mHandlerThread.getLooper());
-		
-		
+
+
 		if(Build.VERSION.SDK_INT>=19)
 			mSensorManager.registerListener(this, mAccelerometer, MAX_SENSOR_UPDATE_RATE * 1000, 1000, sensorHandler); //fa risparmiare un po' di batteria se sei fortunato e hai android KK+
 		else
@@ -301,16 +303,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 	@Override
 	public void onDestroy() {
 
-
-		/*TODO deve mandare in pausa la session
-		 * 
-		 */
-		if(sessionDataSource.existCurrentSession())
+		if(sessionDataSource.existCurrentSession()){ //cioè il service viene chiuso dal sistema per poca memoria
 			storeDuration();
+			sessionDataSource.setSessionOnPause(sessionDataSource.currentSession());
+		}
 		resetTime();
-		sessionDataSource.close();
-		if(fallDataSource != null)
-			fallDataSource.close();
+
 		stop = true;
 		mSensorManager.unregisterListener(this);
 		stopLocationUpdates();
@@ -408,7 +406,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 
-long lastUpdate = System.currentTimeMillis();
+	long lastUpdate = System.currentTimeMillis();
 	@SuppressLint("NewApi")
 	@Override
 	public synchronized void onSensorChanged(SensorEvent event) {
@@ -634,7 +632,6 @@ long lastUpdate = System.currentTimeMillis();
 								//=====================STORE NEL DATABASE (INIZIO)=================
 								if(fallDataSource == null)
 									fallDataSource = new FallDataSource(ForegroundService.this);
-								//TODO AGGIUNGERE CONTROLLO ESISTE CURRENT SESSION? MA NON HA SENSO
 								databaseFallSaver(fallDataSource, sessionDataSource.currentSession(), acquisitionList.getQueue(), latitude, longitude);
 								//=====================STORE NEL DATABASE(FINE)====================
 

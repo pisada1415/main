@@ -7,10 +7,15 @@ import fallDetectorException.DublicateNameSessionException;
 import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.database.SessionDataSource.Session;
+import pisada.fallDetector.CurrentSessionActivity;
 import pisada.fallDetector.R;
 import pisada.fallDetector.SessionDetailsActivity;
 import pisada.fallDetector.SessionsListActivity;
+import pisada.fallDetector.Utility;
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -20,13 +25,14 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
 public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 	private ArrayList<Session> sessionList;
-	private SessionsListActivity activity;
+	private static SessionsListActivity activity;
 	private static SessionDataSource sessionData;
 	private RecyclerView rView;
 
@@ -34,11 +40,13 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	public static class OldSessionHolder extends RecyclerView.ViewHolder {
 		private TextView vName;
 		private Button btn;
+		private CardView card;
 		public OldSessionHolder(View v) {
 			super(v);
 
 			vName =  (TextView) v.findViewById(R.id.nameText);
 			btn=(Button) v.findViewById(R.id.old_details_button);
+			card=(CardView) v;
 
 		}
 	}
@@ -48,17 +56,20 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		private TextView newSessionText;
 		private Button addSessionButton;
 		private EditText typeSession;
+		private CardView card;
 
 
+		@SuppressLint("NewApi")
 		public NewSessionHolder(View v) {
 			super(v);
-
-			this.newSessionText=(TextView) v.findViewById(R.id.new_session_text);
-			this.addSessionButton=(Button) v.findViewById(R.id.add_session_button);
-			this.typeSession=(EditText) v.findViewById(R.id.type_session);
-
+			card=(CardView) v;
+			this.newSessionText=(TextView) card.findViewById(R.id.new_session_text);
+			this.addSessionButton=(Button) card.findViewById(R.id.add_session_button);
+			this.typeSession=(EditText) card.findViewById(R.id.type_session);
+			
+			addSessionButton.setBackground(new BitmapDrawable(activity.getResources(),Utility.createImage(4456)));
 			if(sessionData.existCurrentSession()){
-				v.setLayoutParams(new LayoutParams(v.getWidth(),0));
+				//v.setLayoutParams(new LayoutParams(v.getWidth(),0));
 			}
 
 		}
@@ -68,13 +79,17 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	public static class CurrentSessionHolder extends RecyclerView.ViewHolder {
 		private TextView sessionName;
 		private TextView sessionStart;
+		private Button detailsButton;
+		private CardView card;
 
 		public CurrentSessionHolder(View v) {
 			super(v);
 			sessionName=(TextView) v.findViewById(R.id.current_session_name_text);
 			sessionStart=(TextView) v.findViewById(R.id.current_session_start_text);
+			detailsButton=(Button) v.findViewById(R.id.details_current_button);
+			card=(CardView) v;
 			if(!sessionData.existCurrentSession()){
-				v.setLayoutParams(new LayoutParams(v.getWidth(),0));
+			//	v.setLayoutParams(new LayoutParams(v.getWidth(),0));
 			}
 		}
 
@@ -105,16 +120,27 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		Session currSession=sessionData.currentSession();
 		switch(i) {
 		case 0: 
-			if(sessionData.existCurrentSession()){
+			NewSessionHolder Nholder=(NewSessionHolder) holder;
+			if(currSession!=null){
+				Nholder.card.setVisibility(CardView.GONE);
+			}
+			else{
+				Nholder.card.setVisibility(CardView
+						.VISIBLE);
+
 			}
 			return;
 
 		case 1:
+			CurrentSessionHolder cHolder=(CurrentSessionHolder) holder;
 			if(currSession!=null){
-				CurrentSessionHolder cHolder=(CurrentSessionHolder) holder;
+				cHolder.card.setVisibility(View.VISIBLE);
 				cHolder.sessionName.setText(currSession.getName()+"\n Close: "+currSession.booleanIsClose());
 				cHolder.sessionStart.setText(String.valueOf(currSession.getStartTime()).toString());
 
+			}
+			else{
+				cHolder.card.setVisibility(View.GONE);
 			}
 			return;
 		}
@@ -159,7 +185,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			sessionList.set(1,sessionData.openNewSession(name, img, startTime));
 			notifyItemChanged(0);
 		}
-	
+
 
 	}
 
@@ -170,7 +196,17 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			sessionData.closeSession(currSession);
 			sessionList.add(1,new Session());
 		}
+
+	}
 	
+	public void check(){
+		sessionList=sessionData.sessions();
+		sessionList.add(0,new Session());
+		if(!sessionData.existCurrentSession()){
+			sessionList.add(0, new Session());
+		}
+		
+		
 	}
 
 	@Override
@@ -183,6 +219,9 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		return 3;
 
 	}
+	
+	
+	
 
 
 

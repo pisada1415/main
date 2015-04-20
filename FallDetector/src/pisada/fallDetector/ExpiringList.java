@@ -2,6 +2,8 @@ package pisada.fallDetector;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import pisada.database.Acquisition;
+
 
 public class ExpiringList {
 
