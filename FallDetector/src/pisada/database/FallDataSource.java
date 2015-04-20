@@ -10,12 +10,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import fallDetectorException.InvalidSessionException;
 import pisada.database.SessionDataSource.Session;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.widget.Toast;
 
 public class FallDataSource {
 	private SQLiteDatabase database;
@@ -89,6 +91,7 @@ public class FallDataSource {
 		long time=0;
 		int i=0;
 		int size=acquisitionList.size();
+		long lastTime=System.currentTimeMillis();
 		for(Acquisition a: acquisitionList){
 			if(i==size/2) {
 				time=a.getTime();
@@ -96,8 +99,10 @@ public class FallDataSource {
 			}
 			i++;
 		}
-//se volete riprodurre lo stream dovete diciamo, chiedere anche il permesso di accedere alla rete, anche questo è un permesso.k
+		System.out.println(System.currentTimeMillis()-lastTime);
 		
+		//se volete riprodurre lo stream dovete diciamo, chiedere anche il permesso di accedere alla rete, anche questo è un permesso.k
+
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.FALL_TIME,time);
 		values.put(FallSqlHelper.FALL_FSESSION, session.getName());

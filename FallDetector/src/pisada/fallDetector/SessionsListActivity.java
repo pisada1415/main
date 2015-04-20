@@ -13,6 +13,7 @@ import java.util.Random;
 
 
 
+
 import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
@@ -56,7 +57,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	private SensorManager mSensorManager;
 	private Sensor mSensor;
 	private static SessionDataSource sessionData;
-	private long lastToastTime;
 	Intent serviceIntent;
 
 
@@ -85,7 +85,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-
+		
 	}
 
 
@@ -174,7 +174,9 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 	}
 	public void addSession(View v) throws BoolNotBoolException{
+		String s="Session "+(sessionData.sessionCount()+1);
 		Intent  intent=new Intent(this, CurrentSessionActivity.class);
+		intent.putExtra(FallSqlHelper.SESSION_NAME, s);
 		startActivity(intent);
 
 
