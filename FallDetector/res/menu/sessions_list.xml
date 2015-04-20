@@ -8,6 +8,7 @@
         android:orderInCategory="100"
         android:title="stop service"
         app:showAsAction="never"/>
-    <item android:id="@+id/action_settings_2" android:title="start service" android:orderInCategory="100"></item>
+    <item android:id="@+id/action_settings_2" android:title="start service" android:orderInCategory="101"></item>
+    <item android:id="@+id/action_settings_3" android:title="Test Database" android:orderInCategory="102"></item>
 
 </menu>

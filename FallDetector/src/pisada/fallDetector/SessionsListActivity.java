@@ -13,6 +13,7 @@ import java.util.Random;
 
 
 
+
 import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
@@ -21,6 +22,7 @@ import pisada.database.SessionDataSource.Session;
 import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.recycler.SessionListCardAdapter;
+import pisada.test.DatabaseActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -125,6 +127,11 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		{
 			if(serviceIntent!=null)
 				startService(serviceIntent);
+			return true;
+		}
+		if(id == R.id.action_settings_3)
+		{
+			startActivity(new Intent(this,DatabaseActivity.class));
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
