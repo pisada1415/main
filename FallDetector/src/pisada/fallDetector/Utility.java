@@ -123,7 +123,7 @@ public class Utility {
 			int prime=primes.get(i)[0];
 			int exp=primes.get(i)[1];
 			paint.setColor(colors[(int)(Math.pow(prime, exp))%6]);
-			canvas.drawPath(getPolygon(prime*exp,new Point(100,100),100), paint);
+			canvas.drawPath(getPolygon(prime*exp,new Point(100,100),100/exp), paint);
 
 		}
 

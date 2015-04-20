@@ -68,7 +68,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			this.addSessionButton=(Button) card.findViewById(R.id.add_session_button);
 			this.typeSession=(EditText) card.findViewById(R.id.type_session);
 			Random random=new Random();
-			addSessionButton.setBackground(new BitmapDrawable(activity.getResources(),Utility.createImage((int)random.nextLong()%150)));
+			addSessionButton.setBackground(new BitmapDrawable(activity.getResources(),Utility.createImage(Math.abs((int)random.nextLong()%100))));
 			if(sessionData.existCurrentSession()){
 				//v.setLayoutParams(new LayoutParams(v.getWidth(),0));
 			}
