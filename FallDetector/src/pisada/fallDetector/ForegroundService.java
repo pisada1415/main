@@ -58,7 +58,7 @@ import android.widget.Toast;
  *
  *
  *TODO: 
- *prendere lista cadute e caricarla nella sessione quando apri ed era in pausa
+ *MANDARE MESSAGGIO A CONTATTI PRESTABILITI QUANDO AVVIENE CADUTA
  */
 
 public class ForegroundService extends Service implements SensorEventListener {

@@ -39,8 +39,8 @@ public class Plot2d extends View {
 		super(context);
 		this.context = context;
 		paint = new Paint();
-		minX = defData.getX();
-		minY = defData.getY();
+		minX = defData.x;
+		minY = defData.y;
 		maxX = 0;
 		maxY = 0;
 		values = new ArrayList<Data>();
@@ -60,12 +60,12 @@ public class Plot2d extends View {
 		values.add(data);
 		
 		//minx dovrebe essere il valore minimo del tempo quindi il valore di tempo del primo della lista
-		minX = values.get(0).getX();
+		minX = values.get(0).x;
 		//minX = Math.min(minX, data.getX());
-		minY = Math.min(minY, data.getY());
+		minY = Math.min(minY, data.y);
 		//maxX = Math.max(maxX, data.getX());
-		maxX = values.get(values.size()-1).getX();	
-		maxY = Math.max(maxY, data.getY());
+		maxX = values.get(values.size()-1).x;	
+		maxY = Math.max(maxY, data.y);
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class Plot2d extends View {
 		
 		for (int i = 0; i < valuesInPixel.size()-1; i++) {
 			paint.setColor(getResources().getColor(R.color.lightBlue));
-			canvas.drawLine(valuesInPixel.get(i).getX(),canvasHeight-valuesInPixel.get(i).getY(),valuesInPixel.get(i+1).getX(),canvasHeight-valuesInPixel.get(i+1).getY(),paint);
+			canvas.drawLine(valuesInPixel.get(i).x,canvasHeight-valuesInPixel.get(i).y,valuesInPixel.get(i+1).x,canvasHeight-valuesInPixel.get(i+1).y,paint);
 		}
 		
 		paint.setColor(Color.WHITE);
@@ -119,8 +119,8 @@ public class Plot2d extends View {
 		ArrayList<Data> output = new ArrayList<Data>();
 		
 		for (int i = 0; i < val.size(); i++) {
-			int x = (int)(0.1*pixelsX+((val.get(i).getX()-minX)/(maxX-minX))*0.8*pixelsX);
-			int y = (int)(0.1*pixelsY+((val.get(i).getY()-minY)/(maxY-minY))*0.8*pixelsY);
+			int x = (int)(0.1*pixelsX+((val.get(i).x-minX)/(maxX-minX))*0.8*pixelsX);
+			int y = (int)(0.1*pixelsY+((val.get(i).y-minY)/(maxY-minY))*0.8*pixelsY);
 			Data a = new Data(x, y);
 			output.add(a);
 			

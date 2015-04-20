@@ -33,8 +33,7 @@ import fallDetectorException.MoreThanOneOpenSessionException;
  * 
  * TODO:
  * 
- * 
- * TEMPO LIMITE POI LA SESSION SI CHIUDE DA SOLA. (nel service)
+ * aggionrare tempo timeout da settingsactivity 
  * 
  */
 
@@ -148,7 +147,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	{
 		super.onPause();
 		ForegroundService.disconnect(this);
-		sessionData.close(); //TODO BOH
+		sessionData.close(); 
 	}
 	
 	@Override
@@ -276,6 +275,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		cardAdapter.clearGraphs();
 		/*
 		 *  * SESSION VIENE TERMINATA QUI. (dal service in ondestroy) 
+		 *  TODO passare a activity di piero con dati definitivi di questa sessione (richiesta del prof)
 		 */
 	}
 
@@ -383,11 +383,6 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	    
 	}
 
-	@Override
-	public void serviceUpdate(float x, float y, float z, long time) {
-		// non da usare qui
-		
-	}
 
 	@Override
 	public void serviceUpdate(String fallPosition, String link, String time,
@@ -400,6 +395,12 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	public void sessionTimeOut() {
 		if(serviceIntent != null)
 			stopService(serviceIntent);
+		
+	}
+
+	@Override
+	public void serviceUpdate(float x, float y, float z, long time) {
+		// TODO Auto-generated method stub
 		
 	}
 }
