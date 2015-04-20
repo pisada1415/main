@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteConstraintException;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -53,6 +54,8 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	private FallDataSource fallDataSource;
 	private SessionDataSource.Session currentSession; 
 
+	private ActionBar actionBar;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -124,7 +127,9 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		if(!ForegroundService.isConnected(this)){
 			ForegroundService.connect(this);
 		}
-
+		
+		actionBar = getSupportActionBar();
+		actionBar.setHomeButtonEnabled(true);
 	}
 
 	@Override
@@ -134,6 +139,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		return true;
 	}
 
+	
 
 
 	@Override
@@ -277,45 +283,57 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		
 
 		int id = item.getItemId();
-		if (id == R.id.rename_session) {
-			// Set an EditText view to get user input 
-			final EditText input = new EditText(this);
+		
+		 switch (id) {
+	        case android.R.id.home:
+	            // app icon in action bar clicked; goto parent activity.
+	            this.finish();
+	            return true;
+	        case R.id.rename_session:
+	        {
+				// Set an EditText view to get user input 
+				final EditText input = new EditText(this);
 
-			new AlertDialog.Builder(CurrentSessionActivity.this)
-			.setTitle("Rename")
-			.setMessage("Insert name")
-			.setView(input)
-			.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					String value = input.getText().toString(); 
-					String tmp = sessionName;
+				new AlertDialog.Builder(CurrentSessionActivity.this)
+				.setTitle("Rename")
+				.setMessage("Insert name")
+				.setView(input)
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						String value = input.getText().toString(); 
+						String tmp = sessionName;
 
-					if(sessionData.existCurrentSession() && !sessionData.existSession(value)){
-						sessionData.renameSession(sessionData.currentSession(), value);
-						setTitle(value);
-						sessionName = value;
+						if(sessionData.existCurrentSession() && !sessionData.existSession(value)){
+							sessionData.renameSession(sessionData.currentSession(), value);
+							setTitle(value);
+							sessionName = value;
+						}
+						else if(!sessionData.existSession(value)){
+							sessionName = value; setTitle(value);
+						}
+						else
+						{
+							Toast.makeText(CurrentSessionActivity.this, "Can't add session with same name!", Toast.LENGTH_LONG).show();
+							sessionName = tmp;
+							setTitle(sessionName);
+
+
+						}
+
 					}
-					else if(!sessionData.existSession(value)){
-						sessionName = value; setTitle(value);
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// Do nothing.
 					}
-					else
-					{
-						Toast.makeText(CurrentSessionActivity.this, "Can't add session with same name!", Toast.LENGTH_LONG).show();
-						sessionName = tmp;
-						setTitle(sessionName);
-
-
-					}
-
-				}
-			}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					// Do nothing.
-				}
-			}).show();
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
+				}).show();
+				
+	        }
+	        	return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
+		
+		
 	}
 
 
