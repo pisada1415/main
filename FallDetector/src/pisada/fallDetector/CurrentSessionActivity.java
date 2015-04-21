@@ -4,6 +4,7 @@ package pisada.fallDetector;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
@@ -285,6 +286,9 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		switch (id) {
 		case android.R.id.home:
 			// app icon in action bar clicked; goto parent activity.
+			Intent toDaniel = new Intent(this, CurrentSessionActivity.class);
+			toDaniel.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+			startActivity(toDaniel);
 			this.finish();
 			return true;
 		case R.id.rename_session:
