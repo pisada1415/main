@@ -43,6 +43,7 @@ public class TimePreference extends DialogPreference {
 
         picker.setCurrentHour(lastHour);
         picker.setCurrentMinute(lastMinute);
+        picker.setIs24HourView(true);
     }
 
     @Override

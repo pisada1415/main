@@ -15,13 +15,15 @@
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="alarm"
-        android:title="Activate reminder alarm" />
+        android:title="Activate reminder alarm" 
+        />
 
     <pisada.fallDetector.TimePreference
                android:dependency="alarm"
                android:key="time"
                android:defaultValue="07:00"
                android:title="Select time"
+               android:summary="Select daily alarm time"
        >
    </pisada.fallDetector.TimePreference>
    

@@ -13,6 +13,7 @@ import java.util.Random;
 
 
 
+
 import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
@@ -118,13 +119,11 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
 			if(serviceIntent!=null)
-				stopService(serviceIntent);
 			return true;
 		}
 		if(id == R.id.action_settings_2)
 		{
 			if(serviceIntent!=null)
-				startService(serviceIntent);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -174,8 +173,9 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 	}
 	public void addSession(View v) throws BoolNotBoolException{
-		Intent  intent=new Intent(this, CurrentSessionActivity.class);
-		startActivity(intent);
+		Intent toSamu = new Intent(this, CurrentSessionActivity.class);
+		toSamu.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+		startActivity(toSamu);
 
 
 	}

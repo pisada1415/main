@@ -27,12 +27,7 @@ import android.widget.Toast;
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
 
-/*
- * TODO:
- * 
- * aggionrare tempo timeout da settingsactivity 
- * 
- */
+
 
 
 public class CurrentSessionActivity extends ActionBarActivity implements ServiceReceiver{
@@ -126,7 +121,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		}
 
 		actionBar = getSupportActionBar();
-		actionBar.setHomeButtonEnabled(true);
+		//actionBar.setHomeButtonEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);
 	}
 
@@ -273,7 +268,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 			toPiero.putExtra("name", closedSessionName); // TODO nome da dire a piero per extras quando viene premuto stop
 			toPiero.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); 
 			startActivity(toPiero);
-			finish(); 
+			//TODO this.finish();
 		}
 	}
 
@@ -286,9 +281,10 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		switch (id) {
 		case android.R.id.home:
 			// app icon in action bar clicked; goto parent activity.
-			Intent toDaniel = new Intent(this, CurrentSessionActivity.class);
+			Intent toDaniel = new Intent(this, SessionsListActivity.class);
 			toDaniel.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 			startActivity(toDaniel);
+			ForegroundService.disconnect(cardAdapter);
 			this.finish();
 			return true;
 		case R.id.rename_session:
@@ -331,6 +327,12 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 
 		}
 		return true;
+		case R.id.action_settings:
+			Intent intent = new Intent(this, SettingsActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+			startActivity(intent);
+			return true;
+		
 		default:
 			return super.onOptionsItemSelected(item);
 		}

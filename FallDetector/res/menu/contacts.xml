@@ -9,7 +9,7 @@
           android:title="Add Contact"
           app:showAsAction="always" />
 	<item android:id="@+id/action_addnumber"
-          android:icon="@drawable/ic_action_edit"
+          android:icon="@drawable/editnumber"
           android:title="Add Number"
           app:showAsAction="always" />
 	

@@ -22,7 +22,9 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -31,6 +33,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 public class ContactsActivity extends ActionBarActivity {
+
 
 	private final String CONTACTS_KEY = "contacts";
 	private ArrayList<String> contacts;
@@ -47,35 +50,39 @@ public class ContactsActivity extends ActionBarActivity {
 		contacts = numbers != null ? new ArrayList<String>(numbers) : new ArrayList<String>();
 		actionBar = getSupportActionBar();
 		ListView listView = (ListView) findViewById(R.id.listView1);
-
 		adapter = new StableArrayAdapter(this,android.R.layout.simple_list_item_1, contacts);
 		listView.setAdapter(adapter);
-		listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+
+		listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
 			@Override
-			public void onItemClick(AdapterView<?> parent, final View view,
-					int position, long id) {
-				final String item = (String) parent.getItemAtPosition(position);
-				view.animate().setDuration(2000).alpha(0)
-				.withEndAction(new Runnable() {
-					@Override
-					public void run() {
-						/*
-						 *TODO metti dialog di conferma
-						 */
+			public boolean onItemLongClick(final AdapterView<?> parent, View arg1,
+					final int position, long id) {
+				new AlertDialog.Builder(ContactsActivity.this)
+				.setTitle(getResources().getString(R.string.deletecontact))
+				.setMessage(getResources().getString(R.string.sure))
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						final String item = (String) parent.getItemAtPosition(position);
 						contacts.remove(item);
 						adapter.notifyDataSetChanged();
-						view.setAlpha(1);
 						Set<String> set = new HashSet<String>();
 						set.addAll(contacts);
 						sp.edit().putStringSet(CONTACTS_KEY, set).commit();
-						
+
 					}
-				});
+				})
+				.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+
+					}
+				}).show();
+
+				return true;
 			}
-
-		});
-
+		}
+				);
 		actionBar.setHomeButtonEnabled(true);
 		actionBar.setDisplayHomeAsUpEnabled(true);
 	}
@@ -93,6 +100,8 @@ public class ContactsActivity extends ActionBarActivity {
 		}
 	}
 
+
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -106,12 +115,7 @@ public class ContactsActivity extends ActionBarActivity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		switch (item.getItemId()) {
-		/*case R.id.action_settings:
-			Intent intent = new Intent(this, SettingsActivity.class);
-			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
-			startActivity(intent);
-			this.finish();
-			return true;*/
+
 		case android.R.id.home:
 			// app icon in action bar clicked; goto parent activity.
 			Intent toSettings = new Intent(this, SettingsActivity.class);
@@ -119,7 +123,9 @@ public class ContactsActivity extends ActionBarActivity {
 			startActivity(toSettings);
 			return true;
 		case R.id.action_addcontact:
-
+			/*
+			 * apri contacts picker
+			 */
 			Intent pickContactIntent = new Intent( Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI );
 			pickContactIntent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
 			startActivityForResult(pickContactIntent, CONTACT_PICKER_RESULT);	
@@ -127,28 +133,27 @@ public class ContactsActivity extends ActionBarActivity {
 			return true;
 		case R.id.action_addnumber:
 			/*
-			 * TODO apri dialog [nome-numero] e salva numero nella lista poi salva la lista in sp
+			 *  apri dialog [nome-numero] e salva numero nella lista poi salva la lista in sp
 			 */
-			
 			final View textEntryView = LayoutInflater.from(this).inflate(R.layout.doubletextview, null);
-			
-			
-			
+
+
+
 			final AlertDialog dialog = new AlertDialog.Builder(ContactsActivity.this)
-			.setTitle("Insert Number")
-			.setMessage("Insert the contact phone number")
+			.setTitle(getResources().getString(R.string.insertNumber))
+			.setMessage(getResources().getString(R.string.insertContactNumber))
 			.setView(textEntryView)
-			.setPositiveButton("Ok", null)
-			.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			.setPositiveButton(getResources().getString(R.string.ok), null)
+			.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
 					// Do nothing.
 				}
 			}).create();
 
 			final EditText inputName = (EditText) textEntryView.findViewById(R.id.editText1);
-	        final EditText inputNumber = (EditText) textEntryView.findViewById(R.id.editText2);
-	        inputNumber.setInputType(InputType.TYPE_CLASS_PHONE);
-	        
+			final EditText inputNumber = (EditText) textEntryView.findViewById(R.id.editText2);
+			inputNumber.setInputType(InputType.TYPE_CLASS_PHONE);
+
 
 			dialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
@@ -162,7 +167,7 @@ public class ContactsActivity extends ActionBarActivity {
 						public void onClick(View view) {
 
 							if(inputName.getText().toString() == "" || inputNumber.getText().toString() == "")
-								Toast.makeText(ContactsActivity.this, "Insert contact name and number", Toast.LENGTH_SHORT).show();
+								Toast.makeText(ContactsActivity.this, getResources().getString(R.string.complainInsertionContact), Toast.LENGTH_SHORT).show();
 							else{
 								String name = inputName.getText().toString(); 
 								String number = inputNumber.getText().toString();
