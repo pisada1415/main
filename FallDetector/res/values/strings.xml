@@ -37,5 +37,7 @@
     <string name="start">Start!</string>
     <string name="remember">Remember to start your daily session!</string>
     <string name="remember1st">Reminder</string>
+    <string name="nocontacts">No contacts added yet</string>
+    
 
 </resources>

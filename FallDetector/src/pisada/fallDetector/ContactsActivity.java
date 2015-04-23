@@ -22,14 +22,13 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class ContactsActivity extends ActionBarActivity {
@@ -41,6 +40,8 @@ public class ContactsActivity extends ActionBarActivity {
 	private ActionBar actionBar;
 	private static final int CONTACT_PICKER_RESULT = 1021;
 	private StableArrayAdapter adapter;
+	private TextView noContacts;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -52,7 +53,11 @@ public class ContactsActivity extends ActionBarActivity {
 		ListView listView = (ListView) findViewById(R.id.listView1);
 		adapter = new StableArrayAdapter(this,android.R.layout.simple_list_item_1, contacts);
 		listView.setAdapter(adapter);
-
+		noContacts = (TextView)findViewById(R.id.nocontacts);
+		if(contacts.size()>0)
+			noContacts.setVisibility(View.GONE);
+		else
+			noContacts.setVisibility(View.VISIBLE);
 
 		listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
@@ -70,7 +75,8 @@ public class ContactsActivity extends ActionBarActivity {
 						Set<String> set = new HashSet<String>();
 						set.addAll(contacts);
 						sp.edit().putStringSet(CONTACTS_KEY, set).commit();
-
+						if(contacts.size()==0)
+							noContacts.setVisibility(View.VISIBLE);
 					}
 				})
 				.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -174,6 +180,8 @@ public class ContactsActivity extends ActionBarActivity {
 								String contact = name + "\n" + number;
 								if(!contacts.contains(contact))
 									contacts.add(contact);
+								if(contacts.size()>0)
+									noContacts.setVisibility(View.GONE);
 								Set<String> set = new HashSet<String>();
 								set.addAll(contacts);
 								sp.edit().putStringSet(CONTACTS_KEY, set).commit();
@@ -211,6 +219,8 @@ public class ContactsActivity extends ActionBarActivity {
 				String contact = ""+name+"\n"+phoneNo;
 				if(!contacts.contains(contact))
 					contacts.add(contact);
+				if(contacts.size()>0)
+					noContacts.setVisibility(View.GONE);
 				adapter.notifyDataSetChanged();
 				Set<String> set = new HashSet<String>();
 				set.addAll(contacts);
