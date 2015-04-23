@@ -117,7 +117,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		}
 
 		if(!ForegroundService.isConnected(this)){
-			ForegroundService.connect(this);
+			ForegroundService.connect(this); //TODO
 		}
 
 		actionBar = getSupportActionBar();
@@ -268,7 +268,10 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 			toPiero.putExtra("name", closedSessionName); // TODO nome da dire a piero per extras quando viene premuto stop
 			toPiero.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); 
 			startActivity(toPiero);
-			//TODO this.finish();
+			//TODO rimpiazzare queste ultime 2 righe con finish
+			ForegroundService.disconnect(this);
+			ForegroundService.disconnect(cardAdapter);
+			///this.finish();
 		}
 	}
 
@@ -284,7 +287,8 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 			Intent toDaniel = new Intent(this, SessionsListActivity.class);
 			toDaniel.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 			startActivity(toDaniel);
-			ForegroundService.disconnect(cardAdapter);
+		/*	ForegroundService.disconnect(this);
+			ForegroundService.disconnect(cardAdapter);*/
 			this.finish();
 			return true;
 		case R.id.rename_session:
