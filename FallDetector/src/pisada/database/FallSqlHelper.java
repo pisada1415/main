@@ -28,6 +28,8 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	public static final int OPEN=0;
 	public static final int PAUSE=1;
 	public static final int RUNNING=0;
+	public static final int NOTIFIED=1;
+	public static final int UNNOTIFIED=0;
 
 
 	//DEFINIZIONE TABELLA SESSSIONE
@@ -48,6 +50,7 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	public static final String FALL_TABLE="FALL"; 
 	public static final String FALL_TIME="FallTime";
 	public static final String FALL_FSESSION="FallSession";
+	public static final String FALL_NOTIFIED_COLUMN="Notified";
 	public static final String FALL_LNG="Lng";
 	public static final String FALL_LAT="Lat";
 
@@ -57,6 +60,7 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 					FALL_FSESSION+" TEXT,"+
 					FALL_LAT+" REAL NOT NULL,"+
 					FALL_LNG+" REAL NOT NULL,"+
+					FALL_NOTIFIED_COLUMN+" INTEGER DEFAULT 0, "+
 					"PRIMARY KEY ("+FALL_TIME+","+FALL_FSESSION+") "+
 					"FOREIGN KEY ("+FALL_FSESSION+") REFERENCES "+SESSION_TABLE+"("+SESSION_NAME+") ON UPDATE CASCADE ON DELETE CASCADE"+
 					");";
