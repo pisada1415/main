@@ -3,6 +3,7 @@ package pisada.recycler;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Random;
 
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
@@ -55,10 +56,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	 * 
 	 * first_new_currentsession_card
 	 */
-	public static class FirstCardHolder extends RecyclerView.ViewHolder {
+	public class FirstCardHolder extends RecyclerView.ViewHolder {
 		private Button startPauseButton;
 		private Button stopButton;
-		
 		private ImageView thumbNail;
 		private TextView info;
 		
@@ -131,12 +131,14 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		private ImageView fallThumbnail;
 		private TextView fallTime;
 		private TextView fallPosition;
+		private TextView boolNotif;
 		//TODO notifica mandata correttamente o no
 		public FallsHolder(View v) {
 			super(v);
 			fallThumbnail=(ImageView) v.findViewById(R.id.thumbnail_fall);
 			fallTime=(TextView) v.findViewById(R.id.fall_time);
 			fallPosition=(TextView) v.findViewById(R.id.position);
+			boolNotif = (TextView) v.findViewById(R.id.booleanSent);
 		}
 
 	}
@@ -172,13 +174,18 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	@Override
 	public void onBindViewHolder(ViewHolder holder, int i) {
 
-		if(i==0 || i == 1){ //se sono le prime due non fare niente
-
+		if(i==0){ //se sono le prime due non fare niente
+			FirstCardHolder fch = (FirstCardHolder) holder;
+			fch.thumbNail.setImageBitmap(Utility.createImage(Utility.randInt(2, 100)));
 		}
+		else if(i == 1){}
 		else{
+			/*
+			 * TODO qui anziché randint va passato il numero della sessione cui la fall fa riferimento
+			 */
 			CardContent fall = cardContentList.get(i);
 			FallsHolder Oholder=(FallsHolder) holder;
-			Oholder.fallThumbnail.setImageBitmap(getBitmapFromData(fall.getThumbnail()));
+			Oholder.fallThumbnail.setImageBitmap(Utility.createImage(Utility.randInt(2, 100)));
 			String link = fall.getLink();
 			Oholder.fallPosition.setText(Html.fromHtml("<a href=\""+ link + "\">" + "Position: " + fall.getPos() + "</a>"));
 			if(link != null){
@@ -189,29 +196,15 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				Oholder.fallPosition.setClickable(false);
 			//Oholder.fallPosition.setText("Position: "+ fall.getPos());
 			Oholder.fallTime.setText("Time: " + fall.getTime());
-
+			if(fall.notifiedSuccess()){
+			Oholder.boolNotif.setText(activity.getResources().getString(R.string.sent));
+			Oholder.boolNotif.setTextColor(Color.GREEN);
+			}
 		}
 
 	}
 
-	private Bitmap getBitmapFromData(double data) {
-		// TODO facciamo l'immagine. oppure decidere se metterlo da un'altra parte e memorizzare l'img nel database
-		Bitmap b = Bitmap.createBitmap(100,100,Config.ARGB_8888);
-		b.eraseColor(android.graphics.Color.GREEN);
-		int rand = Utility.randInt(3, 100);
-		
-		for(int i = 0; i < rand; i++)
-		{
-			int x =Utility.randInt(0, 99);
-			int y = Utility.randInt(0, 99);
-			int r =Utility.randomizeToColor(data);
-			int g = Utility.randomizeToColor(data);
-			int bc = Utility.randomizeToColor(data);
-			b.setPixel(x, y, Color.rgb(r, g, bc));
-		}
-		return b;
-	}
-
+	
 
 
 	@Override
@@ -323,18 +316,25 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		duration.stop();
 	}
 	
-	private void addFallToCardList(String position, String link, String time, long img)
+	private void addFallToCardList(String position, String link, String time, boolean b)
 	{
-		cardContentList.add(new CardContent(position,link,time, img));
-		notifyItemInserted(cardContentList.size()-1);
-		
-		
+		CardContent cc = new CardContent(position,link,time, b);
+		if(!cardContentList.contains(cc)){
+			cardContentList.add(cc);
+			notifyItemInserted(cardContentList.size()-1);
+		}
+		else
+		{
+			int i = 0;
+			for(; i < cardContentList.size() && !cardContentList.get(i).equals(cc); i++);
+			cardContentList.set(i, cc);
+			notifyItemChanged(i);
+		}
 	}
 
 	@Override
-	public void serviceUpdate(String fallPosition, String link, String time, long img) {
-		// TODO se arrivano cadute vengono notificate qui, aggiornare anche il "notifica inviata o no"
-		addFallToCardList(fallPosition, link, time, img);
+	public void serviceUpdate(String fallPosition, String link, String time, boolean b) {
+		addFallToCardList(fallPosition, link, time, b);
 	}
 	
 	public void addFall(FallDataSource.Fall f, SessionDataSource.Session s)
@@ -342,7 +342,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		String time = Utility.getStringTime(f.getTime());
 		String position;
 		position = (f.getLat() != -1 && f.getLng() != -1) ? "" + f.getLat() + ", " + f.getLng() : "Not available";
-		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), time, 1083l);
+		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), time, true/*, f.wasNotified()TODO*/);
 	}
 	
 	public void clearFalls()

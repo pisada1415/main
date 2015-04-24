@@ -73,7 +73,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	protected static int MAX_SENSOR_UPDATE_RATE = 10; //ogni quanti millisecondi update
 	private final int TIME_BETWEEN_FALLS = 2000, CYCLES_FOR_LOCATION_REQUESTS = 50, SERVICE_SLEEP_TIME = 5000, MIN_TIME_LOCATION_UPDATES = 5000, MIN_DISTANCE_LOCATION_UPDATES = 500; 
 	private long TIMEOUT_SESSION = 86400000; //24h
-	private final String CONTACTS_KEY = "contacts";
+	private final static String CONTACTS_KEY = "contacts";
 	
 	private final String GPSProvider = LocationManager.GPS_PROVIDER;
 	private final String networkProvider = LocationManager.NETWORK_PROVIDER;
@@ -83,12 +83,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static boolean isRunning = false, timeInitialized = false; //riguarda il tempo per sapere da quanto è aperta la session;
 	private static String position, link;
 	private static long totalTime = 0, startTime = 0;
-	private static ArrayList<ServiceReceiver> connectedActs;
+	public static ArrayList<ServiceReceiver> connectedActs;
 
 	private int counterGPSUpdate = 50; //per attivare subito la ricerca della posizione
 	private String bestProvider;
 	private String activeService;
-	private long lastFall = System.currentTimeMillis() - 2000, lastSensorChanged = System.currentTimeMillis();
+	private long lastFallTime = System.currentTimeMillis() - 2000, lastSensorChanged = System.currentTimeMillis();
 	private Double latitude = -1d, longitude = -1d;
 
 	private Acquisition lastInserted;
@@ -107,7 +107,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private FallDataSource fallDataSource;
 	private ExpiringList acquisitionList;
 	private BackgroundTask bgrTask;
-	private SharedPreferences sp;
+	private static SharedPreferences sp;
 	@Override
 	public void onStart(Intent intent, int startId) {
 
@@ -596,7 +596,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 				}
 
 
-				if(System.currentTimeMillis() - lastFall > TIME_BETWEEN_FALLS)
+				if(System.currentTimeMillis() - lastFallTime > TIME_BETWEEN_FALLS)
 				{
 
 					if(lastInserted != null){
@@ -607,7 +607,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
 
 							if(DetectorAlgorithm.danielAlgorithm(acquisitionList)){
-								lastFall = System.currentTimeMillis();
+								lastFallTime = System.currentTimeMillis();
 
 								//=====================ASPETTO 0.5 SECONDI mentre continuo a storare nella coda==========================================
 								try {
@@ -642,9 +642,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 								//=====================STORE NEL DATABASE (INIZIO)=================
 								if(fallDataSource == null)
 									fallDataSource = new FallDataSource(ForegroundService.this);
-								databaseFallSaver(fallDataSource, sessionDataSource.currentSession(), acquisitionList.getQueue(), latitude, longitude);
 								//=====================STORE NEL DATABASE(FINE)====================
 								
+								databaseFallSaverAndFallOccurredManager(ForegroundService.this, fallDataSource, sessionDataSource.currentSession(), acquisitionList.getQueue(), latitude, longitude);
 								
 
 								acquisitionList = new ExpiringList(); 
@@ -658,23 +658,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 									position = "Not available";
 								
 
-								manageFallOccured(position, latitude, longitude); //fa quello che c'è da fare quando avviene una fall!
 								
-								//==============================INVIO ALLE ACTIVITY CONNESSE I DATI(INIZIO)=================================
-								if(connectedActs != null && connectedActs.size() > 0){
-									link = null;
-									final long fallTime = System.currentTimeMillis();
-									final String formattedTime = Utility.getStringTime(fallTime);
-									for(final ServiceReceiver sr : connectedActs){
-										Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime, fallTime);}};
-										if(sr instanceof CurrentSessionCardAdapter)
-											((CurrentSessionCardAdapter)sr).runOnUiThread(r);
-										else if(sr instanceof Activity)
-											((Activity)sr).runOnUiThread(r);
-									}
-								}
-								//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================
-
+								
 								
 							}
 						}
@@ -734,13 +719,35 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	/*
 	 * usa un thread separato per salvare una caduta nel database
+	 * e far apparire tutto nell'adapter
 	 */
-	private static void databaseFallSaver(final FallDataSource fds, final SessionDataSource.Session s, final ConcurrentLinkedQueue<Acquisition> al, final double lat, final double lng)
+	private void databaseFallSaverAndFallOccurredManager(final Context ctx, final FallDataSource fds, final SessionDataSource.Session s, final ConcurrentLinkedQueue<Acquisition> al, final double lat, final double lng)
 	{
+		
 		new Thread(new Runnable(){
 			@Override
 			public void run(){
-				fds.insertFall(s, al, lat, lng);
+				FallDataSource.Fall fall = fds.insertFall(s, al, lat, lng);
+				
+				
+				
+				//==============================INVIO ALLE ACTIVITY CONNESSE I DATI(INIZIO)=================================
+				if(connectedActs != null && connectedActs.size() > 0){
+					//TODO C'ERA UN LINK = NULL
+					final long fallTime = fall.getTime();
+					final String formattedTime = Utility.getStringTime(fallTime);
+					for(final ServiceReceiver sr : connectedActs){ 
+						Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime, false);}};
+						if(sr instanceof CurrentSessionCardAdapter)
+							((CurrentSessionCardAdapter)sr).runOnUiThread(r);
+						else if(sr instanceof Activity)
+							((Activity)sr).runOnUiThread(r);
+					}
+				}
+				//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================
+
+				
+				manageFallOccured(position, ctx, fall); //fa quello che c'è da fare quando avviene una fall!
 			}
 		}).start();
 	}
@@ -752,18 +759,33 @@ public class ForegroundService extends Service implements SensorEventListener {
 		return isRunning;
 	}
 	
-	private void manageFallOccured(String position, double lat, double lng)
+	private void manageFallOccured(String position, Context ctx, FallDataSource.Fall fall)
 	{
 		/*
 		 * TODO: stobene - activity
 		 */
+		
+		
+
+		/*
+		 * creo nuovo oggetto broadcastreceiver inizializzato con i valori sopra ^^^^^
+		 * 
+		 * no
+		 * passo tutti i parametri in sendsms e salvo in database solo quando è stata mandata. oppure salvo subito e modifico tanto ho l'oggetto li dentro
+		 * 
+		 * 
+		 * devo anche passare riferimento alla lista adapter per poter modificare il campo della fall dall'interno di smsender per quanto riguarda la notifica mandata o no
+		 * poi ogni 5 secondi possiam chiamare notifydatasetchanged chi cazzo se ne frega
+		 *
+		 */
+		
 		Scanner scan;
 		
 		String message = getResources().getString(R.string.message);
 		message += position;
-		if(lat != -1 && lng != -1)
+		if(fall.getLat() != -1 && fall.getLng() != -1)
 		{
-			message += "\n" + Utility.getMapsLink(lat, lng);
+			message += "\n" + Utility.getMapsLink(fall.getLat(), fall.getLng());
 		}
 		Set<String> numbers = sp.getStringSet(CONTACTS_KEY, null);
 		ArrayList<String> contacts = numbers != null ? new ArrayList<String>(numbers) : new ArrayList<String>();
@@ -776,6 +798,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 			
 			numbersList.add(number);
 		}
-		SMSender.sendSMSToList(numbersList, this, message);
+		new SMSender().sendSMSToList(numbersList, ctx, message, fall);
 	}
 }

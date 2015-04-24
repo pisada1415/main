@@ -112,7 +112,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 			ArrayList<FallDataSource.Fall> cadute = fallDataSource.sessionFalls(sessionData.currentSession());
 			if(cadute != null) //OCCHIO POTREBBE NASCONDERE PROBLEMI
 				for(int i = cadute.size()-1; i >= 0; i--){
-					cardAdapter.addFall(cadute.get(i), currentSession);
+					cardAdapter.addFall(cadute.get(i), currentSession/*TODO prendi valore true false da caduta*/);
 				}
 		}
 
@@ -390,14 +390,6 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 
 	}
 
-
-	@Override
-	public void serviceUpdate(String fallPosition, String link, String time,
-			long img) {
-		// non da usare qui
-
-	}
-
 	@Override
 	public void sessionTimeOut() {
 		if(serviceIntent != null)
@@ -408,5 +400,12 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	@Override
 	public void serviceUpdate(float x, float y, float z, long time) {
 
+	}
+
+	@Override
+	public void serviceUpdate(String fallPosition, String link, String time,
+			boolean b) {
+		// non serve qui
+		
 	}
 }

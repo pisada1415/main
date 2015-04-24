@@ -8,45 +8,23 @@ package pisada.fallDetector;
 //Samuele gay
 //
 //Canaglia
-import java.util.ArrayList;
-import java.util.Random;
-
-
-
-
 import fallDetectorException.BoolNotBoolException;
-import fallDetectorException.DublicateNameSessionException;
-import fallDetectorException.MoreThanOneOpenSessionException;
-import pisada.database.FallDataSource;
-import pisada.database.SessionDataSource.Session;
-import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.recycler.SessionListCardAdapter;
 import android.support.v7.app.ActionBarActivity;
 import android.content.Context;
 import android.content.Intent;
-import android.database.sqlite.SQLiteConstraintException;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.Toast;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.LayoutManager;
-
-
-
-
 
 public class SessionsListActivity extends ActionBarActivity implements SensorEventListener {
 
@@ -57,7 +35,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	private SensorManager mSensorManager;
 	private Sensor mSensor;
 	private static SessionDataSource sessionData;
-	private long lastToastTime;
 	Intent serviceIntent;
 
 
@@ -65,10 +42,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_sessions_list);
-
-
-
-
 		//APRO CONNESSIONI AL DATABASE
 		sessionData=new SessionDataSource(this);
 
@@ -86,7 +59,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-
+		
 	}
 
 
@@ -173,9 +146,11 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 	}
 	public void addSession(View v) throws BoolNotBoolException{
+
 		Intent toSamu = new Intent(this, CurrentSessionActivity.class);
 		toSamu.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 		startActivity(toSamu);
+
 
 
 	}

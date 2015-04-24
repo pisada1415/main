@@ -2,6 +2,7 @@ package pisada.recycler;
 
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import fallDetectorException.DublicateNameSessionException;
 import pisada.database.FallSqlHelper;
@@ -66,8 +67,8 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			this.newSessionText=(TextView) card.findViewById(R.id.new_session_text);
 			this.addSessionButton=(Button) card.findViewById(R.id.add_session_button);
 			this.typeSession=(EditText) card.findViewById(R.id.type_session);
-			
-			addSessionButton.setBackground(new BitmapDrawable(activity.getResources(),Utility.createImage(4456)));
+			Random random=new Random();
+			addSessionButton.setBackground(new BitmapDrawable(activity.getResources(),Utility.createImage(Math.abs((int)random.nextLong()%100))));
 			if(sessionData.existCurrentSession()){
 				//v.setLayoutParams(new LayoutParams(v.getWidth(),0));
 			}
@@ -125,8 +126,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				Nholder.card.setVisibility(CardView.GONE);
 			}
 			else{
-				Nholder.card.setVisibility(CardView
-						.VISIBLE);
+				Nholder.card.setVisibility(CardView.VISIBLE);
 
 			}
 			return;

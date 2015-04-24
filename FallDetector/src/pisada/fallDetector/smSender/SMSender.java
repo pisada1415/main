@@ -2,6 +2,11 @@ package pisada.fallDetector.smSender;
 
 import java.util.ArrayList;
 
+import pisada.database.FallDataSource;
+import pisada.fallDetector.ForegroundService;
+import pisada.fallDetector.ServiceReceiver;
+import pisada.fallDetector.Utility;
+import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -11,13 +16,42 @@ import android.content.IntentFilter;
 import android.telephony.SmsManager;
 import android.widget.Toast;
 
+/*
+ * in teoria funziona così:
+ * quando un sms viene mandato con successo, la lista nell'adapter dell'altra activity viene aggiornata.
+ * il contenuto di una card è considerato uguale se cambia solo il valore boolean della notifica mandata
+ * con successo (vedi sovrascrittura equals nella classe CardContent pacchetto pisada.recycler). questo fa si
+ * che venga scambiata la card con quella nuova che contiene il valore aggiornato del campo booleano "notificainviata". poi boh non so se va.
+ * 
+ */
+
 public class SMSender {
 
-	private static boolean wait = false;
-	private static final int TIMEOUT = 30000;
-	
-	public static void sendSMSToList(final ArrayList<String> list, final Context ctx, final String message)
+	private boolean wait = false;
+	private final int TIMEOUT = 30000;
+	private FallDataSource fds;
+	private boolean notified = false;
+	public void sendSMSToList(final ArrayList<String> list, final Context ctx, final String message, final FallDataSource.Fall fall)
 	{
+		fds = new FallDataSource(ctx);
+
+		if(list.size() == 0)
+		{
+			if(ForegroundService.connectedActs != null && ForegroundService.connectedActs.size() > 0){
+
+				final double latitude = fall.getLat(), longitude = fall.getLng();
+				final String position = "" + latitude + ", " + longitude;
+				final String link = Utility.getMapsLink(latitude, longitude);
+				final String formattedTime = Utility.getStringTime(fall.getTime());
+				for(final ServiceReceiver sr : ForegroundService.connectedActs){ 
+					Runnable r = new Runnable(){@Override public void run() {String pos = latitude != -1 && longitude != -1? position : "Not available";sr.serviceUpdate(pos, link, formattedTime, true);}};
+					if(sr instanceof CurrentSessionCardAdapter)
+						((CurrentSessionCardAdapter)sr).runOnUiThread(r);
+					else if(sr instanceof Activity)
+						((Activity)sr).runOnUiThread(r);
+				}
+			}
+		}
 		new Thread(){
 			@Override
 			public void run()
@@ -30,17 +64,16 @@ public class SMSender {
 							Thread.sleep(1000);
 							waitingTime += 1000;
 						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					waitingTime = 0;
-					sendSMS(number, ctx, message);
+					sendSMS(number, ctx, message, fall);
 				}
 			}
 		}.start();
 	}
 
-	private static void sendSMS(String number, final Context ctx, String message){
+	private  void sendSMS(String number, final Context ctx, String message, final FallDataSource.Fall fall){
 
 
 		String SENT = "SMS_SENT";
@@ -62,7 +95,22 @@ public class SMSender {
 				case Activity.RESULT_OK:
 					Toast.makeText(ctx.getApplicationContext(), "SMS sent", 
 							Toast.LENGTH_SHORT).show();
+					//TODO 	fds.setNotificationSuccess(fall, true);
+					
+					if(ForegroundService.connectedActs != null && ForegroundService.connectedActs.size() > 0){
 
+						final double latitude = fall.getLat(), longitude = fall.getLng();
+						final String position = "" + latitude + ", " + longitude;
+						final String link = Utility.getMapsLink(latitude, longitude);
+						final String formattedTime = Utility.getStringTime(fall.getTime());
+						for(final ServiceReceiver sr : ForegroundService.connectedActs){ 
+							Runnable r = new Runnable(){@Override public void run() {String pos = latitude != -1 && longitude != -1? position : "Not available";sr.serviceUpdate(pos, link, formattedTime, true);}};
+							if(sr instanceof CurrentSessionCardAdapter)
+								((CurrentSessionCardAdapter)sr).runOnUiThread(r);
+							else if(sr instanceof Activity)
+								((Activity)sr).runOnUiThread(r);
+						}
+					}
 					break;
 				case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
 					Toast.makeText(ctx.getApplicationContext(), "Generic failure", 
