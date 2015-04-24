@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import fallDetectorException.InvalidFallException;
 import fallDetectorException.InvalidSessionException;
 import pisada.database.SessionDataSource.Session;
 import android.app.Activity;
@@ -20,10 +21,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.widget.Toast;
 
 public class FallDataSource {
-	private SQLiteDatabase database;
+	private static SQLiteDatabase database;
 	private FallSqlHelper databaseHelper;
 	private SessionDataSource sessionData;
-	private String[] fallColumns = {FallSqlHelper.FALL_TIME, FallSqlHelper.FALL_FSESSION,FallSqlHelper.FALL_LAT,FallSqlHelper.FALL_LNG};
+	private String[] fallColumns = {FallSqlHelper.FALL_TIME, FallSqlHelper.FALL_FSESSION,FallSqlHelper.FALL_LAT,FallSqlHelper.FALL_LNG, FallSqlHelper.FALL_NOTIFIED_COLUMN};
 	private String[] acquisitionColumns = {FallSqlHelper.ACQUISITION_TIME,FallSqlHelper.ACQUISITION_FALL_TIME, FallSqlHelper.ACQUISITION_ASESSION, FallSqlHelper.ACQUISITION_XAXIS, FallSqlHelper.ACQUISITION_YAXIS, FallSqlHelper.ACQUISITION_ZAXIS};
 	private Context context;
 
@@ -37,10 +38,11 @@ public class FallDataSource {
 		private long time;
 		private double lng;
 		private double lat;
+		private int notified;
 		private boolean isValid=true;
 
 
-		private Fall(long time,Session session, double lat, double lng){
+		private Fall(long time,Session session, double lat, double lng, int notified){
 
 
 			if(!session.isValidSession()||session==null)throw new InvalidSessionException();
@@ -49,6 +51,7 @@ public class FallDataSource {
 			this.time=time;
 			this.lng=lng;
 			this.lat=lat;
+			this.notified=notified;
 
 		}
 
@@ -56,15 +59,21 @@ public class FallDataSource {
 			isValid=false;
 		}
 
-
+		private void setNotificationSuccess(boolean notified){
+			if(notified)this.notified=1;
+			else this.notified=0;
+		}
+			
 		public double getLat(){return lat;}
 		public double getLng(){return lng;}
 		public long getTime(){return time;}
 		public Session getSession(){return session;}
 		public boolean isValid(){return isValid;}
 		public String getSessionName(){return session.getName();}
+		public boolean wasNotified(){return notified==1;}
+				
+		}
 
-	}
 
 
 
@@ -109,7 +118,7 @@ public class FallDataSource {
 		values.put(FallSqlHelper.FALL_LAT, lat);
 		values.put(FallSqlHelper.FALL_LNG, lng);
 		database.insert(FallSqlHelper.FALL_TABLE,null,values);
-		Fall fall=new Fall(time, session,lat, lng);
+		Fall fall=new Fall(time, session,lat, lng,FallSqlHelper.UNNOTIFIED);
 		for(Acquisition a: acquisitionList){
 			insertAcquisition(fall, a);
 		}
@@ -237,8 +246,10 @@ public class FallDataSource {
 		Session session=sessionData.getSession(cursor.getString(cursor.getColumnIndex(FallSqlHelper.FALL_FSESSION)));
 		double lat=cursor.getDouble(cursor.getColumnIndex(FallSqlHelper.FALL_LAT));
 		double lng=cursor.getDouble(cursor.getColumnIndex(FallSqlHelper.FALL_LNG));
+		int notified=cursor.getInt(cursor.getColumnIndex(FallSqlHelper.FALL_NOTIFIED_COLUMN));
+		
 
-		return new Fall(time,session,lat,lng);
+		return new Fall(time,session,lat,lng, notified);
 
 	}
 
@@ -255,6 +266,21 @@ public class FallDataSource {
 		a.setSession(sessionData.getSession(sName));
 		a.setFall(getFall(fallTime,a.getSession()));
 		return a;
+	}
+	
+	public void setNotificationSuccess(Fall fall,boolean notified){
+		if(!fall.isValid())throw new InvalidFallException();
+		int intNotified;
+		if(notified)intNotified=FallSqlHelper.NOTIFIED;
+		else intNotified=FallSqlHelper.UNNOTIFIED;
+		
+		database.execSQL("UPDATE "+FallSqlHelper.FALL_TABLE
+				+ " SET "+ FallSqlHelper.FALL_NOTIFIED_COLUMN+" = "+intNotified+
+				" WHERE "+FallSqlHelper.FALL_FSESSION+" = '"+fall.session.getName()+"' AND "+FallSqlHelper.FALL_TIME+" = "+fall.getTime()+");");
+
+		fall.setNotificationSuccess(notified);
+		
+		
 	}
 
 }

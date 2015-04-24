@@ -1,8 +1,8 @@
 package pisada.plotmaker;
 
 public class Data {
-	private float x;
-	private float y;
+	public float x;
+	public float y;
 	
 	public Data(float x, float y)
 	{

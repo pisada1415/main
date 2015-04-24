@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="pisada.fallDetector.ContactsActivity" >
+
+ 
+	<item android:id="@+id/action_addcontact"
+          android:icon="@drawable/ic_action_add_person"
+          android:title="Add Contact"
+          app:showAsAction="always" />
+	<item android:id="@+id/action_addnumber"
+          android:icon="@drawable/editnumber"
+          android:title="Add Number"
+          app:showAsAction="always" />
+	
+</menu>

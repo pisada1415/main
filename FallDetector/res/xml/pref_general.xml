@@ -1,0 +1,25 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <ListPreference
+        android:defaultValue="-1"
+        android:entries="@array/sampleratenames"
+        android:entryValues="@array/sampleratevalues"
+        android:key="sample_rate"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="Select sensor sample rate"
+        android:summary="Lower values to save battery" />
+    
+    
+    <EditTextPreference
+        android:defaultValue="24"
+        android:inputType="number"
+        android:key="max_duration_session"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Max session duration"
+        android:summary="Insert duration in hours"
+         />
+
+</PreferenceScreen>

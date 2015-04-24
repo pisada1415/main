@@ -1,0 +1,25 @@
+/*
+ * fate così quando mettete l'azione al tasto back nella actionbar o comunque quando usate un qualsiasi intent:
+ *
+ * Intent intent = new Intent(this, Activity.class);
+ * intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+ * startActivity(intent);
+ *  // this.finish(); ( vedi te se metterlo, in genere no)
+ *
+ * in pratica porta su l'activity se esiste già un'istanza, ALTRIMENTI la apre e la mette in cima
+ *
+ 
+ /*
+	 * per salvare array: 
+	 * //Set the values
+	 * Set<String> set = new HashSet<String>();
+	 * set.addAll(listOfExistingScores);
+	 *
+	 * 
+	 * per riprendere i valori: 
+	 * //Retrieve the values
+	 * Set<String> set = myScores.getStringSet("key", null);
+	 *
+	 *
+	*/
+ */

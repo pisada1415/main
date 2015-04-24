@@ -8,6 +8,7 @@
     card_view:cardCornerRadius="4dp" >
 
     <RelativeLayout
+         android:id="@+id/curr_card_session_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 

@@ -80,7 +80,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		mLayoutManager = new LinearLayoutManager(this);
 		rView.setLayoutManager(mLayoutManager);
 		rView.setItemAnimator(new DefaultItemAnimator());
-
+	
 		//INIZIALIZZO SENSORE E MANAGER
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -105,7 +105,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 		sessionData.open();
 		cardAdapter.check();
-		cardAdapter.notifyDataSetChanged();
 	}
 
 
@@ -118,13 +117,11 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
 			if(serviceIntent!=null)
-				stopService(serviceIntent);
 			return true;
 		}
 		if(id == R.id.action_settings_2)
 		{
 			if(serviceIntent!=null)
-				startService(serviceIntent);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -174,10 +171,10 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 
 	}
 	public void addSession(View v) throws BoolNotBoolException{
-		String s="Session "+(sessionData.sessionCount()+1);
-		Intent  intent=new Intent(this, CurrentSessionActivity.class);
-		intent.putExtra(FallSqlHelper.SESSION_NAME, s);
-		startActivity(intent);
+
+		Intent toSamu = new Intent(this, CurrentSessionActivity.class);
+		toSamu.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+		startActivity(toSamu);
 
 
 	}

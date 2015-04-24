@@ -1,0 +1,32 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <!--
+         A 'parent' preference, which enables/disables child preferences (below)
+         when checked/unchecked.
+    -->
+    
+    <Preference
+        android:key="sms_list"
+        android:title="Sms - notified people contacts"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+    ></Preference>
+    
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="alarm"
+        android:title="Activate reminder alarm" 
+        />
+
+    <pisada.fallDetector.TimePreference
+               android:dependency="alarm"
+               android:key="time"
+               android:defaultValue="07:00"
+               android:title="Select time"
+               android:summary="Select daily alarm time"
+       >
+   </pisada.fallDetector.TimePreference>
+   
+   
+
+</PreferenceScreen>

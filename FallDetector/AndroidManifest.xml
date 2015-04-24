@@ -5,14 +5,15 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="11"
         android:targetSdkVersion="22" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-        
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -20,38 +21,51 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".SessionsListActivity"
-            android:label="@string/title_activity_sessions_list"
             android:windowSoftInputMode="stateHidden|adjustResize" >
-             <intent-filter >
+        </activity>
+        <activity android:name=".SessionDetailsActivity" >
+        </activity>
+        <activity
+            android:name="test.TestActivity"
+            android:configChanges="orientation|screenSize" >
+        </activity>
+        <activity
+            android:name=".CurrentSessionActivity"
+            android:configChanges="orientation|screenSize" >
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".SessionDetailsActivity"
-            android:label="@string/title_activity_session" >
-            
-        </activity>
-        <activity
-            android:name=".CurrentSessionActivity"
-            android:configChanges="orientation|screenSize"
-             >
-           
-        </activity>
         <activity
             android:name=".FallDetailsActivity"
             android:label="@string/title_activity_fall_details" >
-             
+        </activity>
+
+        <service android:name=".ForegroundService" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings" >
         </activity>
         <activity
-            android:name=".PreferencesActivity"
-            android:label="@string/title_activity_preferences" >
+            android:name=".ContactsActivity"
+            android:label="@string/title_activity_contacts" >
         </activity>
-        
-        <service android:name=".ForegroundService" />
-        
+        <activity
+            android:name=".StartSessionReminderActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_start_session_reminder"
+            android:theme="@style/FullscreenTheme" >
+        </activity>
+
+        <receiver android:name=".NotificationReceiver" 
+                android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="pisada.NOTIFICATION" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
