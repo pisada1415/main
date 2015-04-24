@@ -90,7 +90,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			detailsButton=(Button) v.findViewById(R.id.details_current_button);
 			card=(CardView) v;
 			if(!sessionData.existCurrentSession()){
-			//	v.setLayoutParams(new LayoutParams(v.getWidth(),0));
+				//	v.setLayoutParams(new LayoutParams(v.getWidth(),0));
 			}
 		}
 
@@ -115,48 +115,51 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		return sessionList.size();
 	}
 
-	@Override
+	
 	public void onBindViewHolder(ViewHolder holder, int i) {
 
+		
+		
 		Session currSession=sessionData.currentSession();
-		switch(i) {
+		switch(getItemViewType(i)) {
 		case 0: 
-			NewSessionHolder Nholder=(NewSessionHolder) holder;
-			if(currSession!=null){
-				Nholder.card.setVisibility(CardView.GONE);
-			}
-			else{
-				Nholder.card.setVisibility(CardView.VISIBLE);
 
-			}
-			return;
+			
+				NewSessionHolder Nholder=(NewSessionHolder) holder;
 
+
+				return ;
+			
 		case 1:
-			CurrentSessionHolder cHolder=(CurrentSessionHolder) holder;
-			if(currSession!=null){
+
+			
+				CurrentSessionHolder cHolder=(CurrentSessionHolder) holder;
+
 				cHolder.card.setVisibility(View.VISIBLE);
 				cHolder.sessionName.setText(currSession.getName()+"\n Close: "+currSession.booleanIsClose());
 				cHolder.sessionStart.setText(String.valueOf(currSession.getStartTime()).toString());
+				return;
+			
 
-			}
-			else{
-				cHolder.card.setVisibility(View.GONE);
-			}
-			return;
+			
+
+		
 		}
 
 		OldSessionHolder Oholder=(OldSessionHolder) holder;
 		final Session session = sessionList.get(i);
-		Oholder.vName.setText("Name: "+session.getName()+"\nStart Time: "+session.getStartTime()+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
-		Oholder.btn.setOnClickListener(new OnClickListener(){
+		if(session.isValidSession()){
+			Oholder.vName.setText("Name: "+session.getName()+"\nStart Time: "+session.getStartTime()+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
+			Oholder.btn.setOnClickListener(new OnClickListener(){
 
-			@Override
-			public void onClick(View v) {
-				Intent intent=new Intent(activity,SessionDetailsActivity.class);
-				intent.putExtra(FallSqlHelper.SESSION_NAME, session.getName());
-				activity.startActivity(intent);
-			}
-		});
+				@Override
+				public void onClick(View v) {
+					Intent intent=new Intent(activity,SessionDetailsActivity.class);
+					intent.putExtra(FallSqlHelper.SESSION_NAME, session.getName());
+					activity.startActivity(intent);
+				}
+			});
+		}
 	}
 
 	@Override
@@ -165,9 +168,15 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		Session currSession=sessionData.currentSession();
 
-		if(type==0) return new NewSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_session_card, viewGroup, false));
+		if(type==0)
+		{
+				return new NewSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_session_card, viewGroup, false));
+		}
+		else if(type == 1)
+			return new CurrentSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_curr_session_card,viewGroup,false));
 
-		if(type==1)return new CurrentSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_curr_session_card,viewGroup,false));
+
+		//if(type==1)return new CurrentSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_curr_session_card,viewGroup,false));
 
 		return new OldSessionHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.old_session_card, viewGroup, false));
 
@@ -198,30 +207,40 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		}
 
 	}
-	
+
 	public void check(){
 		sessionList=sessionData.sessions();
 		sessionList.add(0,new Session());
 		if(!sessionData.existCurrentSession()){
 			sessionList.add(0, new Session());
 		}
-		
-		
+
+
 	}
 
 	@Override
 	public int getItemViewType(int position) {
 
-		switch(position){
-		case 0: return 0;
-		case 1: return 1;
+		//switch(position){
+		Session currSession=sessionData.currentSession();
+		if(currSession == null)
+		{
+			if(position == 0)
+				return 0;
 		}
-		return 3;
+		else
+			if(position == 0)
+				return 1;
+		/*
+		case 0: return 0;
+		case 1: return 1;}*/
+
+		return 2;
 
 	}
-	
-	
-	
+
+
+
 
 
 

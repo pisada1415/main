@@ -1,13 +1,6 @@
 package pisada.fallDetector;
 
-/*
- * questa è la mainactivity. Vorrei farla in stile Google FIT (dateci un'occhiata) così rispettiamo
- * le richieste di mettere lo start stop (bottone in alto iniziale) nella stessa schermata
- * della lista di sessions..
- */
-//Samuele gay
-//
-//Canaglia
+
 import fallDetectorException.BoolNotBoolException;
 import pisada.database.SessionDataSource;
 import pisada.recycler.SessionListCardAdapter;
@@ -26,14 +19,12 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-public class SessionsListActivity extends ActionBarActivity implements SensorEventListener {
+public class SessionsListActivity extends ActionBarActivity {
 
 	private RecyclerView rView;
 	private static SessionListCardAdapter cardAdapter;
 	private RecyclerView.LayoutManager mLayoutManager;
 	public static int counter;
-	private SensorManager mSensorManager;
-	private Sensor mSensor;
 	private static SessionDataSource sessionData;
 	Intent serviceIntent;
 
@@ -55,11 +46,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		rView.setLayoutManager(mLayoutManager);
 		rView.setItemAnimator(new DefaultItemAnimator());
 
-		//INIZIALIZZO SENSORE E MANAGER
-		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-		mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
-		
 	}
 
 
@@ -76,7 +62,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	@Override
 	public void onResume(){
 		super.onResume();
-		mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 		sessionData.open();
 		cardAdapter.check();
 		cardAdapter.notifyDataSetChanged();
@@ -90,15 +75,6 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			if(serviceIntent!=null)
-			return true;
-		}
-		if(id == R.id.action_settings_2)
-		{
-			if(serviceIntent!=null)
-			return true;
-		}
 		return super.onOptionsItemSelected(item);
 
 
@@ -107,58 +83,26 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	protected void onPause() {
 
 		super.onPause();
-		mSensorManager.unregisterListener(this);
 
 
 	}
 
-	@Override
-	public void onSensorChanged(SensorEvent event) {
-		long currentTime=System.currentTimeMillis();
-		/*	TextView xText=(TextView) findViewById(R.id.xAxis);
-		TextView yText=(TextView) findViewById(R.id.yAxis);
-		TextView zText=(TextView) findViewById(R.id.zAxis);*/
-		float xValue=event.values[0];
-		float yValue=event.values[1];
-		float zValue=event.values[2];
-		float absG=(float) Math.sqrt(xValue*xValue+yValue*yValue+zValue*zValue);
-		int bool=0;
-		if(absG>30)bool=1;
-		//STORE NEL DATABASE
-		/*if(add){
-			try{
-				lastTime=currentTime;
-				acquisitionData.insert(currentTime, xValue, yValue, zValue, sessionName,bool );
-				Acquisition a=acquisitionData.getAcquisition(currentTime, sessionName);
-				cardAdapter.addItem(a);
-				add=false;
-			}
-			catch(Exception e){
-				e.printStackTrace();
-
-			}
-		}*/
-	}
-
-	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-
-	}
+	
 	public void addSession(View v) throws BoolNotBoolException{
 
 		Intent toSamu = new Intent(this, CurrentSessionActivity.class);
-		toSamu.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+		toSamu.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); 
 		startActivity(toSamu);
-
+	//	finish();
 
 
 	}
 
 	public void currentSessionDetails(View v){
-		Intent  intent=new Intent(this, CurrentSessionActivity.class);
-		startActivity(intent);
-
+		Intent toSamu = new Intent(this, CurrentSessionActivity.class);
+		toSamu.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); 
+		startActivity(toSamu);
+	//	finish();
 	}
 
 
