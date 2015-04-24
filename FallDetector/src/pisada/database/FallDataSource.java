@@ -26,7 +26,7 @@ public class FallDataSource {
 	private String[] fallColumns = {FallSqlHelper.FALL_TIME, FallSqlHelper.FALL_FSESSION,FallSqlHelper.FALL_LAT,FallSqlHelper.FALL_LNG};
 	private String[] acquisitionColumns = {FallSqlHelper.ACQUISITION_TIME,FallSqlHelper.ACQUISITION_FALL_TIME, FallSqlHelper.ACQUISITION_ASESSION, FallSqlHelper.ACQUISITION_XAXIS, FallSqlHelper.ACQUISITION_YAXIS, FallSqlHelper.ACQUISITION_ZAXIS};
 	private Context context;
-
+private String diocane = ")398";
 
 
 
