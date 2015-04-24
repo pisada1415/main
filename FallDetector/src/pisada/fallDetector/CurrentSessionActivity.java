@@ -270,9 +270,9 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 			toPiero.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); 
 			startActivity(toPiero);
 			//TODO rimpiazzare queste ultime 2 righe con finish
-			ForegroundService.disconnect(this);
+			/*ForegroundService.disconnect(this);
 			ForegroundService.disconnect(cardAdapter);
-			///this.finish();
+			*/this.finish();
 		}
 	}
 
