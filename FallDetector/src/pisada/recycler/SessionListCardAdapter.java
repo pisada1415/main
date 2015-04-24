@@ -171,7 +171,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		OldSessionHolder Oholder=(OldSessionHolder) holder;
 		final Session session = sessionList.get(i);
-		Oholder.vName.setText("Name: "+session.getName()+"\nStart Time: "+session.getStartTime()+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
+		Oholder.vName.setText("Name: "+session.getName());//+"\nStart Time: "+session.getStartTime()//+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
 		Oholder.btn.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
@@ -269,7 +269,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 					super.onSingleTapUp(e);
 					View card=recycler.findChildViewUnder(e.getX(),e.getY());
 					if(card!=null&&listener!=null){
-						listener.onClick(card, recycler.getChildPosition(card));
+					//	listener.onClick(card, recycler.getChildPosition(card));
 					}
 
 					return false;
@@ -283,7 +283,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 					View card=recycler.findChildViewUnder(e.getX(),e.getY());
 					if(card!=null&&listener!=null){
-						listener.onLongClick(card, recycler.getChildPosition(card));
+					//	listener.onLongClick(card, recycler.getChildPosition(card));
 					}
 				}
 			});
@@ -294,7 +294,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		public boolean onInterceptTouchEvent(RecyclerView recycler, MotionEvent e) {
 			View card=recycler.findChildViewUnder(e.getX(),e.getY());
 			if(card!=null&&listener!=null&&gDetector.onTouchEvent(e)){
-				listener.onClick(card, recycler.getChildPosition(card));
+			//	listener.onClick(card, recycler.getChildPosition(card));
 			}
 			return false;
 		}
@@ -303,7 +303,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		public void onTouchEvent(RecyclerView recycler, MotionEvent e) {
 			View card=recycler.findChildViewUnder(e.getX(),e.getY());
 			if(card!=null&&listener!=null&&gDetector.onTouchEvent(e)){
-				listener.onClick(card, recycler.getChildPosition(card));
+			//	listener.onClick(card, recycler.getChildPosition(card));
 			}
 
 		}

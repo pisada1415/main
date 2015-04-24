@@ -186,6 +186,7 @@ public class SessionsListActivity extends ActionBarActivity implements SensorEve
 	}
 
 
+
 }
 
 
