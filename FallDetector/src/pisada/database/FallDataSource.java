@@ -38,7 +38,7 @@ private String diocane = ")398";
 		private double lng;
 		private double lat;
 		private boolean isValid=true;
-		private boolean diodiodiosscoioi;
+		private boolean diodiodihhosscoioi;
 
 		private Fall(long time,Session session, double lat, double lng){
 
