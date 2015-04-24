@@ -38,10 +38,10 @@
     <string name="remember">Remember to start your daily session!</string>
     <string name="remember1st">Reminder</string>
     <string name="nocontacts">No contacts added yet</string>
-    <string name="successNotif">Notification:</string>
+    <string name="successNotif">Notification:&#160;</string>
     <string name="notsent">not sent yet</string>
     <string name="sent">sent</string>
-        
+      <string name="requiresSetup">requires setup</string>  
     
     
 

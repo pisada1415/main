@@ -7,12 +7,14 @@ import pisada.database.Acquisition;
 
 public class ExpiringList {
 
-	private final int EXPIRING_SIZE = 1000 / ForegroundService.MAX_SENSOR_UPDATE_RATE;
+	private int EXPIRING_SIZE = 1000;
 	protected ConcurrentLinkedQueue<Acquisition> timerAcquisitionList ; //NON VA PROTECTED. SOLO PER DEBUG
 	
 	public ExpiringList()
 	{
 		timerAcquisitionList = new ConcurrentLinkedQueue<Acquisition>();
+		int sizeBasedOnUpdateRate = (Integer) (1000/ForegroundService.MAX_SENSOR_UPDATE_RATE);
+		EXPIRING_SIZE = sizeBasedOnUpdateRate > 10 ? sizeBasedOnUpdateRate : 10;
 	}
 	
 	public void enqueue(Acquisition a)

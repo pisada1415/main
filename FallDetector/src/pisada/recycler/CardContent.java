@@ -1,12 +1,16 @@
 package pisada.recycler;
 
+/*
+ * due oggetti cardcontent considerati uguali quando hanno uguale id e tempo
+ */
 public class CardContent {
 
 	private String pos;
 	private String time;
 	private String link;
 	private boolean notifSuccessfull;
-	private long id;
+	private static int count;
+	private int id;
 	
 	@Override
 	public boolean equals(Object o){
@@ -14,7 +18,7 @@ public class CardContent {
 		if(o instanceof CardContent)
 		cc = (CardContent) o;
 		else return false;
-		if(cc.id == this.id && cc.pos.equals(this.pos) && cc.time.equals(this.time)  && this.link.equals(cc.link))
+		if(cc.id == this.id  && cc.time.equals(this.time))
 			return true;
 		return false;
 	}
@@ -28,7 +32,7 @@ public class CardContent {
 	}
 	public CardContent()
 	{
-		id = System.currentTimeMillis();
+		id = ++count;
 	}
 	
 	public boolean notifiedSuccess()

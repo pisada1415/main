@@ -3,7 +3,6 @@ package pisada.recycler;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Random;
 
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
@@ -14,13 +13,12 @@ import pisada.fallDetector.Utility;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
+import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.Html;
@@ -51,7 +49,11 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static long timeSessionUp;
 	private static long timeWhenPaused = 0;
 	
+	private SharedPreferences sp;
+	
 	private static boolean startChronometerOnStart = false;
+	
+	private final String CONTACTS_KEY = "contacts";
 	/*
 	 * 
 	 * first_new_currentsession_card
@@ -160,6 +162,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		if(pauseTime != 0) {
 			timeWhenPaused = pauseTime;
 		}
+		
+		sp = PreferenceManager.getDefaultSharedPreferences(activity);
+		
 	}
 
 	Handler mHandler;
@@ -187,18 +192,27 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			FallsHolder Oholder=(FallsHolder) holder;
 			Oholder.fallThumbnail.setImageBitmap(Utility.createImage(Utility.randInt(2, 100)));
 			String link = fall.getLink();
-			Oholder.fallPosition.setText(Html.fromHtml("<a href=\""+ link + "\">" + "Position: " + fall.getPos() + "</a>"));
 			if(link != null){
+				Oholder.fallPosition.setText(Html.fromHtml("<a href=\""+ link + "\">" + "Position: " + fall.getPos() + "</a>"));
+				
 				Oholder.fallPosition.setClickable(true);
-			Oholder.fallPosition.setMovementMethod (LinkMovementMethod.getInstance());
+				Oholder.fallPosition.setMovementMethod (LinkMovementMethod.getInstance());
 			}
-			else
+			else{
+				Oholder.fallPosition.setText("Position: " + fall.getPos());
 				Oholder.fallPosition.setClickable(false);
+			}
+			
 			//Oholder.fallPosition.setText("Position: "+ fall.getPos());
 			Oholder.fallTime.setText("Time: " + fall.getTime());
 			if(fall.notifiedSuccess()){
-			Oholder.boolNotif.setText(activity.getResources().getString(R.string.sent));
-			Oholder.boolNotif.setTextColor(Color.GREEN);
+				Oholder.boolNotif.setText(activity.getResources().getString(R.string.sent));
+				Oholder.boolNotif.setTextColor(Color.GREEN);
+			}
+			else if(sp.getStringSet(CONTACTS_KEY, null) == null || sp.getStringSet(CONTACTS_KEY, null).size()==0)
+			{
+				Oholder.boolNotif.setText(activity.getResources().getString(R.string.requiresSetup));
+				Oholder.boolNotif.setTextColor(Color.RED);
 			}
 		}
 
@@ -220,12 +234,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		}
 		else return new FallsHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.fall_card, viewGroup, false));
-
-	}
-	public void addItem(CardContent c) {//DIVENTERà FALL
-
-		cardContentList.add(cardContentList.size(),c);
-		notifyItemInserted(cardContentList.size()-1);
 
 	}
 
@@ -329,6 +337,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			for(; i < cardContentList.size() && !cardContentList.get(i).equals(cc); i++);
 			cardContentList.set(i, cc);
 			notifyItemChanged(i);
+			
 		}
 	}
 
@@ -342,7 +351,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		String time = Utility.getStringTime(f.getTime());
 		String position;
 		position = (f.getLat() != -1 && f.getLng() != -1) ? "" + f.getLat() + ", " + f.getLng() : "Not available";
-		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), time,true/* f.wasNotified()*/);
+		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), time, f.wasNotified());
 	}
 	
 	public void clearFalls()

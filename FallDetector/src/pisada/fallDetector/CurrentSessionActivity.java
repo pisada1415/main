@@ -44,7 +44,8 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 
 	private FallDataSource fallDataSource;
 	private SessionDataSource.Session currentSession; 
-
+	private RecyclerView recycler;
+	
 	private ActionBar actionBar;
 
 	@Override
@@ -55,7 +56,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		serviceIntent = new Intent(this, ForegroundService.class);
 		sessionNameDefault = getResources().getString(R.string.defaultSessionName);
 		sessionName = sessionNameDefault;
-
+		recycler = (RecyclerView) findViewById(R.id.currentsession_list_recycler);
 
 		//INIZIALIZZO DATABASE
 
@@ -406,6 +407,6 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	public void serviceUpdate(String fallPosition, String link, String time,
 			boolean b) {
 		// non serve qui
-		
+		recycler.scrollToPosition(recycler.getAdapter().getItemCount()-1);
 	}
 }

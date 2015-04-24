@@ -47,7 +47,8 @@
             android:layout_toRightOf="@id/thumbnail_fall"
             android:text="@string/time_elapsed"
             android:textColor="@color/lightBlue"
-            android:textSize="20sp" />
+            android:textSize="20sp" 
+            android:singleLine="true"/>
 
         <TextView
             android:id="@+id/position"
@@ -58,7 +59,8 @@
             android:layout_toRightOf="@id/thumbnail_fall"
             android:singleLine="true"
             android:text="@string/position"
-            android:textColor="@color/lightBlue" />
+            android:textColor="@color/lightBlue"
+            android:textColorLink="@color/lightBlue" />
 
         <TextView
             android:id="@+id/successNotif"

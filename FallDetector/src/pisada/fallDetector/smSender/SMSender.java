@@ -30,28 +30,11 @@ public class SMSender {
 	private boolean wait = false;
 	private final int TIMEOUT = 30000;
 	private FallDataSource fds;
-	private boolean notified = false;
 	public void sendSMSToList(final ArrayList<String> list, final Context ctx, final String message, final FallDataSource.Fall fall)
 	{
 		fds = new FallDataSource(ctx);
 
-		if(list.size() == 0)
-		{
-			if(ForegroundService.connectedActs != null && ForegroundService.connectedActs.size() > 0){
-
-				final double latitude = fall.getLat(), longitude = fall.getLng();
-				final String position = "" + latitude + ", " + longitude;
-				final String link = Utility.getMapsLink(latitude, longitude);
-				final String formattedTime = Utility.getStringTime(fall.getTime());
-				for(final ServiceReceiver sr : ForegroundService.connectedActs){ 
-					Runnable r = new Runnable(){@Override public void run() {String pos = latitude != -1 && longitude != -1? position : "Not available";sr.serviceUpdate(pos, link, formattedTime, true);}};
-					if(sr instanceof CurrentSessionCardAdapter)
-						((CurrentSessionCardAdapter)sr).runOnUiThread(r);
-					else if(sr instanceof Activity)
-						((Activity)sr).runOnUiThread(r);
-				}
-			}
-		}
+		if(list.size() != 0)
 		new Thread(){
 			@Override
 			public void run()
@@ -95,7 +78,7 @@ public class SMSender {
 				case Activity.RESULT_OK:
 					Toast.makeText(ctx.getApplicationContext(), "SMS sent", 
 							Toast.LENGTH_SHORT).show();
-					//TODO 	fds.setNotificationSuccess(fall, true);
+					fds.setNotificationSuccess(fall, true);
 					
 					if(ForegroundService.connectedActs != null && ForegroundService.connectedActs.size() > 0){
 
