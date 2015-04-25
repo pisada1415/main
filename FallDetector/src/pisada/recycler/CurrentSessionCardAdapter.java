@@ -27,7 +27,6 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -37,11 +36,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static ArrayList<CardContent> cardContentList;
 	private Activity activity;
 
-	private ArrayList<Double> lastFallThumbnailData;
-	private String lastFallTime;
-	private String lastFallPosition;
-
-	private long time;
+	
 	private double /*lastX, lastY, lastZ,*/ last;
 	private static Plot2d /*graphX, graphY, graphZ,*/ graph;
 	private Calendar c;
@@ -62,15 +57,13 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	 * first_new_currentsession_card
 	 */
 	public class FirstCardHolder extends RecyclerView.ViewHolder {
-		private Button startPauseButton;
-		private Button stopButton;
+		
 		private ImageView thumbNail;
 		private TextView info;
 		
 		public FirstCardHolder(View v) {
 			super(v);
-			startPauseButton = (Button)v.findViewById(R.id.start_pause_button);
-			stopButton = (Button)v.findViewById(R.id.stop_button);
+			
 			duration = (Chronometer) v.findViewById(R.id.chronometer);
 			thumbNail = (ImageView)v.findViewById(R.id.thumbnail);
 			info =  (TextView) v.findViewById(R.id.info);
@@ -151,7 +144,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 					// TODO Auto-generated method stub
 					int position = getAdapterPosition();
 					Intent intent = new Intent(activity, pisada.fallDetector.FallDetailsActivity.class);
-					intent.putExtra("fallTime", cardContentList.get(position).getTime());
+					long time = cardContentList.get(position).getTime();
+					intent.putExtra("fallTime", time);
 					intent.putExtra("fallSession", currentSessionName);
 					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 					activity.startActivity(intent);
@@ -287,8 +281,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		//lastX = x; lastY = y; lastZ = z; 
 		last = Math.sqrt(x*x + y*y + z*z);
 		
-		this.time = time;
-
 		c = Calendar.getInstance();
 		if(/*graphX != null && graphY != null && graphZ != null*/graph != null){
 			long timeGraph = (time - millisecStartGraph);
@@ -377,10 +369,11 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void addFall(FallDataSource.Fall f, SessionDataSource.Session s)
 	{
 		currentSessionName = s.getName();
-		String time = Utility.getStringTime(f.getTime());
+		long timeLong = f.getTime();
+		String timeLiteral = Utility.getStringTime(timeLong);
 		String position;
 		position = (f.getLat() != -1 && f.getLng() != -1) ? "" + f.getLat() + ", " + f.getLng() : "Not available";
-		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), time, f.getTime(), f.wasNotified());
+		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), timeLiteral, timeLong, f.wasNotified());
 	}
 	
 	public void clearFalls()

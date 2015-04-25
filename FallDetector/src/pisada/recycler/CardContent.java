@@ -32,6 +32,7 @@ public class CardContent {
 		this.timeLiteral = timeLiteral;
 		this.link = link;
 		this.notifSuccessfull = notifSuccessfull;
+		this.time = time;
 	}
 	public CardContent()
 	{
