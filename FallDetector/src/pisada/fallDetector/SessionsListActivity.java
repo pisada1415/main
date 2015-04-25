@@ -104,6 +104,8 @@ public class SessionsListActivity extends ActionBarActivity {
 		startActivity(toSamu);
 	//	finish();
 	}
+	
+	
 
 
 }

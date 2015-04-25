@@ -10,7 +10,11 @@
     android:layout_marginTop="5dp"
     card_view:cardBackgroundColor="@color/foregroundGrey"
     card_view:cardCornerRadius="8dp"
-    card_view:cardElevation="14dp" >
+    card_view:cardElevation="14dp" 
+    android:clickable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+   
+    >
 
     <RelativeLayout
         android:layout_width="match_parent"

@@ -63,7 +63,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		sessionData=new SessionDataSource(this);
 
 		if(sessionData.existCurrentSession()){
-			SessionDataSource.Session currentSession = sessionData.currentSession();
+			currentSession = sessionData.currentSession();
 			sessionName = currentSession.getName();
 
 
@@ -247,6 +247,7 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 
 	//METODO CHIAMATO DAL TASTO STOP NELLA PRIMA CARD
 	public void stopService(View v) {
+	
 		cardAdapter.stopChronometer();
 		cardAdapter.clearFalls();
 		String closedSessionName = null;
@@ -276,6 +277,16 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 		}
 	}
 
+	
+	@Override
+	public void onBackPressed()
+	{
+		Intent toDaniel = new Intent(this, SessionsListActivity.class);
+		toDaniel.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+		startActivity(toDaniel);
+		this.finish();
+	}
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -404,8 +415,8 @@ public class CurrentSessionActivity extends ActionBarActivity implements Service
 	}
 
 	@Override
-	public void serviceUpdate(String fallPosition, String link, String time,
-			boolean b) {
+	public void serviceUpdate(String fallPosition, String link, String timeLiteral
+			, long time, boolean b) {
 		// non serve qui
 		recycler.scrollToPosition(recycler.getAdapter().getItemCount()-1);
 	}

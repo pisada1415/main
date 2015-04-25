@@ -50,4 +50,13 @@ public class SessionDetailsActivity extends ActionBarActivity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
+	
+	@Override
+	public void onBackPressed()
+	{
+		Intent toDaniel = new Intent(this, SessionsListActivity.class);
+		toDaniel.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+		startActivity(toDaniel);
+		this.finish(); 
+	}
 }

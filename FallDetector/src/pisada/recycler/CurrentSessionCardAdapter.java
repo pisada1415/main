@@ -13,6 +13,7 @@ import pisada.fallDetector.Utility;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
@@ -54,6 +55,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static boolean startChronometerOnStart = false;
 	
 	private final String CONTACTS_KEY = "contacts";
+	
+	private static String currentSessionName;
 	/*
 	 * 
 	 * first_new_currentsession_card
@@ -129,7 +132,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	/*
 	 * fall cards
 	 */
-	public  class FallsHolder extends RecyclerView.ViewHolder {
+	public  class FallsHolder extends RecyclerView.ViewHolder{
 		private ImageView fallThumbnail;
 		private TextView fallTime;
 		private TextView fallPosition;
@@ -141,7 +144,23 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			fallTime=(TextView) v.findViewById(R.id.fall_time);
 			fallPosition=(TextView) v.findViewById(R.id.position);
 			boolNotif = (TextView) v.findViewById(R.id.booleanSent);
+			v.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					int position = getAdapterPosition();
+					Intent intent = new Intent(activity, pisada.fallDetector.FallDetailsActivity.class);
+					intent.putExtra("fallTime", cardContentList.get(position).getTime());
+					intent.putExtra("fallSession", currentSessionName);
+					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+					activity.startActivity(intent);
+					//Toast.makeText(activity, "premuta caduta " + cardContentList.get(position).getTime(), Toast.LENGTH_SHORT).show();
+				
+				}
+			});
 		}
+		
 
 	}
 
@@ -204,7 +223,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			}
 			
 			//Oholder.fallPosition.setText("Position: "+ fall.getPos());
-			Oholder.fallTime.setText("Time: " + fall.getTime());
+			Oholder.fallTime.setText("Time: " + fall.getTimeLiteral());
 			if(fall.notifiedSuccess()){
 				Oholder.boolNotif.setText(activity.getResources().getString(R.string.sent));
 				Oholder.boolNotif.setTextColor(Color.GREEN);
@@ -214,6 +233,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				Oholder.boolNotif.setText(activity.getResources().getString(R.string.requiresSetup));
 				Oholder.boolNotif.setTextColor(Color.RED);
 			}
+			
+			
 		}
 
 	}
@@ -222,18 +243,25 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 	@Override
-	public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int type) {
+	public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int type) {
 
 
 		if(type==0){
-			return new FirstCardHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_currentsession_card, viewGroup, false));
+			return new FirstCardHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.first_new_currentsession_card, parent, false));
 		}
 		if(type==1)
 		{
-			return new SecondCardHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.plots_card, viewGroup, false));
+			return new SecondCardHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.plots_card, parent, false));
 
 		}
-		else return new FallsHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.fall_card, viewGroup, false));
+		else 
+			{
+			
+			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fall_card, parent, false);
+		    
+		    
+				return new FallsHolder(view);
+			}
 
 	}
 
@@ -324,9 +352,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		duration.stop();
 	}
 	
-	private void addFallToCardList(String position, String link, String time, boolean b)
+	private void addFallToCardList(String position, String link, String timeLiteral, long time, boolean b)
 	{
-		CardContent cc = new CardContent(position,link,time, b);
+		CardContent cc = new CardContent(position,link,timeLiteral, time, b);
 		if(!cardContentList.contains(cc)){
 			cardContentList.add(cc);
 			notifyItemInserted(cardContentList.size()-1);
@@ -342,16 +370,17 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	}
 
 	@Override
-	public void serviceUpdate(String fallPosition, String link, String time, boolean b) {
-		addFallToCardList(fallPosition, link, time, b);
+	public void serviceUpdate(String fallPosition, String link, String timeLiteral, long time, boolean b) {
+		addFallToCardList(fallPosition, link, timeLiteral, time, b);
 	}
 	
 	public void addFall(FallDataSource.Fall f, SessionDataSource.Session s)
 	{
+		currentSessionName = s.getName();
 		String time = Utility.getStringTime(f.getTime());
 		String position;
 		position = (f.getLat() != -1 && f.getLng() != -1) ? "" + f.getLat() + ", " + f.getLng() : "Not available";
-		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), time, f.wasNotified());
+		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), time, f.getTime(), f.wasNotified());
 	}
 	
 	public void clearFalls()
