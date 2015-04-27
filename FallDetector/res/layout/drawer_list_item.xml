@@ -2,31 +2,30 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="48dp"
-    android:background="?android:attr/activatedBackgroundIndicator">
- 
+    android:background="?android:attr/activatedBackgroundIndicator" >
+
     <ImageView
         android:id="@+id/icon"
         android:layout_width="25dp"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
         android:layout_marginLeft="12dp"
         android:layout_marginRight="12dp"
-        android:src="@drawable/ic_launcher"
-        android:layout_centerVertical="true" 
-       />
- 
+        android:src="@drawable/ic_launcher" />
 
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_centerVertical="true"
         android:layout_toRightOf="@id/icon"
-        android:minHeight="?android:attr/listPreferredItemHeightSmall"
-        android:textAppearance="?android:attr/textAppearanceListItemSmall"
-        
-        android:textColor="#e3e1e2"
-        android:gravity="center_vertical"
-    android:paddingEnd="16dp"
-    android:paddingStart="16dp"/>
- 
+        android:layout_toEndOf="@id/icon"
+        android:paddingEnd="6dp"
+        android:paddingStart="6dp"
+        android:textColor="#d0d0d0"
+        android:textSize="20sp"
+        android:typeface="sans" />
+
 </RelativeLayout>

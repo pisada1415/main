@@ -101,7 +101,6 @@ public class SettingsActivity extends ActionBarActivity {
 		private Preference smsNotiPref;
 		private Preference maxDurationSession;
 		private Preference alarmTime;
-		private Preference alarmCheckBox;
 		private static AlarmManager alarmManager;
 		
 		@Override
@@ -121,8 +120,6 @@ public class SettingsActivity extends ActionBarActivity {
 			 maxDurationSession.setOnPreferenceChangeListener(sessionDurationChangeListener);
 			 alarmTime = (Preference) findPreference("time");
 			 alarmTime.setOnPreferenceChangeListener(alarmTimeChangeListener);
-			 alarmCheckBox = (Preference) findPreference("alarm");
-			 alarmCheckBox.setOnPreferenceChangeListener(alarmChangeListener);
 		}
 
 
@@ -178,12 +175,12 @@ public class SettingsActivity extends ActionBarActivity {
 				List<String> splittedList = Arrays.asList(value.split(":"));
 				int hour = Integer.parseInt(splittedList.get(0));
 				int minute = Integer.parseInt(splittedList.get(1));
-				/*boolean am = hour<12;
+				boolean am = hour<12;
 				if(!am)
 				{
 					hour -= 12;
 					am = false;
-				}*/
+				}
 
 				Intent myIntent = new Intent(c,  NotificationReceiver.class/*StartSessionReminderActivity.class*/);     
 				myIntent.setAction("pisada.NOTIFICATION");
@@ -194,21 +191,30 @@ public class SettingsActivity extends ActionBarActivity {
 				/*
 				 * cancello tutte allarmi
 				 */
-				PendingIntent pendingIntent = PendingIntent.getBroadcast(c, 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-			/*	alarmManager.cancel(pendingIntent);
+				PendingIntent pendingIntent = PendingIntent.getBroadcast(c, 0, myIntent, 0);
+				try {
+			        alarmManager.cancel(pendingIntent);
 
-				*/
+			    } catch (Exception e) {
+			    	
+			    }
 				
+				
+				//get time from database and initialise the variables.
+
 
 				Calendar now = Calendar.getInstance();
 				Calendar calendar = Calendar.getInstance();
-				calendar.set(Calendar.HOUR_OF_DAY, hour);  
-				/*if(am)
+			//	calendar.setTimeInMillis(System.currentTimeMillis());
+				
+				calendar.set(Calendar.HOUR, hour);  
+				if(am)
 					calendar.set(Calendar.AM_PM, Calendar.AM);
 				else
 					calendar.set(Calendar.AM_PM, Calendar.PM);
-				*/calendar.set(Calendar.MINUTE, minute);
+				calendar.set(Calendar.MINUTE, minute);
 				calendar.set(Calendar.SECOND, 0);
+				
 				if(calendar.before(now))
 					calendar.add(Calendar.DATE, 1); //se è passato non suonare
 				
@@ -220,53 +226,6 @@ public class SettingsActivity extends ActionBarActivity {
 			}
 
 
-		};
-		
-		private Preference.OnPreferenceChangeListener alarmChangeListener = new Preference.OnPreferenceChangeListener(){
-
-
-
-			@Override
-			public boolean onPreferenceChange(Preference preference,
-					Object newValue) {
-				boolean value = newValue.toString().equals("true") ? true : false;
-				Context c = getActivity();
-				if(value)
-				{
-					
-					String time = settings.getString("time", "09:00");
-					List<String> splittedList = Arrays.asList(time.split(":"));
-					int hour = Integer.parseInt(splittedList.get(0));
-					int minute = Integer.parseInt(splittedList.get(1));
-					Intent myIntent = new Intent(c,  NotificationReceiver.class/*StartSessionReminderActivity.class*/);     
-					myIntent.setAction("pisada.NOTIFICATION");
-					alarmManager = (AlarmManager)c.getSystemService(ALARM_SERVICE);
-				
-					PendingIntent pendingIntent = PendingIntent.getBroadcast(c, 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-				
-					Calendar now = Calendar.getInstance();
-					Calendar calendar = Calendar.getInstance();
-					calendar.set(Calendar.HOUR_OF_DAY, hour);  
-					calendar.set(Calendar.MINUTE, minute);
-					calendar.set(Calendar.SECOND, 0);
-					if(calendar.before(now))
-						calendar.add(Calendar.DATE, 1); 
-					alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),AlarmManager.INTERVAL_DAY, pendingIntent);
-					Toast.makeText(c, getResources().getString(R.string.alarmsuccess), Toast.LENGTH_LONG).show();
-					
-				}
-				else
-				{
-					/*
-					 * cancello tutte le allarmi
-					 */
-					Intent myIntent = new Intent(c,  NotificationReceiver.class);     
-					myIntent.setAction("pisada.NOTIFICATION");
-					PendingIntent pendingIntent = PendingIntent.getBroadcast(c, 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-					alarmManager.cancel(pendingIntent);
-				}
-				return true;
-			}
 		};
 
 	}
@@ -284,5 +243,23 @@ public class SettingsActivity extends ActionBarActivity {
 	}
 
 
+	/*
+	Intent myIntent = new Intent(this , NotifyService.class);     
+	AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+	pendingIntent = PendingIntent.getService(this, 0, myIntent, 0);
+
+	//get time from database and initialise the variables.
+	int minute;
+	int hour;
+
+	Calendar calendar = Calendar.getInstance();
+	calendar.set(Calendar.SECOND, 0);
+	calendar.set(Calendar.MINUTE, minute);
+	calendar.set(Calendar.HOUR, hour);
+	calendar.set(Calendar.AM_PM, Calendar.AM);    //set accordingly
+	calendar.add(Calendar.DAY_OF_YEAR, 0);
+
+	alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(),AlarmManager.INTERVAL_DAY, pendingIntent);
+	 */
 
 }

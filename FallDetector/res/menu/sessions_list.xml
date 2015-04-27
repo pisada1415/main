@@ -1,13 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="pisada.fallDetector.SessionsListActivity" >
+    xmlns:tools="http://schemas.android.com/tools">
 
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
-        android:title="stop service"
+        android:title="@string/action_settings"
         app:showAsAction="never"/>
-    <item android:id="@+id/action_settings_2" android:title="start service" android:orderInCategory="100"></item>
 
 </menu>

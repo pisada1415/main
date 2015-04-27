@@ -1,44 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="5dp"
+    card_view:cardBackgroundColor="@color/accent_material_dark"
+    card_view:cardCornerRadius="4dp" >
 
-
-
-    <android.support.v7.widget.CardView
-        xmlns:card_view="http://schemas.android.com/apk/res-auto"
-         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/card_view"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+
         android:layout_margin="5dp"
         card_view:cardCornerRadius="4dp" 
         
     android:clickable="true"
     android:foreground="?android:attr/selectableItemBackground">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical" >
 
-            <TextView
-                android:id="@+id/nameText"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-            
-                android:gravity="center"
-                android:text="DIooooooo"
-                android:textSize="14sp" />
+        <TextView
+            android:id="@+id/nameText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="banane"
+            android:textColor="@color/abc_primary_text_material_dark"
+            android:textSize="20sp" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" >
 
             <Button
                 android:id="@+id/old_details_button"
                 android:layout_width="50dp"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:layout_gravity="end"
-                android:text="Details"
-                android:textSize="14sp" />
-                
-        </LinearLayout>
-    
-    </android.support.v7.widget.CardView>
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/ic_action_search"/>
 
+            <Button
+                android:id="@+id/old_rename_button"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@id/old_details_button"
+                  android:background="@drawable/editbtn"
+                  />
+
+            <Button
+                android:id="@+id/old_delete_button"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@id/old_rename_button"
+                android:background="@drawable/ic_action_delete" />
+        </RelativeLayout>
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>

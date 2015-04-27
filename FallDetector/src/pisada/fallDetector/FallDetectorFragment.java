@@ -12,5 +12,6 @@ public class FallDetectorFragment extends Fragment{
 	public void stopService(View v){};
 	public String getSessionName(){return null;};
 	public void setSessionName(String s){};
-	public void setSession(String s){};
+	public void setFallTime(long timeMillis){};
+	public void addSession(View v){};
 }

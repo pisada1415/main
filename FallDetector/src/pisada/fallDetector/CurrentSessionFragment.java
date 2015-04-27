@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 
 import pisada.database.FallDataSource;
+import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.Activity;
@@ -275,7 +276,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 		if(closedSessionName != null){
 			Intent toPiero = new Intent(activity, SessionDetailsFragment.class);
-			toPiero.putExtra("name", closedSessionName); // TODO nome da dire a piero per extras quando viene premuto stop
+			toPiero.putExtra(FallSqlHelper.SESSION_NAME, closedSessionName); // TODO nome da dire a piero per extras quando viene premuto stop
 			((FragmentCommunicator)activity).switchFragment(toPiero); //TODO CAMBIA FRAGMENT pass
 		}
 	}
@@ -355,11 +356,6 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		sessionName = s;
 	}
 
-	@Override
-	public void setSession(String s) {
-		// TODO Auto-generated method stub
-		
-	}
 	
 
 }

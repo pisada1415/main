@@ -9,7 +9,11 @@ import android.view.ViewGroup;
 
 public class SessionDetailsFragment extends FallDetectorFragment {
 	String sessionName;	
-	
+
+	public SessionDetailsFragment()
+	{
+		setHasOptionsMenu(true);
+	}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -44,12 +48,6 @@ public class SessionDetailsFragment extends FallDetectorFragment {
 
 	@Override
 	public void setSessionName(String s) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setSession(String s) {
 		// TODO Auto-generated method stub
 		sessionName = s;
 	}

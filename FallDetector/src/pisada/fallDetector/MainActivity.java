@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -16,6 +17,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -97,6 +99,11 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	{
 		fragment.stopService(v);
 	}
+	
+	public void addSession(View v)
+	{
+		fragment.addSession(v);
+	}
 
 
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
@@ -116,17 +123,22 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			fragment = new CurrentSessionFragment();
 			break;
 		case 1:
+			fragment = new SessionsListFragment();
 			break;
 		case 2:
+			//TODO archive
 			break;
 		case 3:
+			//TODO Settings
 			break;
 		case 4:
+			//TODO Info
 			break;
 		default:
 			
 			break;
 		}
+		
 		
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		fragmentManager.beginTransaction()
@@ -157,7 +169,15 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		// If the nav drawer is open, hide action items related to the content view
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-		
+		try{
+		menu.findItem(R.id.rename_session).setVisible(!drawerOpen);
+		}
+		catch(NullPointerException e)
+		{
+			/*
+			 * non faccio niente, significa che la view non c'è ancora
+			 */
+		}
 		// menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
 		return super.onPrepareOptionsMenu(menu);
 	}
@@ -249,28 +269,17 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	{
 		switch(currentUIIndex){
 		case 0:
-			//TODO PASSARE DA SAMU A DANIEL
-			/*	fragment = new daniel blabla  e resettare anche il menu sopra!!!
-				Intent toDaniel = new Intent(this, SessionsListActivity.class);
-				toDaniel.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
-				startActivity(toDaniel);*/
-			/*	fragment = new SessionsListFragment();
-			 * 	FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction()
-			.replace(R.id.content_frame, fragment)
-			.commit();*/
-
-			break;
-		case 1:
-			break;
-		case 2:
-			break;
-		case 3:
-			break;
-		case 4:
+			/*
+			 * se sei in currentsession, il tasto back porta fuori
+			 */
+			finish();
 			break;
 		default:
-			
+			/*
+			 * se sei in qualsiasi altro posto, il tasto back porta alla currentsession
+			 */
+			Intent toSamu = new Intent(this, CurrentSessionFragment.class);
+			this.switchFragment(toSamu);
 			break;
 		}
 		invalidateOptionsMenu();
@@ -285,28 +294,46 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		}
 		else if (i.getComponent().getClassName().contains("SessionsListFragment")){
 			currentUIIndex = 1;
+			fragment = new SessionsListFragment();
+			FragmentManager fragmentManager = getSupportFragmentManager();
+			fragmentManager.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment)
+			.commit();
 		}
 		else if (i.getComponent().getClassName().contains("SessionDetailsFragment")){
-			currentUIIndex = -1;// (non appare nel nav draw
+			currentUIIndex = -1;// (non appare nel nav draw)
 			fragment = new SessionDetailsFragment();
-			fragment.setSession(i.getStringExtra("name"));
+			fragment.setSessionName(i.getStringExtra(FallSqlHelper.SESSION_NAME));
 			FragmentManager fragmentManager = getSupportFragmentManager();
 			fragmentManager.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
 		}
 		else if (i.getComponent().getClassName().contains("SettingsFragment")){
-			currentUIIndex = 3;// (non appare nel nav draw
+			currentUIIndex = 3;
 		}
 		else if (i.getComponent().getClassName().contains("FallDetailsFragment")){
 			currentUIIndex = -1;// (non appare nel nav draw
+			fragment = new FallDetailsFragment();
+			fragment.setSessionName(i.getStringExtra("fallSession"));
+			fragment.setFallTime(i.getLongExtra("fallTime", -1));
+			FragmentManager fragmentManager = getSupportFragmentManager();
+			fragmentManager.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment)
+			.commit();
 		}
 		else if(i.getComponent().getClassName().contains("Archive")){
-			currentUIIndex = 2;// (non appare nel nav draw
+			currentUIIndex = 2;
 		}
 		else if(i.getComponent().getClassName().contains("Info")){
-			currentUIIndex = 4;// (non appare nel nav draw
+			currentUIIndex = 4;
 		}
 		invalidateOptionsMenu();
 	}
+	
+	@Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.activity_main, menu);
+		return true;
+    }
 }
