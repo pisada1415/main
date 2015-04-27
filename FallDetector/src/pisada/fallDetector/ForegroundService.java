@@ -45,6 +45,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.widget.Toast;
 
@@ -222,7 +223,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 		//=========================NOTIFICATION(START)============
 		Context context = getApplicationContext();
-		Intent notificationIntent = new Intent(context, CurrentSessionActivity.class);
+		Intent notificationIntent = new Intent(context, MainActivity.class);
 		notificationIntent.setAction(Intent.ACTION_MAIN);
 		notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
@@ -742,6 +743,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 							((CurrentSessionCardAdapter)sr).runOnUiThread(r);
 						else if(sr instanceof Activity)
 							((Activity)sr).runOnUiThread(r);
+						else if(sr instanceof Fragment)
+							((Fragment)sr).getActivity().runOnUiThread(r);
 					}
 				}
 				//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================

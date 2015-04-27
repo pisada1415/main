@@ -25,7 +25,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 		  if(s.existCurrentSession())
 			  return;
 		  else{
-		  Intent notificationIntent = new Intent(context, CurrentSessionActivity.class);
+		  Intent notificationIntent = new Intent(context, MainActivity.class);
 			notificationIntent.setAction(Intent.ACTION_MAIN);
 			notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 			notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate

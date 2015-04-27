@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+     <string-array name="navigation_items">
+        <item>Current session</item>
+        <item>Sessions list</item>
+        <item>Archive</item>
+        <item>Settings</item>
+        <item>Info.</item>
+    </string-array>
+    
+</resources>

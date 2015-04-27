@@ -51,7 +51,7 @@ public class StartSessionReminderActivity extends Activity {
 				public void onClick(View v) {
 					if(mp.isPlaying())
 						mp.stop();
-					Intent intent = new Intent(StartSessionReminderActivity.this, CurrentSessionActivity.class);
+					Intent intent = new Intent(StartSessionReminderActivity.this, CurrentSessionFragment.class);
 					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 					startActivity(intent);
 					StartSessionReminderActivity.this.finish();

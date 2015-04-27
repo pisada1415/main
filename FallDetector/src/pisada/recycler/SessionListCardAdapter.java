@@ -8,9 +8,8 @@ import fallDetectorException.DublicateNameSessionException;
 import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.database.SessionDataSource.Session;
-import pisada.fallDetector.CurrentSessionActivity;
 import pisada.fallDetector.R;
-import pisada.fallDetector.SessionDetailsActivity;
+import pisada.fallDetector.SessionDetailsFragment;
 import pisada.fallDetector.SessionsListActivity;
 import pisada.fallDetector.Utility;
 import android.annotation.SuppressLint;
@@ -154,7 +153,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 				@Override
 				public void onClick(View v) {
-					Intent intent=new Intent(activity,SessionDetailsActivity.class);
+					Intent intent=new Intent(activity, SessionDetailsFragment.class);
 					intent.putExtra(FallSqlHelper.SESSION_NAME, session.getName());
 					activity.startActivity(intent);
 				}

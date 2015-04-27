@@ -90,19 +90,13 @@ public class SessionsListActivity extends ActionBarActivity {
 	
 	public void addSession(View v) throws BoolNotBoolException{
 
-		Intent toSamu = new Intent(this, CurrentSessionActivity.class);
-		toSamu.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); 
-		startActivity(toSamu);
-	//	finish();
-
-
+		
+		Intent toSamu = new Intent(this, CurrentSessionFragment.class);
+		((FragmentCommunicator)activity).switchFragment(toSamu);
 	}
 
 	public void currentSessionDetails(View v){
-		Intent toSamu = new Intent(this, CurrentSessionActivity.class);
-		toSamu.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); 
-		startActivity(toSamu);
-	//	finish();
+		this.addSession(v);
 	}
 	
 	
