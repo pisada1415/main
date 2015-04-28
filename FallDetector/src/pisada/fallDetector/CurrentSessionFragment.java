@@ -213,6 +213,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 				}
 				else{
 					//STA ANDANDO, QUINDI VA MESSA IN PAUSA
+					
 					sessionData.setSessionOnPause(sessionData.currentSession());
 					activity.stopService(serviceIntent); //dovrebbe essere inutile
 					cardAdapter.pauseChronometer();
