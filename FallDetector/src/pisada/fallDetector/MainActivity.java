@@ -2,7 +2,9 @@ package pisada.fallDetector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
@@ -10,17 +12,23 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.text.InputType;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -39,7 +47,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		sessionData = new SessionDataSource(this); //TODO apro e chiudo
+		sessionData = new SessionDataSource(this); 
 		setContentView(R.layout.activity_navigation_drawer);
 		String[] arr = (getResources().getStringArray(R.array.navigation_items));
 		listItems = new ArrayList<NavDrawerItem>();
@@ -66,6 +74,9 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 				super.onDrawerClosed(view);
 				getSupportActionBar().setTitle(mTitle);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+				if(currentUIIndex != -1)
+				mDrawerList.setItemChecked(currentUIIndex, true);
+				
 			}
 
 			/** Called when a drawer has settled in a completely open state. */
@@ -73,6 +84,9 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 				super.onDrawerOpened(drawerView);
 				getSupportActionBar().setTitle(mDrawerTitle);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+				if(currentUIIndex != -1)
+				mDrawerList.setItemChecked(currentUIIndex, true);
+				
 			}
 		};
 
@@ -91,6 +105,9 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		.commit();
 	}
 
+	/*
+	 * metodi view che rimandano ai fragment ma vengono automaticamente chiamati qui
+	 */
 	public void playPauseService(View v){
 		fragment.playPauseService(v);
 	}
@@ -105,17 +122,24 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		fragment.addSession(v);
 	}
 
+	public void currentSessionDetails(View v)
+	{
+		fragment.currentSessionDetails(v);
+	}
+	
 
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 		@Override
-		public void onItemClick(AdapterView parent, View view, int position, long id) {
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			selectItem(position);
 		}
 	}
 
 	/** Swaps fragments in the main content view */
 	private void selectItem(int position) {
-		// Create a new fragment and specify the planet to show based on position
+		/*
+		 * chiamato quando viene selezionato un elemento dal navigation drawer
+		 */
 		currentUIIndex = position;
 		switch(position)
 		{
@@ -129,7 +153,12 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			//TODO archive
 			break;
 		case 3:
-			//TODO Settings
+			Intent intent = new Intent(this, SettingsActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+			startActivity(intent);
+			SettingsActivity.setActivity(this);
+			Intent intent2 = new Intent(this, CurrentSessionFragment.class);
+			this.switchFragment(intent2);
 			break;
 		case 4:
 			//TODO Info
@@ -209,7 +238,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		int id = item.getItemId();
 
 		switch (id) {
-		case R.id.rename_session:
+				case R.id.rename_session:
 		{
 			// Set an EditText view to get user input 
 			final EditText input = new EditText(this);
@@ -253,17 +282,18 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			Intent intent = new Intent(this, SettingsActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 			startActivity(intent);
+			SettingsActivity.setActivity(this);
+			Intent intent2 = new Intent(this, CurrentSessionFragment.class);
+			this.switchFragment(intent2);
 			return true;
 
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-
-
-
 	}
+	
+	
 
-	//TODO fragmentare
 	@Override
 	public void onBackPressed()
 	{
@@ -291,6 +321,11 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		
 		if (i.getComponent().getClassName().contains("CurrentSessionFragment")){
 			currentUIIndex = 0;
+			fragment = new CurrentSessionFragment();
+			FragmentManager fragmentManager = getSupportFragmentManager();
+			fragmentManager.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment)
+			.commit();
 		}
 		else if (i.getComponent().getClassName().contains("SessionsListFragment")){
 			currentUIIndex = 1;
@@ -301,7 +336,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			.commit();
 		}
 		else if (i.getComponent().getClassName().contains("SessionDetailsFragment")){
-			currentUIIndex = -1;// (non appare nel nav draw)
+			currentUIIndex = -1;// non appare nel nav draw)
 			fragment = new SessionDetailsFragment();
 			fragment.setSessionName(i.getStringExtra(FallSqlHelper.SESSION_NAME));
 			FragmentManager fragmentManager = getSupportFragmentManager();
@@ -309,11 +344,8 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
 		}
-		else if (i.getComponent().getClassName().contains("SettingsFragment")){
-			currentUIIndex = 3;
-		}
 		else if (i.getComponent().getClassName().contains("FallDetailsFragment")){
-			currentUIIndex = -1;// (non appare nel nav draw
+			currentUIIndex = -1;// non appare nel nav draw
 			fragment = new FallDetailsFragment();
 			fragment.setSessionName(i.getStringExtra("fallSession"));
 			fragment.setFallTime(i.getLongExtra("fallTime", -1));
@@ -328,12 +360,11 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		else if(i.getComponent().getClassName().contains("Info")){
 			currentUIIndex = 4;
 		}
+		if(currentUIIndex != -1)
+		mDrawerList.setItemChecked(currentUIIndex, true);
 		invalidateOptionsMenu();
 	}
 	
-	@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
-    }
+	
+	
 }

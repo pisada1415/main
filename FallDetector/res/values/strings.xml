@@ -42,6 +42,8 @@
     <string name="notsent">not sent yet</string>
     <string name="sent">sent</string>
       <string name="requiresSetup">requires setup</string>  
+    <string name="starttime">Info:\nStart time:&#160;</string>
+        <string name="duration">Duration:&#160;</string>
     
 
 </resources>

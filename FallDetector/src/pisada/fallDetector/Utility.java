@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -207,6 +208,22 @@ public class Utility {
 		}
 
 		return path;
+	}
+	
+	public static String longToDuration(long l)
+	{
+		String duration = "";
+		int days = (int)(TimeUnit.MILLISECONDS.toDays(l));
+		int hours = (int)(TimeUnit.MILLISECONDS.toHours(l) - TimeUnit.DAYS.toHours(days));
+		int minutes = (int)(TimeUnit.MILLISECONDS.toMinutes(l) - TimeUnit.HOURS.toMinutes(hours));
+		int seconds = (int)(TimeUnit.MILLISECONDS.toSeconds(l)- TimeUnit.MINUTES.toSeconds(minutes));
+		
+		if(days != 0)
+			duration += days + " days,";
+		if(hours != 0)
+			duration += hours + " hrs, ";
+		duration += minutes + " min, " + seconds + " sec";
+		return duration;
 	}
 
 

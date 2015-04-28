@@ -218,5 +218,6 @@ public class ContactsActivity extends ActionBarActivity {
 			}
 		}
 	}
+	
 
 }

@@ -104,11 +104,10 @@ public class SessionsListFragment extends FallDetectorFragment {
 		((FragmentCommunicator)activity).switchFragment(toSamu);
 
 	}
-
+ @Override
 	public void currentSessionDetails(View v){
 
 		this.addSession(v);
-
 	}
 
 
