@@ -39,13 +39,17 @@ public class SessionsListFragment extends FallDetectorFragment {
 	private static SessionDataSource sessionData;
 	Intent serviceIntent;
 	Activity activity;
+	private final int TYPE = 1;
 
 
 	public SessionsListFragment()
 	{
 		setHasOptionsMenu(true);
 	}
-	
+	public int getType()
+	{
+		return this.TYPE;
+	}
 	@Override
 	public View onCreateView(android.view.LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.activity_sessions_list, container, false);

@@ -15,6 +15,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -43,10 +44,13 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	private FallDetectorFragment fragment;
 	private int currentUIIndex = 0;
 	private SessionDataSource sessionData;
-
+	private FragmentManager fm;
+	private final int SESSION_DETAILS_ID = -1;
+	private final int FALL_DETAILS_ID = -2;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		fm = getSupportFragmentManager();
 		sessionData = new SessionDataSource(this); 
 		setContentView(R.layout.activity_navigation_drawer);
 		String[] arr = (getResources().getStringArray(R.array.navigation_items));
@@ -74,9 +78,9 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 				super.onDrawerClosed(view);
 				getSupportActionBar().setTitle(mTitle);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-				if(currentUIIndex != -1)
-				mDrawerList.setItemChecked(currentUIIndex, true);
-				
+				if(currentUIIndex > -1)
+					mDrawerList.setItemChecked(currentUIIndex, true);
+
 			}
 
 			/** Called when a drawer has settled in a completely open state. */
@@ -84,9 +88,9 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 				super.onDrawerOpened(drawerView);
 				getSupportActionBar().setTitle(mDrawerTitle);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-				if(currentUIIndex != -1)
-				mDrawerList.setItemChecked(currentUIIndex, true);
-				
+				if(currentUIIndex > -1)
+					mDrawerList.setItemChecked(currentUIIndex, true);
+
 			}
 		};
 
@@ -99,8 +103,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		 */
 		fragment = new CurrentSessionFragment();
 		// Insert the fragment by replacing any existing fragment
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		fragmentManager.beginTransaction()
+		fm.beginTransaction()
 		.replace(R.id.content_frame, (Fragment)fragment)
 		.commit();
 	}
@@ -116,7 +119,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	{
 		fragment.stopService(v);
 	}
-	
+
 	public void addSession(View v)
 	{
 		fragment.addSession(v);
@@ -126,7 +129,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	{
 		fragment.currentSessionDetails(v);
 	}
-	
+
 
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 		@Override
@@ -150,27 +153,28 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			fragment = new SessionsListFragment();
 			break;
 		case 2:
-			//TODO archive
+			fragment = new ArchiveFragment();
 			break;
 		case 3:
 			Intent intent = new Intent(this, SettingsActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 			startActivity(intent);
 			SettingsActivity.setActivity(this);
-			Intent intent2 = new Intent(this, CurrentSessionFragment.class);
-			this.switchFragment(intent2);
+			Intent intent2 = new Intent(MainActivity.this, CurrentSessionFragment.class);
+			currentUIIndex = 0; //sto rimandando la schermata a currentsession
+			switchFragment(intent2);
+
 			break;
 		case 4:
-			//TODO Info
+			fragment = new InfoFragment();
 			break;
 		default:
-			
+
 			break;
 		}
-		
-		
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		fragmentManager.beginTransaction()
+
+
+		fm.beginTransaction()
 		.replace(R.id.content_frame, (Fragment)fragment)
 		.commit();
 
@@ -179,7 +183,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
         fragment.setArguments(args);*/
 
 		// Insert the fragment by replacing any existing fragment
-		
+
 		// Highlight the selected item, update the title, and close the drawer
 		mDrawerList.setItemChecked(position, true);
 		setTitle(listItems.get(position).getTitle());
@@ -199,7 +203,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		// If the nav drawer is open, hide action items related to the content view
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
 		try{
-		menu.findItem(R.id.rename_session).setVisible(!drawerOpen);
+			menu.findItem(R.id.rename_session).setVisible(!drawerOpen);
 		}
 		catch(NullPointerException e)
 		{
@@ -238,44 +242,43 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		int id = item.getItemId();
 
 		switch (id) {
-				case R.id.rename_session:
+		case R.id.rename_session:
 		{
-			// Set an EditText view to get user input 
-			final EditText input = new EditText(this);
 
-			new AlertDialog.Builder(this)
-			.setTitle("Rename")
-			.setMessage("Insert name")
-			.setView(input)
-			.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					String value = input.getText().toString(); 
-					String tmp = fragment.getSessionName();
+			if(currentUIIndex == 0){ //fai apparire il dialog. altrimenti... questo equivale a currentUIid==0
+				final EditText input = new EditText(this);
 
-					if(sessionData.existCurrentSession() && !sessionData.existSession(value)){
-						sessionData.renameSession(sessionData.currentSession(), value);
-						setTitle(value);
-						fragment.setSessionName(value);
-					}
-					else if(!sessionData.existSession(value)){
-						fragment.setSessionName(value); setTitle(value);
-					}
-					else
-					{
-						Toast.makeText(MainActivity.this, "Can't add session with same name!", Toast.LENGTH_LONG).show();
-						fragment.setSessionName(tmp);
-						setTitle(fragment.getSessionName());
+				new AlertDialog.Builder(this)
+				.setTitle("Rename")
+				.setMessage("Insert name")
+				.setView(input)
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						String value = input.getText().toString(); 
+						String tmp = fragment.getSessionName();
 
+						if(!sessionData.existSession(value) && sessionData.existCurrentSession()){
+							sessionData.renameSession(sessionData.currentSession(), value);
+							setTitle(value);
+							fragment.setSessionName(value);
+						}
+						else if(sessionData.existSession(value))
+						{
+							Toast.makeText(MainActivity.this, "Can't add session with same name!", Toast.LENGTH_LONG).show();
+							fragment.setSessionName(tmp);
+							setTitle(fragment.getSessionName());
+						}
 
 					}
-
-				}
-			}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					// Do nothing.
-				}
-			}).show();
-
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// Do nothing.
+					}
+				}).show();
+				return true;
+			}
+			else if(currentUIIndex == this.SESSION_DETAILS_ID)//altrimenti passo il lavoro al fragment che sarebbe il sessionDetails
+				return false;
 		}
 		return true;
 		case R.id.action_settings:
@@ -291,84 +294,122 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
-	
+
+
 
 	@Override
 	public void onBackPressed()
 	{
-		switch(currentUIIndex){
-		case 0:
-			/*
-			 * se sei in currentsession, il tasto back porta fuori
-			 */
+		if(currentUIIndex == 0)
 			finish();
-			break;
-		default:
-			/*
-			 * se sei in qualsiasi altro posto, il tasto back porta alla currentsession
-			 */
+		else if(currentUIIndex < 0)
+		{
+			if (fm.getBackStackEntryCount() > 0) {
+				fm.popBackStackImmediate();
+				int count = this.getSupportFragmentManager().getBackStackEntryCount();
+				List<Fragment> list = fm.getFragments();
+				FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
+				currentUIIndex = getFragmentIndex(frag);
+			} else {
+				super.onBackPressed();  
+			}
+		}
+		else
+		{
 			Intent toSamu = new Intent(this, CurrentSessionFragment.class);
 			this.switchFragment(toSamu);
-			break;
 		}
+
 		invalidateOptionsMenu();
 
 	}
 
+	private int getFragmentIndex(FallDetectorFragment frag) {
+		// TODO Auto-generated method stub
+		return frag.getType();
+	}
+
 	@Override
 	public void switchFragment(Intent i) {
-		
+
 		if (i.getComponent().getClassName().contains("CurrentSessionFragment")){
 			currentUIIndex = 0;
+			/*svuoto back stack*/
+			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
+				fm.popBackStack();
+			}
 			fragment = new CurrentSessionFragment();
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction()
+			fm.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
 		}
 		else if (i.getComponent().getClassName().contains("SessionsListFragment")){
 			currentUIIndex = 1;
+			/*svuoto back stack*/
+			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
+				fm.popBackStack();
+			}
 			fragment = new SessionsListFragment();
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction()
+			fm.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
 		}
 		else if (i.getComponent().getClassName().contains("SessionDetailsFragment")){
-			currentUIIndex = -1;// non appare nel nav draw)
+			currentUIIndex = this.SESSION_DETAILS_ID;// non appare nel nav draw
+			unselectAllLines();
 			fragment = new SessionDetailsFragment();
 			Bundle args = new Bundle();
-	        args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
-	        fragment.setArguments(args);
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction()
-			.replace(R.id.content_frame, (Fragment)fragment)
+			args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
+			fragment.setArguments(args);
+			fm.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack("sessiondetails")
 			.commit();
 		}
 		else if (i.getComponent().getClassName().contains("FallDetailsFragment")){
-			currentUIIndex = -1;// non appare nel nav draw
+			currentUIIndex = this.FALL_DETAILS_ID;// non appare nel nav draw
+			unselectAllLines();
 			fragment = new FallDetailsFragment();
 			Bundle args = new Bundle();
-	        args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
-	        args.putLong(Utility.FALL_TIME_KEY, i.getLongExtra(Utility.FALL_TIME_KEY, -1));
-	        fragment.setArguments(args);
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction()
+			args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
+			args.putLong(Utility.FALL_TIME_KEY, i.getLongExtra(Utility.FALL_TIME_KEY, -1));
+			fragment.setArguments(args);
+			fm.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack("falldetails")
+			.commit();
+		}
+		else if(i.getComponent().getClassName().contains("ArchiveFragment")){
+			currentUIIndex = 2;
+			/*svuoto back stack*/
+			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
+				fm.popBackStack();
+			}
+			fragment = new ArchiveFragment();
+			fm.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
 		}
-		else if(i.getComponent().getClassName().contains("Archive")){
-			currentUIIndex = 2;
-		}
-		else if(i.getComponent().getClassName().contains("Info")){
+		else if(i.getComponent().getClassName().contains("InfoFragment")){
 			currentUIIndex = 4;
+			/*svuoto back stack*/
+			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
+				fm.popBackStack();
+			}
+			fragment = new InfoFragment();
+			fm.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment)
+			.commit();
 		}
-		if(currentUIIndex != -1)
-		mDrawerList.setItemChecked(currentUIIndex, true);
+		if(currentUIIndex > -1)
+			mDrawerList.setItemChecked(currentUIIndex, true);
 		invalidateOptionsMenu();
 	}
-	
-	
-	
+
+	private void unselectAllLines()
+	{
+		for(int i = 0; i < listItems.size(); i++){
+			mDrawerList.setItemChecked(i, false);
+		}
+	}
+
+
 }

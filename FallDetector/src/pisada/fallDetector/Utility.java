@@ -211,7 +211,7 @@ public class Utility {
 
 		return path;
 	}
-	
+
 	public static String longToDuration(long l)
 	{
 		String duration = "";
@@ -219,7 +219,7 @@ public class Utility {
 		int hours = (int)(TimeUnit.MILLISECONDS.toHours(l) - TimeUnit.DAYS.toHours(days));
 		int minutes = (int)(TimeUnit.MILLISECONDS.toMinutes(l) - TimeUnit.HOURS.toMinutes(hours));
 		int seconds = (int)(TimeUnit.MILLISECONDS.toSeconds(l)- TimeUnit.MINUTES.toSeconds(minutes));
-		
+
 		if(days != 0)
 			duration += days + " days,";
 		if(hours != 0)

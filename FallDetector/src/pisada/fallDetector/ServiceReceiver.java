@@ -7,4 +7,6 @@ public interface ServiceReceiver {
 	public void serviceUpdate(String fallPosition, String link, String timeLiteral, long time, boolean b);
 
 	public void sessionTimeOut();
+	
+	public boolean equalsClass(ServiceReceiver obj);
 }

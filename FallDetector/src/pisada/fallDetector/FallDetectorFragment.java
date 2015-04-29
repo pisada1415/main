@@ -14,4 +14,5 @@ public abstract class FallDetectorFragment extends Fragment{
 	public void addSession(View v){};
 	public void currentSessionDetails(View v){};
 	public void setSessionName(String name){};
+	public int getType(){return -29891;};
 }

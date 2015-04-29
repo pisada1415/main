@@ -75,13 +75,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private final int TIME_BETWEEN_FALLS = 2000, CYCLES_FOR_LOCATION_REQUESTS = 50, SERVICE_SLEEP_TIME = 5000, MIN_TIME_LOCATION_UPDATES = 5000, MIN_DISTANCE_LOCATION_UPDATES = 500; 
 	private long TIMEOUT_SESSION = 86400000; //24h
 	private final static String CONTACTS_KEY = "contacts";
-	
+
 	private final String GPSProvider = LocationManager.GPS_PROVIDER;
 	private final String networkProvider = LocationManager.NETWORK_PROVIDER;
 
 
 	private boolean stop = false, running = false, locationUpdatesRemoved = false; 
-	private static boolean isRunning = false, timeInitialized = false; //riguarda il tempo per sapere da quanto è aperta la session;
+	private static boolean isRunning = false, timeInitialized = false, killSessionOnDestroy = false; //riguarda il tempo per sapere da quanto è aperta la session;
 	private static String position, link;
 	private static long totalTime = 0, startTime = 0;
 	public static ArrayList<ServiceReceiver> connectedActs;
@@ -129,6 +129,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// handleCommand(intent);
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
+
+		killSessionOnDestroy = false;
 		
 		sp = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -311,15 +313,15 @@ public class ForegroundService extends Service implements SensorEventListener {
 	@Override
 	public void onDestroy() {
 
-		if(sessionDataSource.existCurrentSession()){ //cioè il service viene chiuso dal sistema per poca memoria
+		if(sessionDataSource.existCurrentSession()){ 
 			storeDuration();
-			sessionDataSource.setSessionOnPause(sessionDataSource.currentSession());
-			sessionDataSource.closeSession(sessionDataSource.currentSession());
+			if(killSessionOnDestroy)
+				sessionDataSource.closeSession(sessionDataSource.currentSession());
+			else
+				sessionDataSource.setSessionOnPause(sessionDataSource.currentSession());
 		}
 		resetTime();
 
-		
-		
 		stop = true;
 		mSensorManager.unregisterListener(this);
 		stopLocationUpdates();
@@ -356,14 +358,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 					 * the service keeps running as long as this statement is cycling 
 					 * the check for the service to stop occurs every SERVICE_SLEEP_TIME/1000 seconds (to save battery)
 					 */
-					
+
 					/*
 					 * TODO qui aggiorniamo tutte le variabili che possono variare in base alle preferenze (es: TIMEOUT_SESSION)
 					 */
-					
+
 					MAX_SENSOR_UPDATE_RATE = Integer.parseInt(sp.getString("sample_rate", "10"));
 					TIMEOUT_SESSION = Integer.parseInt(sp.getString("max_duration_session", "24"))*3600000;
-					
+
 					if(activeService == null){
 						activeService = Utility.checkLocationServices(getApplicationContext(), false);		
 					}
@@ -397,9 +399,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 						}
 						if(sessionDataSource.existCurrentSession())
 							sessionDataSource.closeSession(sessionDataSource.currentSession());
-						
+
 					}
-					
+
 
 					try {
 						Thread.sleep(SERVICE_SLEEP_TIME);
@@ -530,7 +532,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	{
 		if(connectedActs != null){
 			for(ServiceReceiver s : connectedActs)
-				if(s.equals(sr))
+				if(s.equalsClass(sr))
 					return true;
 		}
 		return false;
@@ -647,24 +649,24 @@ public class ForegroundService extends Service implements SensorEventListener {
 								if(fallDataSource == null)
 									fallDataSource = new FallDataSource(ForegroundService.this);
 								//=====================STORE NEL DATABASE(FINE)====================
-								
+
 								databaseFallSaverAndFallOccurredManager(ForegroundService.this, fallDataSource, sessionDataSource.currentSession(), acquisitionList.getQueue(), latitude, longitude);
-								
+
 
 								acquisitionList = new ExpiringList(); 
 
-								
+
 								if(latitude != -1 && longitude != -1){
 									position = "" + latitude + ", " + longitude;
 									link = Utility.getMapsLink(latitude, longitude);
 								}
 								else
 									position = "Not available";
-								
 
-								
-								
-								
+
+
+
+
 							}
 						}
 					}
@@ -727,14 +729,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 	 */
 	private void databaseFallSaverAndFallOccurredManager(final Context ctx, final FallDataSource fds, final SessionDataSource.Session s, final ConcurrentLinkedQueue<Acquisition> al, final double lat, final double lng)
 	{
-		
+
 		new Thread(new Runnable(){
 			@Override
 			public void run(){
 				FallDataSource.Fall fall = fds.insertFall(s, al, lat, lng);
-				
-				
-				
+
+
+
 				//==============================INVIO ALLE ACTIVITY CONNESSE I DATI(INIZIO)=================================
 				if(connectedActs != null && connectedActs.size() > 0){
 					//TODO C'ERA UN LINK = NULL
@@ -752,7 +754,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 				}
 				//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================
 
-				
+
 				manageFallOccured(position, ctx, fall); //fa quello che c'è da fare quando avviene una fall!
 			}
 		}).start();
@@ -764,14 +766,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 	protected static boolean isRunning(){
 		return isRunning;
 	}
-	
+
 	private void manageFallOccured(String position, Context ctx, FallDataSource.Fall fall)
 	{
 		/*
 		 * TODO: stobene - activity
 		 */
-		
-		
+
+
 
 		/*
 		 * creo nuovo oggetto broadcastreceiver inizializzato con i valori sopra ^^^^^
@@ -784,9 +786,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 		 * poi ogni 5 secondi possiam chiamare notifydatasetchanged chi cazzo se ne frega
 		 *
 		 */
-		
+
 		Scanner scan;
-		
+
 		String message = getResources().getString(R.string.message);
 		message += position;
 		if(fall.getLat() != -1 && fall.getLng() != -1)
@@ -801,9 +803,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 			String fullContact = contacts.get(i);
 			scan = new Scanner(fullContact); scan.nextLine();
 			String number = scan.nextLine();
-			
+
 			numbersList.add(number);
 		}
 		new SMSender().sendSMSToList(numbersList, ctx, message, fall);
+	}
+
+	public static void killSessionOnDestroy()
+	{
+		killSessionOnDestroy = true;
 	}
 }

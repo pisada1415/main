@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -13,6 +12,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -45,7 +46,7 @@ public class SettingsActivity extends ActionBarActivity {
 
 	private static SharedPreferences settings; 
 	private ActionBar actionBar;
-	private static Activity activity;
+	private static MainActivity activity;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,15 +56,17 @@ public class SettingsActivity extends ActionBarActivity {
 
 	}
 
+
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
 		setupSimplePreferencesScreen();
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
-
+		
+		
 	}
 
-	public static void setActivity(Activity a)
+	public static void setActivity(MainActivity a)
 	{
 		activity = a;
 	}

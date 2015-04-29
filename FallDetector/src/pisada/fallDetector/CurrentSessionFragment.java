@@ -32,7 +32,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	private static Intent serviceIntent;
 	private static SessionDataSource sessionData;
 	private static CurrentSessionCardAdapter cardAdapter;
-
+	private final int TYPE = 0;
 	private RecyclerView rView;
 	private LayoutManager mLayoutManager;
 	private String sessionName, sessionNameDefault;
@@ -46,6 +46,11 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 	private Activity activity;
 
+	public int getType()
+	{
+		return this.TYPE;
+	}
+	
 	public CurrentSessionFragment()
 	{
 		setHasOptionsMenu(true);
@@ -258,6 +263,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	@Override
 	public void stopService(View v) {
 
+		ForegroundService.killSessionOnDestroy();
 		cardAdapter.stopChronometer();
 		cardAdapter.clearFalls();
 		String closedSessionName = null;
@@ -352,6 +358,15 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		sessionName = s;
 	}
 
+	@Override
+	public boolean equalsClass(ServiceReceiver obj) {
+		// TODO Auto-generated method stub
+		if(obj instanceof CurrentSessionFragment)
+			return true;
+		return false;
+	}
+
+	
 	
 
 }

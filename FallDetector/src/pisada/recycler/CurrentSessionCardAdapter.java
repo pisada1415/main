@@ -6,6 +6,7 @@ import java.util.Calendar;
 
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
+import pisada.fallDetector.CurrentSessionFragment;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.FragmentCommunicator;
 import pisada.fallDetector.R;
@@ -392,7 +393,14 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void sessionTimeOut() {
 		//NON NECESSARIO QUI
 	}
-	
+
+	@Override
+	public boolean equalsClass(ServiceReceiver obj) {
+		// TODO Auto-generated method stub
+		if(obj instanceof CurrentSessionCardAdapter)
+			return true;
+		return false;
+	}
 
 }
 

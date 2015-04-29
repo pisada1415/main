@@ -36,10 +36,15 @@ public class SessionDetailsFragment extends FallDetectorFragment {
 	FallDataSource fallDataSource;
 	SessionDataSource sessionData;
 	SessionDataSource.Session session;
+	private int TYPE = -1;
 	
 	public SessionDetailsFragment()
 	{
 		setHasOptionsMenu(true);
+	}
+	public int getType()
+	{
+		return this.TYPE;
 	}
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -105,6 +110,7 @@ public class SessionDetailsFragment extends FallDetectorFragment {
 			.setView(input)
 			.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
+					
 					String value = input.getText().toString(); 
 					
 
