@@ -26,7 +26,7 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static ArrayList<CardContent> cardContentList;
 	private Activity activity;
 	
-	private static String currentSessionName;
+	private String sessionName;
 	private Session session;
 	private SessionDataSource sessionData;
 	
@@ -69,8 +69,8 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 					int position = getAdapterPosition();
 					Intent intent = new Intent(activity, pisada.fallDetector.FallDetailsFragment.class);
 					long time = cardContentList.get(position).getTime();
-					intent.putExtra("fallTime", time);
-					intent.putExtra("fallSession", currentSessionName);
+					intent.putExtra(Utility.FALL_TIME_KEY, time);
+					intent.putExtra(Utility.SESSION_NAME_KEY, sessionName);
 					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 					((FragmentCommunicator)activity).switchFragment(intent);
 					//Toast.makeText(activity, "premuta caduta " + cardContentList.get(position).getTime(), Toast.LENGTH_SHORT).show();
@@ -84,13 +84,14 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 
-	public SessionDetailsCardAdapter(Activity activity, SessionDataSource sessionData, String sessionName) {
+	public SessionDetailsCardAdapter(Activity activity, SessionDataSource sessionData, String name) {
 
 		this.activity=activity;
 		if(sessionData == null)
 			sessionData = new SessionDataSource(activity);
 			
-		session = sessionData.getSession(sessionName);
+		session = sessionData.getSession(name);
+		sessionName = name;
 		cardContentList = new ArrayList<CardContent>();
 		cardContentList.add(0, new CardContent());
 		

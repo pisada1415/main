@@ -261,14 +261,9 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		cardAdapter.stopChronometer();
 		cardAdapter.clearFalls();
 		String closedSessionName = null;
-		if(sessionData.existCurrentSession()){
-			closedSessionName = sessionData.currentSession().getName();
-			sessionData.closeSession(sessionData.currentSession());
-		}
+		closedSessionName = sessionData.currentSession().getName();
 		if(serviceIntent!=null)
 			activity.stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
-
-
 		serviceIntent = null;
 		currentSession = null;
 		sessionName = sessionNameDefault;
@@ -277,7 +272,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 		if(closedSessionName != null){
 			Intent toPiero = new Intent(activity, SessionDetailsFragment.class);
-			toPiero.putExtra(FallSqlHelper.SESSION_NAME, closedSessionName); // TODO nome da dire a piero per extras quando viene premuto stop
+			toPiero.putExtra(Utility.SESSION_NAME_KEY, closedSessionName); // TODO nome da dire a piero per extras quando viene premuto stop
 			((FragmentCommunicator)activity).switchFragment(toPiero); //TODO CAMBIA FRAGMENT pass
 		}
 	}

@@ -314,9 +314,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 		if(sessionDataSource.existCurrentSession()){ //cioè il service viene chiuso dal sistema per poca memoria
 			storeDuration();
 			sessionDataSource.setSessionOnPause(sessionDataSource.currentSession());
+			sessionDataSource.closeSession(sessionDataSource.currentSession());
 		}
 		resetTime();
 
+		
+		
 		stop = true;
 		mSensorManager.unregisterListener(this);
 		stopLocationUpdates();

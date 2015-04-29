@@ -24,15 +24,6 @@
             android:layout_margin="30dp"
             android:src="@drawable/ic_launcher" />
 
-        <Chronometer
-            android:id="@+id/chronometer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/info"
-            android:text="00:00"
-            android:layout_alignLeft="@id/info"
-            android:layout_alignStart="@id/info"
-            android:textColor="@color/lightBlue" />
 
         <TextView
             android:id="@+id/info"

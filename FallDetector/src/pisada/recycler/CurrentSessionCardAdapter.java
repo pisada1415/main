@@ -126,7 +126,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	/*
 	 * fall cards
 	 */
-	public  class FallsHolder extends RecyclerView.ViewHolder{
+	public class FallsHolder extends RecyclerView.ViewHolder{
 		private ImageView fallThumbnail;
 		private TextView fallTime;
 		private TextView fallPosition;
@@ -146,8 +146,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 					int position = getAdapterPosition();
 					Intent intent = new Intent(activity, pisada.fallDetector.FallDetailsFragment.class);
 					long time = cardContentList.get(position).getTime();
-					intent.putExtra("fallTime", time);
-					intent.putExtra("fallSession", currentSessionName);
+					intent.putExtra(Utility.FALL_TIME_KEY, time);
+					intent.putExtra(Utility.SESSION_NAME_KEY, currentSessionName);
 					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 					((FragmentCommunicator)activity).switchFragment(intent);
 					//Toast.makeText(activity, "premuta caduta " + cardContentList.get(position).getTime(), Toast.LENGTH_SHORT).show();

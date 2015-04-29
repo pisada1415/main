@@ -172,7 +172,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			@Override
 			public void onClick(View v) {
 				Intent intent=new Intent(activity,SessionDetailsFragment.class);
-				intent.putExtra(FallSqlHelper.SESSION_NAME, session.getName());
+				intent.putExtra(Utility.SESSION_NAME_KEY, session.getName());
 				((FragmentCommunicator)activity).switchFragment(intent);
 			}
 		});

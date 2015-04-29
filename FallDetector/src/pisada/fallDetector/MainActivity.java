@@ -338,7 +338,9 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		else if (i.getComponent().getClassName().contains("SessionDetailsFragment")){
 			currentUIIndex = -1;// non appare nel nav draw)
 			fragment = new SessionDetailsFragment();
-			fragment.setSessionName(i.getStringExtra(FallSqlHelper.SESSION_NAME));
+			Bundle args = new Bundle();
+	        args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
+	        fragment.setArguments(args);
 			FragmentManager fragmentManager = getSupportFragmentManager();
 			fragmentManager.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
@@ -347,8 +349,10 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		else if (i.getComponent().getClassName().contains("FallDetailsFragment")){
 			currentUIIndex = -1;// non appare nel nav draw
 			fragment = new FallDetailsFragment();
-			fragment.setSessionName(i.getStringExtra("fallSession"));
-			fragment.setFallTime(i.getLongExtra("fallTime", -1));
+			Bundle args = new Bundle();
+	        args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
+	        args.putLong(Utility.FALL_TIME_KEY, i.getLongExtra(Utility.FALL_TIME_KEY, -1));
+	        fragment.setArguments(args);
 			FragmentManager fragmentManager = getSupportFragmentManager();
 			fragmentManager.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)

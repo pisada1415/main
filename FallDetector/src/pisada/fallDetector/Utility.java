@@ -28,6 +28,8 @@ import android.provider.Settings;
 import android.widget.Toast;
 public class Utility {
 
+	public final static String FALL_TIME_KEY = "fall_time";
+	public final static String SESSION_NAME_KEY = "session_name";
 
 	public static String checkLocationServices(final Context context, boolean showDialog)
 	{
