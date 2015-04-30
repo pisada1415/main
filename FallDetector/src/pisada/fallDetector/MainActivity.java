@@ -305,14 +305,22 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			finish();
 		else if(currentUIIndex < 0)
 		{
+			super.onBackPressed();
+			System.out.println("super onbackpressed");
+			//TODO problema è se siamo in fall, arriva da current o da session list?
+			/*
 			if (fm.getBackStackEntryCount() > 0) {
 				fm.popBackStackImmediate();
 				List<Fragment> list = fm.getFragments();
 				FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
-				currentUIIndex = getFragmentIndex(frag);
+				if(frag != null)
+					currentUIIndex = getFragmentIndex(frag);
+				else
+					finish();
 			} else {
 				super.onBackPressed();  
 			}
+			 */
 		}
 		else
 		{
@@ -321,9 +329,9 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		}
 
 		FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
-		
+
 		fragment = frag;
-		
+
 		invalidateOptionsMenu();
 
 	}
@@ -346,6 +354,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			fm.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
+
 		}
 		else if (i.getComponent().getClassName().contains("SessionsListFragment")){
 			currentUIIndex = 1;
@@ -357,6 +366,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			fm.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
+
 		}
 		else if (i.getComponent().getClassName().contains("SessionDetailsFragment")){
 			currentUIIndex = this.SESSION_DETAILS_ID;// non appare nel nav draw
@@ -365,8 +375,8 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			Bundle args = new Bundle();
 			args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
 			fragment.setArguments(args);
-			fm.beginTransaction()
-			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack("sessiondetails")
+			fm.beginTransaction().remove(fragment)
+			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack(null)
 			.commit();
 		}
 		else if (i.getComponent().getClassName().contains("FallDetailsFragment")){
@@ -377,8 +387,8 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
 			args.putLong(Utility.FALL_TIME_KEY, i.getLongExtra(Utility.FALL_TIME_KEY, -1));
 			fragment.setArguments(args);
-			fm.beginTransaction()
-			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack("falldetails")
+			fm.beginTransaction().remove(fragment)
+			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack(null)
 			.commit();
 		}
 		else if(i.getComponent().getClassName().contains("ArchiveFragment")){
@@ -391,6 +401,8 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			fm.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
+			System.out.println("rimosso");
+
 		}
 		else if(i.getComponent().getClassName().contains("InfoFragment")){
 			currentUIIndex = 4;
@@ -402,6 +414,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			fm.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
+			System.out.println("rimosso");
 		}
 		if(currentUIIndex > -1)
 			mDrawerList.setItemChecked(currentUIIndex, true);
