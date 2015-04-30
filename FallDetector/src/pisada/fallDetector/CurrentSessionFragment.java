@@ -50,17 +50,17 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	{
 		return this.TYPE;
 	}
-	
+
 	public CurrentSessionFragment()
 	{
 		setHasOptionsMenu(true);
 	}
-	
+
 	@Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.current_session, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.current_session, menu);
+		super.onCreateOptionsMenu(menu, inflater);
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -75,7 +75,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		super.onAttach(a);
 		activity = a;
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstance)
 	{
@@ -218,7 +218,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 				}
 				else{
 					//STA ANDANDO, QUINDI VA MESSA IN PAUSA
-					
+
 					sessionData.setSessionOnPause(sessionData.currentSession());
 					activity.stopService(serviceIntent); //dovrebbe essere inutile
 					cardAdapter.pauseChronometer();
@@ -263,14 +263,18 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	@Override
 	public void stopService(View v) {
 
-		ForegroundService.killSessionOnDestroy();
+
 		cardAdapter.stopChronometer();
 		cardAdapter.clearFalls();
 		String closedSessionName = null;
 		if(sessionData.existCurrentSession())
 			closedSessionName = sessionData.currentSession().getName();
-		if(serviceIntent!=null)
+		if(serviceIntent!=null && ForegroundService.isRunning()){
+			ForegroundService.killSessionOnDestroy();
 			activity.stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
+		}
+		else if(sessionData.existCurrentSession())
+			sessionData.closeSession(sessionData.currentSession());
 		serviceIntent = null;
 		currentSession = null;
 		sessionName = sessionNameDefault;
@@ -322,14 +326,14 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		return cardAdapter;
 	}
 
-	
-	
+
+
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		//azioni da compiere quando avviene la rotazione (---ATTENZIONE---) non togliere questo metodo anche se vuoto.
 	}
-	
+
 
 	@Override
 	public void sessionTimeOut() {
@@ -339,7 +343,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 	@Override
 	public void serviceUpdate(float x, float y, float z, long time) {
-//inutile qui
+		//inutile qui
 	}
 
 	@Override
@@ -361,13 +365,13 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 	@Override
 	public boolean equalsClass(ServiceReceiver obj) {
-		
+
 		if(obj instanceof CurrentSessionFragment)
 			return true;
 		return false;
 	}
 
-	
-	
+
+
 
 }

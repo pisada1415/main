@@ -245,7 +245,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		case R.id.rename_session:
 		{
 
-			if(currentUIIndex == 0){ //fai apparire il dialog. altrimenti... questo equivale a currentUIid==0
+			if(currentUIIndex == 0){ 
 				final EditText input = new EditText(this);
 
 				new AlertDialog.Builder(this)
