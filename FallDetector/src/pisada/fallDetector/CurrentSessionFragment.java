@@ -58,6 +58,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
 		inflater.inflate(R.menu.current_session, menu);
 		super.onCreateOptionsMenu(menu, inflater);
 	}
@@ -66,7 +67,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
-		return inflater.inflate(R.layout.activity_current_session, container, false);  
+		return inflater.inflate(R.layout.fragment_current_session, container, false);  
 	}
 
 	@Override

@@ -4,17 +4,15 @@
     android:id="@+id/first_card_new_session"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="5dp"
-    android:layout_marginLeft="15dp"
-    android:layout_marginRight="15dp"
+    android:layout_marginBottom="0dp"
+    android:layout_marginLeft="0dp"
+    android:layout_marginRight="0dp"
     android:layout_marginTop="5dp"
-    card_view:cardBackgroundColor="@color/foregroundGrey"
-    card_view:cardCornerRadius="8dp"
-    card_view:cardElevation="14dp" 
     android:clickable="true"
     android:foreground="?android:attr/selectableItemBackground"
-   
-    >
+    card_view:cardBackgroundColor="#FFFFFF"
+    card_view:cardCornerRadius="4dp"
+    card_view:cardElevation="0dp" >
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -49,10 +47,10 @@
             android:layout_below="@id/fall_event_occurred"
             android:layout_toEndOf="@id/thumbnail_fall"
             android:layout_toRightOf="@id/thumbnail_fall"
+            android:singleLine="true"
             android:text="@string/time_elapsed"
             android:textColor="@color/lightBlue"
-            android:textSize="20sp" 
-            android:singleLine="true"/>
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/position"
@@ -87,6 +85,13 @@
             android:singleLine="true"
             android:text="@string/notsent"
             android:textColor="@color/red" />
+
+        <View
+            android:layout_width="200dp"
+            android:layout_height="1dp"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true"
+            android:background="@color/backgroundGrey" />
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

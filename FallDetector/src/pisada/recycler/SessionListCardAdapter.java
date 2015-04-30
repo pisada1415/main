@@ -192,7 +192,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		}
 
 		if(type==1){
-			View v=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_curr_session_card, viewGroup, false);
+			View v=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_current_session_sessions_list_card, viewGroup, false);
 			if(!sessionData.existCurrentSession())v.setLayoutParams(new LayoutParams(v.getWidth(),0));
 			return new CurrentSessionHolder(v);
 		}

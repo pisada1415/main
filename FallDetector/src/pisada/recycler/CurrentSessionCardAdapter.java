@@ -3,10 +3,8 @@ package pisada.recycler;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
-import pisada.fallDetector.CurrentSessionFragment;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.FragmentCommunicator;
 import pisada.fallDetector.R;
@@ -14,10 +12,12 @@ import pisada.fallDetector.ServiceReceiver;
 import pisada.fallDetector.Utility;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -29,6 +29,7 @@ import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -54,6 +55,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private final String CONTACTS_KEY = "contacts";
 	
 	private static String currentSessionName;
+	
+	
 	/*
 	 * 
 	 * first_new_currentsession_card
@@ -62,10 +65,10 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		
 		private ImageView thumbNail;
 		private TextView info;
-		
+		private Button playPause;
 		public FirstCardHolder(View v) {
 			super(v);
-			
+			playPause = (Button) v.findViewById(R.id.start_pause_button);
 			duration = (Chronometer) v.findViewById(R.id.chronometer);
 			thumbNail = (ImageView)v.findViewById(R.id.thumbnail);
 			info =  (TextView) v.findViewById(R.id.info);
@@ -78,6 +81,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				duration.stop();
 				timeWhenPaused = 0;
 			}
+			
+			
 			//prendi valore start session dal database (qui uso un valore esempio)
 			
 			
@@ -179,7 +184,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 		
 		sp = PreferenceManager.getDefaultSharedPreferences(activity);
-		
 	}
 
 	Handler mHandler;
@@ -243,7 +247,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 		if(type==0){
-			return new FirstCardHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.first_new_currentsession_card, parent, false));
+			return new FirstCardHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.first_current_session_currentsession_card, parent, false));
 		}
 		if(type==1)
 		{

@@ -1,40 +1,31 @@
 package pisada.fallDetector;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import pisada.database.FallSqlHelper;
+import java.util.regex.Pattern;
 import pisada.database.SessionDataSource;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.database.Cursor;
-import android.net.Uri;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.text.InputType;
-import android.view.LayoutInflater;
+import android.text.Editable;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity implements FragmentCommunicator{
+public class MainActivity extends ActionBarActivity implements FragmentCommunicator, android.text.TextWatcher{
 	private List<NavDrawerItem> listItems;
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
@@ -47,9 +38,13 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	private FragmentManager fm;
 	private final int SESSION_DETAILS_ID = -1;
 	private final int FALL_DETAILS_ID = -2;
+	private Drawable pause, play;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		pause =getResources().getDrawable(R.drawable.button_selector_pause);
+		play =getResources().getDrawable(R.drawable.button_selector_play);
 		fm = getSupportFragmentManager();
 		sessionData = new SessionDataSource(this); 
 		setContentView(R.layout.activity_navigation_drawer);
@@ -111,8 +106,24 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	/*
 	 * metodi view che rimandano ai fragment ma vengono automaticamente chiamati qui
 	 */
+	@SuppressLint("NewApi")
 	public void playPauseService(View v){
 		fragment.playPauseService(v);
+		int sdk = android.os.Build.VERSION.SDK_INT;
+		if(v.getBackground().equals(pause)){
+			if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+				v.setBackgroundDrawable(play);
+			} else {
+				v.setBackground(play);
+			}
+		}
+		else{
+			if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+				v.setBackgroundDrawable(pause);
+			} else {
+				v.setBackground(pause);
+			}
+		}
 	}
 
 	public void stopService(View v)
@@ -246,8 +257,8 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		{
 
 			if(currentUIIndex == 0){ 
-				final EditText input = new EditText(this);
-
+				final EditText input = new EditText(this);;
+				input.addTextChangedListener(this);
 				new AlertDialog.Builder(this)
 				.setTitle("Rename")
 				.setMessage("Insert name")
@@ -267,6 +278,11 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 							Toast.makeText(MainActivity.this, "Can't add session with same name!", Toast.LENGTH_LONG).show();
 							fragment.setSessionName(tmp);
 							setTitle(fragment.getSessionName());
+						}
+						else //cioè non esiste con valore nuovo ma non ci sono sessioni correnti: preparo per start
+						{
+							fragment.setSessionName(value);
+							setTitle(value);
 						}
 
 					}
@@ -426,6 +442,31 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		for(int i = 0; i < listItems.size(); i++){
 			mDrawerList.setItemChecked(i, false);
 		}
+	}
+
+	@Override
+	public void beforeTextChanged(CharSequence s, int start, int count,
+			int after) {
+		//non usato
+		
+	}
+
+	@Override
+	public void onTextChanged(CharSequence s, int start, int before, int count) {
+		//non usato
+		
+	}
+
+	@Override
+	public void afterTextChanged(Editable s) {
+		// TODO Auto-generated method stub
+		String text = s.toString();
+	      int length = text.length();
+
+	      if(!text.matches("[a-zA-Z ]+")) {
+	           s.delete(length - 1, length);
+	           Toast.makeText(this, getResources().getString(R.string.notavalidchar), Toast.LENGTH_SHORT).show();
+	      }
 	}
 
 

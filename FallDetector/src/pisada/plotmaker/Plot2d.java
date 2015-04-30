@@ -79,14 +79,14 @@ public class Plot2d extends View {
 	//	int yAxisInPixels = toPixelInt(canvasWidth, minX, maxX, yAxis);
 		int yAxisInPixels = 10; //valore fissato sullo schermo indipendente dai valori di x
 		paint.setStrokeWidth(2);
-		canvas.drawRGB(39, 39, 39); //white background
+		canvas.drawRGB(255, 255, 255); //white background
 		
 		for (int i = 0; i < valuesInPixel.size()-1; i++) {
 			paint.setColor(getResources().getColor(R.color.lightBlue));
 			canvas.drawLine(valuesInPixel.get(i).x,canvasHeight-valuesInPixel.get(i).y,valuesInPixel.get(i+1).x,canvasHeight-valuesInPixel.get(i+1).y,paint);
 		}
 		
-		paint.setColor(Color.WHITE);
+		paint.setColor(Color.DKGRAY);
 		canvas.drawLine(0,canvasHeight-xAxisInPixels,canvasWidth,canvasHeight-xAxisInPixels,paint);
 		canvas.drawLine(yAxisInPixels,0,yAxisInPixels,canvasHeight,paint);
 		

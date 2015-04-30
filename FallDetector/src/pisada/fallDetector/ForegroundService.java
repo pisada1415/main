@@ -44,6 +44,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
@@ -109,6 +110,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private ExpiringList acquisitionList;
 	private BackgroundTask bgrTask;
 	private static SharedPreferences sp;
+	PowerManager.WakeLock wl;
+	
 	@Override
 	public void onStart(Intent intent, int startId) {
 
@@ -130,6 +133,10 @@ public class ForegroundService extends Service implements SensorEventListener {
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
 
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "fall_detector");
+		wl.acquire();
+		
 		killSessionOnDestroy = false;
 		
 		sp = PreferenceManager.getDefaultSharedPreferences(this);
@@ -321,7 +328,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 				sessionDataSource.setSessionOnPause(sessionDataSource.currentSession());
 		}
 		resetTime();
-
+		wl.release();
 		stop = true;
 		mSensorManager.unregisterListener(this);
 		stopLocationUpdates();
@@ -584,7 +591,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 		@Override
 		protected String doInBackground(Void... params) {
 			//params contiene la espiringlist
-
 			while(true){
 				if (pause) {
 					synchronized (INTERRUPTOR) {
@@ -614,7 +620,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 							if(DetectorAlgorithm.danielAlgorithm(acquisitionList)){
 								lastFallTime = System.currentTimeMillis();
-
 								//=====================ASPETTO 0.5 SECONDI mentre continuo a storare nella coda==========================================
 								try {
 									Thread.sleep(500);

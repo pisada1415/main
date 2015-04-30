@@ -49,4 +49,5 @@
     <string name="notifSentCorrectly">Notification was sent correctly to your contacts for this event</string>
     <string name="notifNotSent">Notification was not sent to anyone for this event</string>
 	<string name="notavailable">not available</string>
+	<string name="notavalidchar">Accepter characters: a-z, A-Z</string>
 </resources>

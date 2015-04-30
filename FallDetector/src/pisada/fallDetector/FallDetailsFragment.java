@@ -67,7 +67,7 @@ public class FallDetailsFragment extends FallDetectorFragment {
 
 		plot = new Plot2d(activity, new Data(0,0));
 		View view; 
-		view = inflater.inflate(R.layout.activity_fall_details, container, false);
+		view = inflater.inflate(R.layout.fragment_fall_details, container, false);
 		RelativeLayout rl = (RelativeLayout) view.findViewById(R.id.relative01);
 		LinearLayout graphLayout = (LinearLayout) rl.findViewById(R.id.graphView);
 		graphLayout.addView(plot, lp);
@@ -99,7 +99,7 @@ public class FallDetailsFragment extends FallDetectorFragment {
 			@Override
 			public void run()
 			{
-				int counter = 0;
+				
 				hideUI();
 				
 				fall = fds.getFall(fallTime, sessionName);
@@ -120,7 +120,7 @@ public class FallDetailsFragment extends FallDetectorFragment {
 						String stringInfo2 = "";
 						if(fall.wasNotified()){
 							stringInfo2 += res.getString(R.string.notifSentCorrectly);
-							info2.setTextColor(Color.GREEN);
+							info2.setTextColor(getResources().getColor(R.color.darkGreen));
 						}
 						else{
 							stringInfo2 += res.getString(R.string.notifNotSent);
@@ -179,6 +179,7 @@ public class FallDetailsFragment extends FallDetectorFragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
 		inflater.inflate(R.menu.fall_details, menu);
 		super.onCreateOptionsMenu(menu, inflater);
 	}

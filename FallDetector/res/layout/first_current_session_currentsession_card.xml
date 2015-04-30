@@ -4,10 +4,9 @@
     android:id="@+id/first_card_new_session"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp"
+    android:layout_marginBottom="1dp"
     card_view:cardCornerRadius="4dp" 
-    card_view:cardBackgroundColor="@color/foregroundGrey"
-    
+    card_view:cardBackgroundColor="#FFFFFF"
     android:clickable="true"
     android:foreground="?android:attr/selectableItemBackground">
 
@@ -18,17 +17,18 @@
       
         <Button
             android:id="@+id/start_pause_button"
-            android:layout_width="300dp"
-            android:layout_height="100dp"
+            android:layout_width="190dp"
+            android:layout_height="90dp"
             
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="70dp"
-            android:background="@drawable/button_selector_playpause"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/button_selector_play"
             android:onClick="playPauseService" />
         <Button
             android:id="@+id/stop_button"
-            android:layout_width="300dp"
-            android:layout_height="100dp"
+            android:layout_width="190dp"
+            android:layout_height="90dp"
             android:layout_below="@id/start_pause_button"
             android:layout_centerHorizontal="true"
             android:background="@drawable/button_selector_stop"
@@ -44,6 +44,7 @@
             android:textColor="@color/lightBlue"
              android:layout_below="@id/stop_button"
             android:layout_centerHorizontal="true"
+            android:textSize="30sp"
             android:text="" />
         
         

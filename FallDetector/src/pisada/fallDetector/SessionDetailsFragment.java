@@ -4,16 +4,15 @@ import java.util.ArrayList;
 
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
-import pisada.recycler.CurrentSessionCardAdapter;
 import pisada.recycler.SessionDetailsCardAdapter;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.LayoutManager;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -50,7 +49,7 @@ public class SessionDetailsFragment extends FallDetectorFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
-		return inflater.inflate(R.layout.activity_session, container, false);  
+		return inflater.inflate(R.layout.fragment_sessiondetails, container, false);  
 	}
 	
 	@Override
@@ -88,6 +87,7 @@ public class SessionDetailsFragment extends FallDetectorFragment {
 
 	@Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		menu.clear();
         inflater.inflate(R.menu.session, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -103,7 +103,7 @@ public class SessionDetailsFragment extends FallDetectorFragment {
 		{
 			// Set an EditText view to get user input 
 			final EditText input = new EditText(activity);
-
+			input.addTextChangedListener((TextWatcher)activity);
 			new AlertDialog.Builder(activity)
 			.setTitle("Rename")
 			.setMessage("Insert name")
