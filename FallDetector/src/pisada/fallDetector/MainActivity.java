@@ -300,13 +300,13 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	@Override
 	public void onBackPressed()
 	{
+		int count = this.getSupportFragmentManager().getBackStackEntryCount();
 		if(currentUIIndex == 0)
 			finish();
 		else if(currentUIIndex < 0)
 		{
 			if (fm.getBackStackEntryCount() > 0) {
 				fm.popBackStackImmediate();
-				int count = this.getSupportFragmentManager().getBackStackEntryCount();
 				List<Fragment> list = fm.getFragments();
 				FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
 				currentUIIndex = getFragmentIndex(frag);
@@ -320,6 +320,10 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			this.switchFragment(toSamu);
 		}
 
+		FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
+		
+		fragment = frag;
+		
 		invalidateOptionsMenu();
 
 	}

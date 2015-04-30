@@ -743,7 +743,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 					final long fallTime = fall.getTime();
 					final String formattedTime = Utility.getStringTime(fallTime);
 					for(final ServiceReceiver sr : connectedActs){ 
-						Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime,fallTime, false);}};
+						Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime,fallTime, false, s.getName());}};
 						if(sr instanceof CurrentSessionCardAdapter)
 							((CurrentSessionCardAdapter)sr).runOnUiThread(r);
 						else if(sr instanceof Activity)

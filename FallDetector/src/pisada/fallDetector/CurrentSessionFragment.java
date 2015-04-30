@@ -267,7 +267,8 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		cardAdapter.stopChronometer();
 		cardAdapter.clearFalls();
 		String closedSessionName = null;
-		closedSessionName = sessionData.currentSession().getName();
+		if(sessionData.existCurrentSession())
+			closedSessionName = sessionData.currentSession().getName();
 		if(serviceIntent!=null)
 			activity.stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
 		serviceIntent = null;
@@ -278,8 +279,8 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 		if(closedSessionName != null){
 			Intent toPiero = new Intent(activity, SessionDetailsFragment.class);
-			toPiero.putExtra(Utility.SESSION_NAME_KEY, closedSessionName); // TODO nome da dire a piero per extras quando viene premuto stop
-			((FragmentCommunicator)activity).switchFragment(toPiero); //TODO CAMBIA FRAGMENT pass
+			toPiero.putExtra(Utility.SESSION_NAME_KEY, closedSessionName); 
+			((FragmentCommunicator)activity).switchFragment(toPiero); 
 		}
 	}
 
@@ -343,7 +344,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 	@Override
 	public void serviceUpdate(String fallPosition, String link,
-			String timeLiteral, long time, boolean b) {
+			String timeLiteral, long time, boolean b, String sessionName) {
 		rView.scrollToPosition(rView.getAdapter().getItemCount()-1);
 
 	}
@@ -360,7 +361,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 	@Override
 	public boolean equalsClass(ServiceReceiver obj) {
-		// TODO Auto-generated method stub
+		
 		if(obj instanceof CurrentSessionFragment)
 			return true;
 		return false;

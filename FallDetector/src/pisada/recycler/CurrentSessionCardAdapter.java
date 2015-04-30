@@ -364,7 +364,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	}
 
 	@Override
-	public void serviceUpdate(String fallPosition, String link, String timeLiteral, long time, boolean b) {
+	public void serviceUpdate(String fallPosition, String link, String timeLiteral, long time, boolean b, String sessionName) {
+		currentSessionName = sessionName;
 		addFallToCardList(fallPosition, link, timeLiteral, time, b);
 	}
 	
