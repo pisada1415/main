@@ -44,12 +44,14 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	public static class OldSessionHolder extends RecyclerView.ViewHolder
 	{
 		private TextView vName;
-		private Button btn;
+		private Button detailsBtn;
+		private Button deleteBtn;
 		private CardView card;
 		public OldSessionHolder(View v) {
 			super(v);
 			vName =  (TextView) v.findViewById(R.id.nameText);
-			btn=(Button) v.findViewById(R.id.old_details_button);
+			detailsBtn=(Button) v.findViewById(R.id.old_details_button);
+			deleteBtn=(Button) v.findViewById(R.id.old_delete_button);
 			card=(CardView) v;
 
 		}
@@ -142,7 +144,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	}
 
 	@Override
-	public void onBindViewHolder(ViewHolder holder, int i) {
+	public void onBindViewHolder(ViewHolder holder, final int i) {
 
 		Session currSession=sessionData.currentSession();
 		switch(i) {
@@ -176,13 +178,23 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		final Session session = sessionList.get(i);
 
 		Oholder.vName.setText("Name: "+session.getName()+ " ID= "+session.getID());//+"\nStart Time: "+session.getStartTime()//+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
-		Oholder.btn.setOnClickListener(new OnClickListener(){
+		Oholder.detailsBtn.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
 				Intent intent=new Intent(activity,SessionDetailsFragment.class);
 				intent.putExtra(Utility.SESSION_NAME_KEY, session.getName());
 				((FragmentCommunicator)activity).switchFragment(intent);
 			}
+		});
+		Oholder.deleteBtn.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				sessionData.deleteSession(session);
+				sessionList.remove(i);
+				notifyItemRemoved(i);			
+			}
+
 		});
 
 	}

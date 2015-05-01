@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.InvalidFallException;
 import fallDetectorException.InvalidSessionException;
 import pisada.database.SessionDataSource.Session;
@@ -96,6 +97,7 @@ public class FallDataSource {
 	//INSERISCE UNA NUOVA CADUTA DATA UNA SESSIONE E UNA LISTA DI ACQUISIZIONI(passarla ordinata in funzione del tempo che se no è da ordinare ogni volta)
 	public Fall insertFall(Session session, ConcurrentLinkedQueue<Acquisition> acquisitionList, double lat, double lng){
 
+		if(!session.isValidSession()) throw new InvalidSessionException();
 
 		long time=0;
 		int i=0;

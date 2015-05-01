@@ -411,6 +411,9 @@ public class SessionDataSource {
 			}
 			index++;
 		}
+		
+		database.delete(FallSqlHelper.FALL_TABLE, FallSqlHelper.FALL_FSESSION+" = ?", new String[]{s.name});
+		database.delete(FallSqlHelper.ACQUISITION_TABLE, FallSqlHelper.ACQUISITION_ASESSION+" = ?", new String[]{s.name});
 
 	}
 
