@@ -39,7 +39,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		sessionData = new SessionDataSource(this); //TODO apro e chiudo
+		sessionData = new SessionDataSource(this); //TODO apro e chiudo ... laccredenza
 		setContentView(R.layout.activity_navigation_drawer);
 		String[] arr = (getResources().getStringArray(R.array.navigation_items));
 		listItems = new ArrayList<NavDrawerItem>();
@@ -331,9 +331,5 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		invalidateOptionsMenu();
 	}
 	
-	@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
-    }
+	
 }
