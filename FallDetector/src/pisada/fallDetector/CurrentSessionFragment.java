@@ -3,18 +3,18 @@ package pisada.fallDetector;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-
 import pisada.database.FallDataSource;
-import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteConstraintException;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,6 +38,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	private String sessionName, sessionNameDefault;
 	private boolean startChronometerOnStartActivity = false;
 	private long pauseTime = 0;
+	private String info;
 
 	private FallDataSource fallDataSource;
 	private SessionDataSource.Session currentSession;
@@ -45,6 +46,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	private ActionBar actionBar;
 
 	private Activity activity;
+	private Drawable pause, play;
 
 	public int getType()
 	{
@@ -93,9 +95,12 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		sessionData=new SessionDataSource(activity);
 
 		if(sessionData.existCurrentSession()){
+
 			currentSession = sessionData.currentSession();
+
 			sessionName = currentSession.getName();
 
+			info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(currentSession.getStartTime());
 
 			if(!currentSession.isOnPause())
 				startChronometerOnStartActivity = true; //FA SI CHE PARTA IL CRONOMETRO AL LANCIO DELL'ACTIVITY
@@ -111,7 +116,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 			}
 
 
-			else if(sessionData.currentSession().isOnPause()) //SE INVECE LA CURRENT SESSION è IN PAUSA... 
+			else if(currentSession.isOnPause()) //SE invece LA CURRENT SESSION è IN PAUSA... 
 			{
 				//INIZIALIZZO IL TEMPO DA CUI IL CRONOMETRO DEVE RIPARTIRE
 				pauseTime = sessionData.sessionDuration(currentSession);
@@ -132,6 +137,8 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		rView.setLayoutManager(mLayoutManager);
 		activity.setTitle(sessionName);
 
+		if(info != null)
+			cardAdapter.postEditsFirstCard(info, -1);
 
 		if(sessionData.existCurrentSession()) //SE INVECE LA CURRENT SESSION è IN PAUSA... 
 		{
@@ -144,9 +151,10 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 				}
 		}
 
-		if(!ForegroundService.isConnected(this)){
-			ForegroundService.connect(this); 
-		}
+		ForegroundService.connect(this); 
+
+		pause =getResources().getDrawable(R.drawable.button_selector_pause);
+		play =getResources().getDrawable(R.drawable.button_selector_play);
 
 	}
 
@@ -162,12 +170,10 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	public void onResume()
 	{
 		super.onResume();
-		if(!ForegroundService.isConnected(cardAdapter)){
-			ForegroundService.connect(cardAdapter);
-		}
-		if(!ForegroundService.isConnected(this)){
-			ForegroundService.connect(this);
-		}
+		ForegroundService.connect(cardAdapter);
+
+		ForegroundService.connect(this);
+
 		try{
 			sessionData.open();
 		}
@@ -180,9 +186,72 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		}
 	}
 
+
+
 	//CHIAMATO QUANDO VIENE PREMUTO IL TASTO SOPRA (PLAY/PAUSA)
+	@SuppressLint("NewApi")
 	@Override
-	public void playPauseService(View v){
+	public void playPauseService(final View v){
+
+		final Drawable selection;
+		v.setClickable(false);
+		
+
+		
+		SessionDataSource.Session currentSession;
+		if(sessionData.existCurrentSession()){
+			currentSession = sessionData.currentSession();
+			if(currentSession.isOnPause())
+			{
+				selection = pause;
+
+			}
+			else
+			{
+				selection = play;
+
+			}
+		}
+		else
+		{
+			selection = pause;
+		}
+		v.setBackgroundDrawable(getResources().getDrawable(R.drawable.nonclickable));
+		/*
+		 * qui per due secondi setto un background blu con caricamento in mezzo. poi cambia. per quei due secondi è anche inclickabile
+		 */
+
+		new Thread(){
+			@Override
+			public void run(){
+
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				activity.runOnUiThread(new Runnable() {
+
+
+					@Override
+					public void run() {
+						v.setClickable(true);
+						int sdk = android.os.Build.VERSION.SDK_INT;
+							if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+								v.setBackgroundDrawable(selection);
+							} else {
+								v.setBackground(selection);
+							}
+
+					}		
+				});
+
+			}
+		}.start();
+
+		int chronometer;
 
 		long time = System.currentTimeMillis(); //MEMORIZZA IL MOMENTO IN CUI è STATO PREMUTO IL TASTO
 		if(sessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
@@ -196,67 +265,84 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 				currentSession = null;
 				currentSession = addSession(sessionName, "" + time, time, 0);
 				activity.setTitle(sessionName);
-				CurrentSessionCardAdapter.startChronometer();
 				//FA PARTIRE IL SERVICE
 				serviceIntent = new Intent(activity, ForegroundService.class);
 				String activeServ = Utility.checkLocationServices(activity, true);
 				serviceIntent.putExtra("activeServices", activeServ);
 				activity.startService(serviceIntent);
+
+
+
+				info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
+				chronometer = 0;
 			}
 			else
 			{
+				currentSession = sessionData.currentSession();
+
 				//ESISTE SESSIONE CORRENTE
 				if(sessionData.currentSession().isOnPause()){
 					//è IN PAUSA
-					currentSession = sessionData.currentSession();
 					sessionData.resumeSession(currentSession); //LA FACCIO RIPARTIRE
-					CurrentSessionCardAdapter.startChronometer();
 					//FA PARTIRE IL SERVICE
 					serviceIntent = new Intent(activity, ForegroundService.class);
 					String activeServ = Utility.checkLocationServices(activity, true);
 					serviceIntent.putExtra("activeServices", activeServ);
 					activity.startService(serviceIntent);
+					chronometer = 0;
+
+
+					info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(currentSession.getStartTime());
+
 				}
 				else{
 					//STA ANDANDO, QUINDI VA MESSA IN PAUSA
 
 					sessionData.setSessionOnPause(sessionData.currentSession());
 					activity.stopService(serviceIntent); //dovrebbe essere inutile
-					cardAdapter.pauseChronometer();
+					chronometer = 1;
+					info = "";
 				}
 			}
 
 		}
 		else
 		{
+
 			//il service sta già andando (STESSA COSA DI PRIMA MA QUI NON FA PARTIRE IL SERVICE)
 			if(!sessionData.existCurrentSession()){
 				//non esiste sessione corrente: creane una nuova
 				currentSession = null;
 				currentSession = addSession(sessionName, "" + time, time, 0);
 				activity.setTitle(sessionName);
-				CurrentSessionCardAdapter.startChronometer();
-
+				chronometer = 0;
+				info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(currentSession.getStartTime());
 			}
 			else
 			{
+				currentSession = sessionData.currentSession();
+
 				if(sessionData.currentSession().isOnPause()){
-					currentSession = sessionData.currentSession();
 					sessionData.resumeSession(currentSession);
 					activity.setTitle(currentSession.getName());
-					CurrentSessionCardAdapter.startChronometer();
+					chronometer = 0;
+
+					info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
+
 
 				}
 				else{
 					//pausa
 
-					sessionData.setSessionOnPause(sessionData.currentSession());
+					sessionData.setSessionOnPause(currentSession);
 					//	ForegroundService.storeDuration(sessionData);
 					activity.stopService(serviceIntent); 
-					cardAdapter.pauseChronometer();
+					chronometer = 1;
 				}
 			}
+
 		}
+		cardAdapter.postEditsFirstCard(info, chronometer);
 	}
 
 
@@ -350,6 +436,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	@Override
 	public void serviceUpdate(String fallPosition, String link,
 			String timeLiteral, long time, boolean b, String sessionName) {
+		rView.getAdapter().notifyItemChanged(rView.getAdapter().getItemCount()-1);
 		rView.scrollToPosition(rView.getAdapter().getItemCount()-1);
 
 	}

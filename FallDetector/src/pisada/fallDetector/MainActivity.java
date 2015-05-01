@@ -2,7 +2,7 @@ package pisada.fallDetector;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+
 import pisada.database.SessionDataSource;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -10,7 +10,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -21,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -38,13 +41,11 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	private FragmentManager fm;
 	private final int SESSION_DETAILS_ID = -1;
 	private final int FALL_DETAILS_ID = -2;
-	private Drawable pause, play;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		pause =getResources().getDrawable(R.drawable.button_selector_pause);
-		play =getResources().getDrawable(R.drawable.button_selector_play);
 		fm = getSupportFragmentManager();
 		sessionData = new SessionDataSource(this); 
 		setContentView(R.layout.activity_navigation_drawer);
@@ -85,7 +86,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
 				if(currentUIIndex > -1)
 					mDrawerList.setItemChecked(currentUIIndex, true);
-
+				
 			}
 		};
 
@@ -103,28 +104,19 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		.commit();
 	}
 
+
+
 	/*
 	 * metodi view che rimandano ai fragment ma vengono automaticamente chiamati qui
 	 */
+
+
 	@SuppressLint("NewApi")
 	public void playPauseService(View v){
 		fragment.playPauseService(v);
-		int sdk = android.os.Build.VERSION.SDK_INT;
-		if(v.getBackground().equals(pause)){
-			if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-				v.setBackgroundDrawable(play);
-			} else {
-				v.setBackground(play);
-			}
-		}
-		else{
-			if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-				v.setBackgroundDrawable(pause);
-			} else {
-				v.setBackground(pause);
-			}
-		}
 	}
+
+
 
 	public void stopService(View v)
 	{
@@ -146,6 +138,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			selectItem(position);
+			
 		}
 	}
 
@@ -448,25 +441,25 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	public void beforeTextChanged(CharSequence s, int start, int count,
 			int after) {
 		//non usato
-		
+
 	}
 
 	@Override
 	public void onTextChanged(CharSequence s, int start, int before, int count) {
 		//non usato
-		
+
 	}
 
 	@Override
 	public void afterTextChanged(Editable s) {
 		// TODO Auto-generated method stub
 		String text = s.toString();
-	      int length = text.length();
+		int length = text.length();
 
-	      if(!text.matches("[a-zA-Z ]+")) {
-	           s.delete(length - 1, length);
-	           Toast.makeText(this, getResources().getString(R.string.notavalidchar), Toast.LENGTH_SHORT).show();
-	      }
+		if(!text.matches("[a-zA-Z ]+")) {
+			s.delete(length - 1, length);
+			Toast.makeText(this, getResources().getString(R.string.notavalidchar), Toast.LENGTH_SHORT).show();
+		}
 	}
 
 

@@ -65,16 +65,13 @@ import android.widget.Toast;
  * le coordinate vengono poi passate al metodo dell'activity "connessa" quando avviene una caduta
  * 
  *
- *
- *TODO: 
- *MANDARE MESSAGGIO A CONTATTI PRESTABILITI QUANDO AVVIENE CADUTA
  */
 
 public class ForegroundService extends Service implements SensorEventListener {
 
 	protected static int MAX_SENSOR_UPDATE_RATE = 10; //ogni quanti millisecondi update
 	private final int TIME_BETWEEN_FALLS = 2000, CYCLES_FOR_LOCATION_REQUESTS = 50, SERVICE_SLEEP_TIME = 5000, MIN_TIME_LOCATION_UPDATES = 5000, MIN_DISTANCE_LOCATION_UPDATES = 500; 
-	private long TIMEOUT_SESSION = 86400000; //24h
+	private long TIMEOUT_SESSION = 86400000;
 	private final static String CONTACTS_KEY = "contacts";
 
 	private final String GPSProvider = LocationManager.GPS_PROVIDER;
@@ -85,7 +82,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private static boolean isRunning = false, timeInitialized = false, killSessionOnDestroy = false; //riguarda il tempo per sapere da quanto è aperta la session;
 	private static String position, link;
 	private static long totalTime = 0, startTime = 0;
-	public static ArrayList<ServiceReceiver> connectedActs;
+	public static ConcurrentLinkedQueue<ServiceReceiver> connectedActs;
 
 	private int counterGPSUpdate = 50; //per attivare subito la ricerca della posizione
 	private String bestProvider;
@@ -108,7 +105,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	private SessionDataSource sessionDataSource;
 	private FallDataSource fallDataSource;
 	private ExpiringList acquisitionList;
-	private BackgroundTask bgrTask;
+	private static BackgroundTask bgrTask;
 	private static SharedPreferences sp;
 	PowerManager.WakeLock wl;
 	
@@ -146,7 +143,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		}
 
 		//questo fa si che totalTime tenga il tempo per cui la sessione è aperta in totale
-		if(!timeInitialized && sessionDataSource.existCurrentSession()){
+		if(!timeInitialized /*&& sessionDataSource.existCurrentSession()TODO ultima modifica pericolosa*/){
 
 			totalTime = sessionDataSource.sessionDuration(sessionDataSource.currentSession());
 			timeInitialized = true;
@@ -367,7 +364,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 					 */
 
 					/*
-					 * TODO qui aggiorniamo tutte le variabili che possono variare in base alle preferenze (es: TIMEOUT_SESSION)
+					 * qui aggiorniamo tutte le variabili che possono variare in base alle preferenze (es: TIMEOUT_SESSION)
 					 */
 
 					MAX_SENSOR_UPDATE_RATE = Integer.parseInt(sp.getString("sample_rate", "10"));
@@ -430,11 +427,12 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 	long lastUpdate = System.currentTimeMillis();
+	
 	@SuppressLint("NewApi")
 	@Override
 	public synchronized void onSensorChanged(SensorEvent event) {
 
-
+		
 		if(System.currentTimeMillis() - lastSensorChanged >= MAX_SENSOR_UPDATE_RATE){ //non più di un update ogni MAX_SENSOR_UPDATE_RATE millisecondi
 			lastSensorChanged = System.currentTimeMillis();
 
@@ -443,11 +441,11 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 			if(bgrTask == null)
 				bgrTask = new BackgroundTask();
-			/*
-			 * richiedo almeno 10 elementi nella lista per far partire tutto
-			 */
+			
+			
 			if(acquisitionList.size()>=1){
 				if(bgrTask.getStatus()!= AsyncTask.Status.RUNNING){
+					bgrTask = new BackgroundTask();
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
 						bgrTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, (Void[])null);
 					else
@@ -456,9 +454,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 				}
 			}
 
-			if(bgrTask.getPause())
+			if(bgrTask.getPause()){
 				bgrTask.wakeUp(); //sveglio ad ogni acquisizione l'asynctask
-
+			}
+			
+			
+			
+			
 			if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 				float[] values = event.values;
 
@@ -516,11 +518,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 	/*
 	 * connette l'activity al service
 	 */
-	public static void connect(ServiceReceiver connectedActivity)
+	public synchronized static void connect(ServiceReceiver classToConnect)
 	{
 		if(connectedActs == null)
-			connectedActs = new ArrayList<ServiceReceiver>();
-		connectedActs.add(connectedActivity);
+			connectedActs = new ConcurrentLinkedQueue<ServiceReceiver>();
+		for(ServiceReceiver sr : connectedActs)
+			if(sr.equalsClass(classToConnect))
+				connectedActs.remove(sr);
+		connectedActs.add(classToConnect);
 	}
 
 	/*
@@ -589,9 +594,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 		@Override
-		protected String doInBackground(Void... params) {
+		protected  String doInBackground(Void... params) {
 			//params contiene la espiringlist
+			
+			int i = 0;
 			while(true){
+				
+				System.out.println("scannerando" + i++);
+				
 				if (pause) {
 					synchronized (INTERRUPTOR) {
 						try {
@@ -676,14 +686,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 						}
 					}
 				}
-
+				
 				//assicura la chiusura dell'asynctask quando il service viene distrutto
 				if(stop==true)
 					break;
 
 				//sempre e comunque, metto in sleep l'asynctask alla fine dell'esecuzione del codice che effettua il controllo sulla singola acquisizione
 				pauseMyTask();
-
+				
 
 
 			}
@@ -744,7 +754,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 				//==============================INVIO ALLE ACTIVITY CONNESSE I DATI(INIZIO)=================================
 				if(connectedActs != null && connectedActs.size() > 0){
-					//TODO C'ERA UN LINK = NULL
+					
 					final long fallTime = fall.getTime();
 					final String formattedTime = Utility.getStringTime(fallTime);
 					for(final ServiceReceiver sr : connectedActs){ 

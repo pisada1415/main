@@ -3,6 +3,7 @@ package pisada.recycler;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import pisada.fallDetector.ForegroundService;
@@ -33,13 +34,14 @@ import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements ServiceReceiver {
 
 	private static ArrayList<CardContent> cardContentList;
 	private Activity activity;
 
-	
+
 	private double /*lastX, lastY, lastZ,*/ last;
 	private static Plot2d /*graphX, graphY, graphZ,*/ graph;
 	private Calendar c;
@@ -47,31 +49,42 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static Chronometer duration; 
 	private static long timeSessionUp;
 	private static long timeWhenPaused = 0;
-	
+	private String infoText;
 	private SharedPreferences sp;
-	
+
+	private TextView info;
+
 	private static boolean startChronometerOnStart = false;
-	
+
 	private final String CONTACTS_KEY = "contacts";
-	
+
 	private static String currentSessionName;
-	
-	
+	private SessionDataSource sds;
+	private ProgressBar pb;
 	/*
 	 * 
 	 * first_new_currentsession_card
 	 */
 	public class FirstCardHolder extends RecyclerView.ViewHolder {
-		
+
 		private ImageView thumbNail;
-		private TextView info;
+
 		private Button playPause;
+		
+		
+		@SuppressWarnings("deprecation")
 		public FirstCardHolder(View v) {
 			super(v);
 			playPause = (Button) v.findViewById(R.id.start_pause_button);
 			duration = (Chronometer) v.findViewById(R.id.chronometer);
 			thumbNail = (ImageView)v.findViewById(R.id.thumbnail);
 			info =  (TextView) v.findViewById(R.id.info);
+			pb = (ProgressBar)v.findViewById(R.id.progressBarFirstCard);
+			pb.setVisibility(View.VISIBLE);
+			if(infoText != null)
+				info.setText(infoText);
+			else
+				info.setVisibility(View.GONE);
 			if(startChronometerOnStart)
 				startChronometer();
 			if(timeWhenPaused != 0)
@@ -81,11 +94,17 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				duration.stop();
 				timeWhenPaused = 0;
 			}
-			
-			
-			//prendi valore start session dal database (qui uso un valore esempio)
-			
-			
+
+			if(sds.existCurrentSession())
+			{
+				if(sds.currentSession().isOnPause())
+					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_play));
+				else
+					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_pause));
+				//devo usare il deprecato perché per setBackground serve API Level 16
+			}
+
+
 		}
 	}	
 
@@ -113,19 +132,19 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			graphZLayout=(LinearLayout) v.findViewById(R.id.graphz);*/
 
 			long timePoint = (c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - millisecStartGraph);
-	
+
 			graph = new Plot2d(activity, new Data(timePoint, 0));
 			/*
 			graphX = new Plot2d(activity, new Data(timePoint,0));
 			graphY = new Plot2d(activity, new Data(timePoint,0));
 			graphZ = new Plot2d(activity, new Data(timePoint,0));
-*/
+			 */
 			graphLayout.addView(graph, lp);
 			/*
 			graphXLayout.addView(graphX, lp);
 			graphYLayout.addView(graphY, lp);
 			graphZLayout.addView(graphZ, lp);
-*/
+			 */
 		}
 
 	}
@@ -145,7 +164,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			fallPosition=(TextView) v.findViewById(R.id.position);
 			boolNotif = (TextView) v.findViewById(R.id.booleanSent);
 			v.setOnClickListener(new View.OnClickListener() {
-				
+
 				@Override
 				public void onClick(View v) {
 					// TODO Auto-generated method stub
@@ -157,11 +176,11 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 					((FragmentCommunicator)activity).switchFragment(intent);
 					//Toast.makeText(activity, "premuta caduta " + cardContentList.get(position).getTime(), Toast.LENGTH_SHORT).show();
-				
+
 				}
 			});
 		}
-		
+
 
 	}
 
@@ -171,18 +190,18 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		this.activity=activity;
 		c = Calendar.getInstance();
-		if(!ForegroundService.isConnected(this))
-			ForegroundService.connect(this);
+		ForegroundService.connect(this);
 		millisecStartGraph = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
 		cardContentList = new ArrayList<CardContent>();
 		cardContentList.add(0, new CardContent());
 		cardContentList.add(1, new CardContent());
 		timeSessionUp = time;
 		startChronometerOnStart = startChron;
+		sds = new SessionDataSource(activity);
 		if(pauseTime != 0) {
 			timeWhenPaused = pauseTime;
 		}
-		
+
 		sp = PreferenceManager.getDefaultSharedPreferences(activity);
 	}
 
@@ -191,7 +210,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		if(mHandler == null)
 			mHandler = new Handler(Looper.getMainLooper());
 		mHandler.post(r);
-		
+
 	}
 
 
@@ -213,7 +232,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			String link = fall.getLink();
 			if(link != null){
 				Oholder.fallPosition.setText(Html.fromHtml("<a href=\""+ link + "\">" + "Position: " + fall.getPos() + "</a>"));
-				
+
 				Oholder.fallPosition.setClickable(true);
 				Oholder.fallPosition.setMovementMethod (LinkMovementMethod.getInstance());
 			}
@@ -221,7 +240,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				Oholder.fallPosition.setText("Position: " + fall.getPos());
 				Oholder.fallPosition.setClickable(false);
 			}
-			
+
 			//Oholder.fallPosition.setText("Position: "+ fall.getPos());
 			Oholder.fallTime.setText("Time: " + fall.getTimeLiteral());
 			if(fall.notifiedSuccess()){
@@ -233,13 +252,13 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				Oholder.boolNotif.setText(activity.getResources().getString(R.string.requiresSetup));
 				Oholder.boolNotif.setTextColor(Color.RED);
 			}
-			
-			
+
+
 		}
 
 	}
 
-	
+
 
 
 	@Override
@@ -255,13 +274,13 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		}
 		else 
-			{
-			
+		{
+
 			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fall_card, parent, false);
-		    
-		    
-				return new FallsHolder(view);
-			}
+
+
+			return new FallsHolder(view);
+		}
 
 	}
 
@@ -286,11 +305,11 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void serviceUpdate(float x, float y, float z, long time) {
 		//lastX = x; lastY = y; lastZ = z; 
 		last = Math.sqrt(x*x + y*y + z*z);
-		
+
 		c = Calendar.getInstance();
 		if(/*graphX != null && graphY != null && graphZ != null*/graph != null){
 			long timeGraph = (time - millisecStartGraph);
-		
+
 			graph.pushValue(new Data(timeGraph, last));
 			graph.invalidate();
 			/*graphX.pushValue(new Data(timeGraph,x));
@@ -299,7 +318,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		graphY.invalidate();
 		graphZ.pushValue(new Data(timeGraph,z));
 		graphZ.invalidate();
-		*/
+			 */
 		}
 	}
 
@@ -316,22 +335,22 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			graph.clear();
 		//altrimenti fallisce silenziosamente
 	}
-	
-	
+
+
 	/*
 	 * QUI SALVIAMO I TEMPI NEL DATABASE 
 	 */
 	static long timePause = 0;
-	public void pauseChronometer()
+	private void pauseChronometer()
 	{
 		timePause = duration.getBase() - SystemClock.elapsedRealtime();
 
 		duration.stop();
 	}
-	public static void startChronometer()
+	private void startChronometer()
 	{
 		if(timePause == 0){
-			
+
 			long base = SystemClock.elapsedRealtime()-timeSessionUp;
 			duration.setBase(base);
 			duration.start();
@@ -349,7 +368,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		timePause = 0; //non deve riprendere da tempo stop
 		duration.stop();
 	}
-	
+
 	private void addFallToCardList(String position, String link, String timeLiteral, long time, boolean b)
 	{
 		CardContent cc = new CardContent(position,link,timeLiteral, time, b);
@@ -363,7 +382,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			for(; i < cardContentList.size() && !cardContentList.get(i).equals(cc); i++);
 			cardContentList.set(i, cc);
 			notifyItemChanged(i);
-			
+
 		}
 	}
 
@@ -372,7 +391,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		currentSessionName = sessionName;
 		addFallToCardList(fallPosition, link, timeLiteral, time, b);
 	}
-	
+
 	public void addFall(FallDataSource.Fall f, SessionDataSource.Session s)
 	{
 		currentSessionName = s.getName();
@@ -382,7 +401,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		position = (f.getLat() != -1 && f.getLng() != -1) ? "" + f.getLat() + ", " + f.getLng() : "Not available";
 		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), timeLiteral, timeLong, f.wasNotified());
 	}
-	
+
 	public void clearFalls()
 	{
 		while(cardContentList.size()>2)
@@ -390,7 +409,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			cardContentList.remove(2);
 			this.notifyItemRemoved(2);
 		}
-		
+
 	}
 
 
@@ -407,5 +426,32 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		return false;
 	}
 
+	public void postEditsFirstCard(String infoString, int chronometer)
+	{
+		if(info != null && infoString != "")
+		{
+			info.setText(infoString);
+			info.setVisibility(View.VISIBLE);
+		}
+		else if(info != null)
+			info.setVisibility(View.GONE);
+		if(infoString != "" && info == null)
+			infoText = infoString;
+
+
+		switch(chronometer)
+		{
+		case 0:
+			this.startChronometer();
+			break;
+		case 1:
+			this.pauseChronometer();
+			break;
+		default:
+			break;
+		}
+	}
+	
+	
 }
 

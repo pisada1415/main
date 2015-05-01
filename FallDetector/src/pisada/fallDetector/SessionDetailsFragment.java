@@ -119,6 +119,7 @@ public class SessionDetailsFragment extends FallDetectorFragment {
 						activity.setTitle(value);
 						session = sessionData.getSession(value);
 						sessionName = value;
+						cardAdapter.updateSessionName(sessionName);
 					}
 					
 					else

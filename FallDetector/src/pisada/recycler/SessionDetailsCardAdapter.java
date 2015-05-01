@@ -98,6 +98,9 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 	}
 
 	
+	public void updateSessionName(String newName){
+		sessionName = newName;
+	}
 
 
 	@Override
