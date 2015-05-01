@@ -40,7 +40,7 @@ public class ContactsActivity extends ActionBarActivity {
 	private SharedPreferences sp;
 	private ActionBar actionBar;
 	private static final int CONTACT_PICKER_RESULT = 1021;
-	private StableArrayAdapter adapter;
+	private ArrayAdapter adapter;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -50,7 +50,7 @@ public class ContactsActivity extends ActionBarActivity {
 		contacts = numbers != null ? new ArrayList<String>(numbers) : new ArrayList<String>();
 		actionBar = getSupportActionBar();
 		ListView listView = (ListView) findViewById(R.id.listView1);
-		adapter = new StableArrayAdapter(this,android.R.layout.simple_list_item_1, contacts);
+		adapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1, contacts);
 		listView.setAdapter(adapter);
 
 
@@ -91,9 +91,8 @@ public class ContactsActivity extends ActionBarActivity {
 
 		HashMap<String, Integer> mIdMap = new HashMap<String, Integer>();
 
-		public StableArrayAdapter(Context context, int textViewResourceId,
-				List<String> objects) {
-			super(context, textViewResourceId, objects);
+		public StableArrayAdapter(Context context, int layoutResourceId, List<String> objects) {
+			super(context, layoutResourceId, objects);
 			for (int i = 0; i < objects.size(); ++i) {
 				mIdMap.put(objects.get(i), i);
 			}
@@ -218,5 +217,6 @@ public class ContactsActivity extends ActionBarActivity {
 			}
 		}
 	}
+	
 
 }

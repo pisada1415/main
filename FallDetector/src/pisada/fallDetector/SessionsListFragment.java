@@ -39,16 +39,20 @@ public class SessionsListFragment extends FallDetectorFragment {
 	private static SessionDataSource sessionData;
 	Intent serviceIntent;
 	Activity activity;
+	private final int TYPE = 1;
 
 
 	public SessionsListFragment()
 	{
 		setHasOptionsMenu(true);
 	}
-	
+	public int getType()
+	{
+		return this.TYPE;
+	}
 	@Override
 	public View onCreateView(android.view.LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.activity_sessions_list, container, false);
+		return inflater.inflate(R.layout.fragment_sessions_list, container, false);
 	};
 
 
@@ -84,6 +88,7 @@ public class SessionsListFragment extends FallDetectorFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		// Inflate the menu; this adds items to the action bar if it is present.
+		menu.clear();
 		inflater.inflate(R.menu.sessions_list, menu);
 		super.onCreateOptionsMenu(menu, inflater);
 	}
@@ -104,11 +109,10 @@ public class SessionsListFragment extends FallDetectorFragment {
 		((FragmentCommunicator)activity).switchFragment(toSamu);
 
 	}
-
+ @Override
 	public void currentSessionDetails(View v){
 
 		this.addSession(v);
-
 	}
 
 

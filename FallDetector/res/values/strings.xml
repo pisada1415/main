@@ -13,6 +13,7 @@
     <string name="time_elapsed">00:00:00</string>
     <string name="info">info.</string>
     <string name="position">position</string>
+    <string name="Position">Position:&#160;</string>
     <string name="current_session_name">Current Session Name</string>
     <string name="rename">Rename&#8230;</string>
     <string name="defaultSessionName">New Session</string>
@@ -41,7 +42,12 @@
     <string name="successNotif">Notification:&#160;</string>
     <string name="notsent">not sent yet</string>
     <string name="sent">sent</string>
-      <string name="requiresSetup">requires setup</string>  
-    
-
+    <string name="requiresSetup">requires setup</string>
+    <string name="starttime">Start time:&#160;</string>
+    <string name="duration">Duration:&#160;</string>
+    <string name="date">Date:&#160;</string>
+    <string name="notifSentCorrectly">Notification was sent correctly to your contacts for this event</string>
+    <string name="notifNotSent">Notification was not sent to anyone for this event</string>
+	<string name="notavailable">not available</string>
+	<string name="notavalidchar">Accepter characters: a-z, A-Z</string>
 </resources>

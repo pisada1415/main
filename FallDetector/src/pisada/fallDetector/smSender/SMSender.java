@@ -87,7 +87,7 @@ public class SMSender {
 						final String link = Utility.getMapsLink(latitude, longitude);
 						final String formattedTime = Utility.getStringTime(fall.getTime());
 						for(final ServiceReceiver sr : ForegroundService.connectedActs){ 
-							Runnable r = new Runnable(){@Override public void run() {String pos = latitude != -1 && longitude != -1? position : "Not available";sr.serviceUpdate(pos, link, formattedTime, fall.getTime(), true);}};
+							Runnable r = new Runnable(){@Override public void run() {String pos = latitude != -1 && longitude != -1? position : "Not available";sr.serviceUpdate(pos, link, formattedTime, fall.getTime(), true, fall.getSessionName());}};
 							if(sr instanceof CurrentSessionCardAdapter)
 								((CurrentSessionCardAdapter)sr).runOnUiThread(r);
 							else if(sr instanceof Activity)

@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -27,6 +28,8 @@ import android.provider.Settings;
 import android.widget.Toast;
 public class Utility {
 
+	public final static String FALL_TIME_KEY = "fall_time";
+	public final static String SESSION_NAME_KEY = "session_name";
 
 	public static String checkLocationServices(final Context context, boolean showDialog)
 	{
@@ -112,7 +115,7 @@ public class Utility {
 	public static Bitmap createImage(int sessionNumber){
 
 
-
+		sessionNumber+=3;
 		ArrayList<int[]> primes=getPrimes(sessionNumber);
 		int size=primes.size();
 		Bitmap icon=Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
@@ -208,6 +211,24 @@ public class Utility {
 
 		return path;
 	}
+
+	public static String longToDuration(long l)
+	{
+		String duration = "";
+		int days = (int)(TimeUnit.MILLISECONDS.toDays(l));
+		int hours = (int)(TimeUnit.MILLISECONDS.toHours(l) - TimeUnit.DAYS.toHours(days));
+		int minutes = (int)(TimeUnit.MILLISECONDS.toMinutes(l) - TimeUnit.HOURS.toMinutes(hours));
+		int seconds = (int)(TimeUnit.MILLISECONDS.toSeconds(l)- TimeUnit.MINUTES.toSeconds(minutes));
+
+		if(days != 0)
+			duration += days + " days,";
+		if(hours != 0)
+			duration += hours + " hrs, ";
+		duration += minutes + " min, " + seconds + " sec";
+		return duration;
+	}
+
+
 
 
 }

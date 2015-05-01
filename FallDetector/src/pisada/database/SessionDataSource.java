@@ -119,7 +119,9 @@ public class SessionDataSource {
 		if(existCurrentSession()) throw new MoreThanOneOpenSessionException();
 		if(getSession(name)!=null) throw new DublicateNameSessionException();
 		
-		int id=sessionList.get(sessionList.size()-1).id+1;
+		
+		int id=0;
+		if(!sessionList.isEmpty()) id=sessionList.get(0).id+1;
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.SESSION_NAME, name);
 		values.put(FallSqlHelper.SESSION_IMG, img);
@@ -139,7 +141,8 @@ public class SessionDataSource {
 		if(existCurrentSession()) throw new MoreThanOneOpenSessionException();
 		if(getSession(name)!=null) throw new DublicateNameSessionException();
 		
-		int id=sessionList.get(sessionList.size()-1).id+1;
+		int id=0;
+		if(!sessionList.isEmpty()) id=sessionList.get(0).id+1;
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.SESSION_NAME, name);
 		values.put(FallSqlHelper.SESSION_IMG, img);

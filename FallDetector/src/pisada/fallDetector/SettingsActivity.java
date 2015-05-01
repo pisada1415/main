@@ -12,12 +12,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.provider.AlarmClock;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
@@ -45,7 +46,8 @@ public class SettingsActivity extends ActionBarActivity {
 
 	private static SharedPreferences settings; 
 	private ActionBar actionBar;
-
+	private static MainActivity activity;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,14 +56,20 @@ public class SettingsActivity extends ActionBarActivity {
 
 	}
 
+
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
 		setupSimplePreferencesScreen();
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
-
+		
+		
 	}
 
+	public static void setActivity(MainActivity a)
+	{
+		activity = a;
+	}
 
 	private void setupSimplePreferencesScreen() {
 

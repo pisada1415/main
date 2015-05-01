@@ -1,31 +1,34 @@
 package pisada.fallDetector;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.text.Editable;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity implements FragmentCommunicator{
+public class MainActivity extends ActionBarActivity implements FragmentCommunicator, android.text.TextWatcher{
 	private List<NavDrawerItem> listItems;
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
@@ -35,11 +38,18 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	private FallDetectorFragment fragment;
 	private int currentUIIndex = 0;
 	private SessionDataSource sessionData;
+	private FragmentManager fm;
+	private final int SESSION_DETAILS_ID = -1;
+	private final int FALL_DETAILS_ID = -2;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		sessionData = new SessionDataSource(this); //TODO apro e chiudo ... laccredenza
+
+
+		fm = getSupportFragmentManager();
+		sessionData = new SessionDataSource(this); 
+
 		setContentView(R.layout.activity_navigation_drawer);
 		String[] arr = (getResources().getStringArray(R.array.navigation_items));
 		listItems = new ArrayList<NavDrawerItem>();
@@ -66,6 +76,9 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 				super.onDrawerClosed(view);
 				getSupportActionBar().setTitle(mTitle);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+				if(currentUIIndex > -1)
+					mDrawerList.setItemChecked(currentUIIndex, true);
+
 			}
 
 			/** Called when a drawer has settled in a completely open state. */
@@ -73,6 +86,9 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 				super.onDrawerOpened(drawerView);
 				getSupportActionBar().setTitle(mDrawerTitle);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+				if(currentUIIndex > -1)
+					mDrawerList.setItemChecked(currentUIIndex, true);
+				
 			}
 		};
 
@@ -85,37 +101,54 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		 */
 		fragment = new CurrentSessionFragment();
 		// Insert the fragment by replacing any existing fragment
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		fragmentManager.beginTransaction()
+		fm.beginTransaction()
 		.replace(R.id.content_frame, (Fragment)fragment)
 		.commit();
 	}
 
+
+
+	/*
+	 * metodi view che rimandano ai fragment ma vengono automaticamente chiamati qui
+	 */
+
+
+	@SuppressLint("NewApi")
 	public void playPauseService(View v){
 		fragment.playPauseService(v);
 	}
+
+
 
 	public void stopService(View v)
 	{
 		fragment.stopService(v);
 	}
-	
+
 	public void addSession(View v)
 	{
 		fragment.addSession(v);
 	}
 
+	public void currentSessionDetails(View v)
+	{
+		fragment.currentSessionDetails(v);
+	}
+
 
 	private class DrawerItemClickListener implements ListView.OnItemClickListener {
 		@Override
-		public void onItemClick(AdapterView parent, View view, int position, long id) {
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			selectItem(position);
+			
 		}
 	}
 
 	/** Swaps fragments in the main content view */
 	private void selectItem(int position) {
-		// Create a new fragment and specify the planet to show based on position
+		/*
+		 * chiamato quando viene selezionato un elemento dal navigation drawer
+		 */
 		currentUIIndex = position;
 		switch(position)
 		{
@@ -126,22 +159,28 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			fragment = new SessionsListFragment();
 			break;
 		case 2:
-			//TODO archive
+			fragment = new ArchiveFragment();
 			break;
 		case 3:
-			//TODO Settings
+			Intent intent = new Intent(this, SettingsActivity.class);
+			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
+			startActivity(intent);
+			SettingsActivity.setActivity(this);
+			Intent intent2 = new Intent(MainActivity.this, CurrentSessionFragment.class);
+			currentUIIndex = 0; //sto rimandando la schermata a currentsession
+			switchFragment(intent2);
+
 			break;
 		case 4:
-			//TODO Info
+			fragment = new InfoFragment();
 			break;
 		default:
-			
+
 			break;
 		}
-		
-		
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		fragmentManager.beginTransaction()
+
+
+		fm.beginTransaction()
 		.replace(R.id.content_frame, (Fragment)fragment)
 		.commit();
 
@@ -150,7 +189,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
         fragment.setArguments(args);*/
 
 		// Insert the fragment by replacing any existing fragment
-		
+
 		// Highlight the selected item, update the title, and close the drawer
 		mDrawerList.setItemChecked(position, true);
 		setTitle(listItems.get(position).getTitle());
@@ -170,7 +209,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		// If the nav drawer is open, hide action items related to the content view
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
 		try{
-		menu.findItem(R.id.rename_session).setVisible(!drawerOpen);
+			menu.findItem(R.id.rename_session).setVisible(!drawerOpen);
 		}
 		catch(NullPointerException e)
 		{
@@ -211,125 +250,221 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		switch (id) {
 		case R.id.rename_session:
 		{
-			// Set an EditText view to get user input 
-			final EditText input = new EditText(this);
 
-			new AlertDialog.Builder(this)
-			.setTitle("Rename")
-			.setMessage("Insert name")
-			.setView(input)
-			.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					String value = input.getText().toString(); 
-					String tmp = fragment.getSessionName();
+			if(currentUIIndex == 0){ 
+				final EditText input = new EditText(this);;
+				input.addTextChangedListener(this);
+				new AlertDialog.Builder(this)
+				.setTitle("Rename")
+				.setMessage("Insert name")
+				.setView(input)
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						String value = input.getText().toString(); 
+						String tmp = fragment.getSessionName();
 
-					if(sessionData.existCurrentSession() && !sessionData.existSession(value)){
-						sessionData.renameSession(sessionData.currentSession(), value);
-						setTitle(value);
-						fragment.setSessionName(value);
+						if(!sessionData.existSession(value) && sessionData.existCurrentSession()){
+							sessionData.renameSession(sessionData.currentSession(), value);
+							setTitle(value);
+							fragment.setSessionName(value);
+						}
+						else if(sessionData.existSession(value))
+						{
+							Toast.makeText(MainActivity.this, "Can't add session with same name!", Toast.LENGTH_LONG).show();
+							fragment.setSessionName(tmp);
+							setTitle(fragment.getSessionName());
+						}
+						else //cioè non esiste con valore nuovo ma non ci sono sessioni correnti: preparo per start
+						{
+							fragment.setSessionName(value);
+							setTitle(value);
+						}
+
 					}
-					else if(!sessionData.existSession(value)){
-						fragment.setSessionName(value); setTitle(value);
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// Do nothing.
 					}
-					else
-					{
-						Toast.makeText(MainActivity.this, "Can't add session with same name!", Toast.LENGTH_LONG).show();
-						fragment.setSessionName(tmp);
-						setTitle(fragment.getSessionName());
-
-
-					}
-
-				}
-			}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					// Do nothing.
-				}
-			}).show();
-
+				}).show();
+				return true;
+			}
+			else if(currentUIIndex == this.SESSION_DETAILS_ID)//altrimenti passo il lavoro al fragment che sarebbe il sessionDetails
+				return false;
 		}
 		return true;
 		case R.id.action_settings:
 			Intent intent = new Intent(this, SettingsActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 			startActivity(intent);
+			SettingsActivity.setActivity(this);
+			Intent intent2 = new Intent(this, CurrentSessionFragment.class);
+			this.switchFragment(intent2);
 			return true;
 
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-
-
-
 	}
 
-	//TODO fragmentare
+
+
 	@Override
 	public void onBackPressed()
 	{
-		switch(currentUIIndex){
-		case 0:
-			/*
-			 * se sei in currentsession, il tasto back porta fuori
-			 */
+		int count = this.getSupportFragmentManager().getBackStackEntryCount();
+		if(currentUIIndex == 0)
 			finish();
-			break;
-		default:
+		else if(currentUIIndex < 0)
+		{
+			super.onBackPressed();
+			System.out.println("super onbackpressed");
+			//TODO problema è se siamo in fall, arriva da current o da session list?
 			/*
-			 * se sei in qualsiasi altro posto, il tasto back porta alla currentsession
+			if (fm.getBackStackEntryCount() > 0) {
+				fm.popBackStackImmediate();
+				List<Fragment> list = fm.getFragments();
+				FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
+				if(frag != null)
+					currentUIIndex = getFragmentIndex(frag);
+				else
+					finish();
+			} else {
+				super.onBackPressed();  
+			}
 			 */
+		}
+		else
+		{
 			Intent toSamu = new Intent(this, CurrentSessionFragment.class);
 			this.switchFragment(toSamu);
-			break;
 		}
+
+		FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
+
+		fragment = frag;
+
 		invalidateOptionsMenu();
 
+	}
+
+	private int getFragmentIndex(FallDetectorFragment frag) {
+		// TODO Auto-generated method stub
+		return frag.getType();
 	}
 
 	@Override
 	public void switchFragment(Intent i) {
-		
+
 		if (i.getComponent().getClassName().contains("CurrentSessionFragment")){
 			currentUIIndex = 0;
+			/*svuoto back stack*/
+			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
+				fm.popBackStack();
+			}
+			fragment = new CurrentSessionFragment();
+			fm.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment)
+			.commit();
+
 		}
 		else if (i.getComponent().getClassName().contains("SessionsListFragment")){
 			currentUIIndex = 1;
+			/*svuoto back stack*/
+			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
+				fm.popBackStack();
+			}
 			fragment = new SessionsListFragment();
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction()
+			fm.beginTransaction()
 			.replace(R.id.content_frame, (Fragment)fragment)
 			.commit();
+
 		}
 		else if (i.getComponent().getClassName().contains("SessionDetailsFragment")){
-			currentUIIndex = -1;// (non appare nel nav draw)
+			currentUIIndex = this.SESSION_DETAILS_ID;// non appare nel nav draw
+			unselectAllLines();
 			fragment = new SessionDetailsFragment();
-			fragment.setSessionName(i.getStringExtra(FallSqlHelper.SESSION_NAME));
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction()
-			.replace(R.id.content_frame, (Fragment)fragment)
+			Bundle args = new Bundle();
+			args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
+			fragment.setArguments(args);
+			fm.beginTransaction().remove(fragment)
+			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack(null)
 			.commit();
-		}
-		else if (i.getComponent().getClassName().contains("SettingsFragment")){
-			currentUIIndex = 3;
 		}
 		else if (i.getComponent().getClassName().contains("FallDetailsFragment")){
-			currentUIIndex = -1;// (non appare nel nav draw
+			currentUIIndex = this.FALL_DETAILS_ID;// non appare nel nav draw
+			unselectAllLines();
 			fragment = new FallDetailsFragment();
-			fragment.setSessionName(i.getStringExtra("fallSession"));
-			fragment.setFallTime(i.getLongExtra("fallTime", -1));
-			FragmentManager fragmentManager = getSupportFragmentManager();
-			fragmentManager.beginTransaction()
-			.replace(R.id.content_frame, (Fragment)fragment)
+			Bundle args = new Bundle();
+			args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
+			args.putLong(Utility.FALL_TIME_KEY, i.getLongExtra(Utility.FALL_TIME_KEY, -1));
+			fragment.setArguments(args);
+			fm.beginTransaction().remove(fragment)
+			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack(null)
 			.commit();
 		}
-		else if(i.getComponent().getClassName().contains("Archive")){
+		else if(i.getComponent().getClassName().contains("ArchiveFragment")){
 			currentUIIndex = 2;
+			/*svuoto back stack*/
+			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
+				fm.popBackStack();
+			}
+			fragment = new ArchiveFragment();
+			fm.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment)
+			.commit();
+			System.out.println("rimosso");
+
 		}
-		else if(i.getComponent().getClassName().contains("Info")){
+		else if(i.getComponent().getClassName().contains("InfoFragment")){
 			currentUIIndex = 4;
+			/*svuoto back stack*/
+			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
+				fm.popBackStack();
+			}
+			fragment = new InfoFragment();
+			fm.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment)
+			.commit();
+			System.out.println("rimosso");
 		}
+		if(currentUIIndex > -1)
+			mDrawerList.setItemChecked(currentUIIndex, true);
 		invalidateOptionsMenu();
 	}
-	
-	
+
+
+	private void unselectAllLines()
+	{
+		for(int i = 0; i < listItems.size(); i++){
+			mDrawerList.setItemChecked(i, false);
+		}
+	}
+
+	@Override
+	public void beforeTextChanged(CharSequence s, int start, int count,
+			int after) {
+		//non usato
+
+	}
+
+	@Override
+	public void onTextChanged(CharSequence s, int start, int before, int count) {
+		//non usato
+
+	}
+
+	@Override
+	public void afterTextChanged(Editable s) {
+		// TODO Auto-generated method stub
+		String text = s.toString();
+		int length = text.length();
+
+		if(!text.matches("[a-zA-Z ]+")) {
+			s.delete(length - 1, length);
+			Toast.makeText(this, getResources().getString(R.string.notavalidchar), Toast.LENGTH_SHORT).show();
+		}
+	}
+
+
+
 }

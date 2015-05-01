@@ -5,13 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="1400px"
     android:layout_margin="5dp"
-    card_view:cardCornerRadius="4dp"
-    
     android:clickable="true"
-    android:foreground="?android:attr/selectableItemBackground" >
+    android:foreground="?android:attr/selectableItemBackground"
+    card_view:cardCornerRadius="4dp" >
 
     <RelativeLayout
-         android:id="@+id/curr_card_session_layout"
+        android:id="@+id/curr_card_session_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
@@ -32,13 +31,20 @@
             android:text="cazzo"
             android:textSize="20sp" />
 
-     
-          <Button
+        <ImageView
+            android:id="@+id/current_session_icon"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/current_session_start_text"
+            android:gravity="center" />
+
+        <Button
             android:id="@+id/details_current_button"
             android:layout_width="match_parent"
             android:layout_height="120dp"
-            android:layout_below="@id/current_session_start_text"
-            android:gravity="center"
+            android:layout_below="@id/current_session_icon"
+            android:layout_centerHorizontal="true"
             android:onClick="currentSessionDetails"
             android:text="Dettaglio Session"
             android:textSize="20sp" />
