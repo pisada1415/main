@@ -144,7 +144,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	}
 
 	@Override
-	public void onBindViewHolder(ViewHolder holder, final int i) {
+	public void onBindViewHolder(ViewHolder holder,  int i) {
 
 		Session currSession=sessionData.currentSession();
 		switch(i) {
@@ -176,7 +176,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		OldSessionHolder Oholder=(OldSessionHolder) holder;
 		final Session session = sessionList.get(i);
-
+		final int j=i;
 		Oholder.vName.setText("Name: "+session.getName()+ " ID= "+session.getID());//+"\nStart Time: "+session.getStartTime()//+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
 		Oholder.detailsBtn.setOnClickListener(new OnClickListener(){
 			@Override
@@ -190,9 +190,14 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 			@Override
 			public void onClick(View v) {
-				sessionData.deleteSession(session);
-				sessionList.remove(i);
-				notifyItemRemoved(i);			
+				//sessionData.deleteSession(session);
+			
+				notifyItemRemoved(j);
+				sessionList.remove(j);
+		
+
+
+
 			}
 
 		});
