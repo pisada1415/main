@@ -19,7 +19,7 @@ public class SessionDataSource {
 	private SQLiteDatabase database;
 	private FallSqlHelper databaseHelper;
 	private String[] allColumns={FallSqlHelper.SESSION_NAME,FallSqlHelper.SESSION_IMG,FallSqlHelper.SESSION_START_TIME,FallSqlHelper.SESSION_END_TIME, 
-			FallSqlHelper.SESSION_CLOSE_COLUMN, FallSqlHelper.SESSION_DURATION, FallSqlHelper.SESSION_STOP_TIME_PREFERENCE, FallSqlHelper.SESSION_PAUSE_COLUMN };
+			FallSqlHelper.SESSION_CLOSE_COLUMN, FallSqlHelper.SESSION_DURATION, FallSqlHelper.SESSION_STOP_TIME_PREFERENCE, FallSqlHelper.SESSION_PAUSE_COLUMN, FallSqlHelper.SESSION_ARCHIVED_COLUMN , FallSqlHelper.SESSION_ID};
 	private Context context;
 	private static ArrayList<Session> sessionList=new ArrayList<Session>();
 
@@ -34,11 +34,13 @@ public class SessionDataSource {
 		private long stopTimePreference;
 		private int close;
 		private int pause;
+		private int archived;
+		private int id;
 		private boolean isValid=true;
 
 		//COSTRUTTORE INTERNO NUOVA SESSIONE
-		private Session(String name, String img,long startTime,long endTime,long stopTimePreference, int close, int pause, Context context) throws BoolNotBoolException{
-			if(close!=0&&close!=1)throw new BoolNotBoolException();
+		private Session(String name, String img,long startTime,long endTime,long stopTimePreference, int close, int pause, int archived,int id, Context context) throws BoolNotBoolException{
+			if((close!=0&&close!=1)||(pause!=0&&pause!=1)||(archived!=0&&archived!=1))throw new BoolNotBoolException();
 			else{
 				this.name=name;
 				this.img=img;
@@ -47,6 +49,8 @@ public class SessionDataSource {
 				this.close=close;
 				this.stopTimePreference=stopTimePreference;
 				this.pause=pause;
+				this.archived=archived;
+				this.id=id;
 			}
 
 		}
@@ -69,6 +73,8 @@ public class SessionDataSource {
 		public boolean hasStopTimePreference(){return stopTimePreference!=FallSqlHelper.NO_VALUE_FOR_TIME_COLUMN;}
 		public boolean isOnPause(){return pause==FallSqlHelper.PAUSE;}
 		public boolean isRunning(){return pause==FallSqlHelper.RUNNING;}
+		public boolean isArchived(){return archived==FallSqlHelper.ARCHIVED;}
+		public int getID(){return id;}
 
 		//SETTER PRIVATI
 		private void setName(String name){this.name=name;}
@@ -77,15 +83,18 @@ public class SessionDataSource {
 		private void setStopTimePreference(long t){stopTimePreference=t;}
 		private void pause(){pause=FallSqlHelper.PAUSE;}
 		private void resume(){pause=FallSqlHelper.RUNNING;}
-
+		private void setArchived(boolean archived){
+			int i=FallSqlHelper.NOTARCHIVED;
+			if(archived) i=FallSqlHelper.ARCHIVED;
+			this.archived=i;
+		}
 	}
-
 
 	public SessionDataSource(Context context){
 		synchronized(SessionDataSource.class)
 		{		
 			if(databaseHelper==null) databaseHelper=FallSqlHelper.getIstance(context);
-			
+
 			this.context=context;
 			open();
 			if(sessionList.size()==0){
@@ -109,13 +118,18 @@ public class SessionDataSource {
 
 		if(existCurrentSession()) throw new MoreThanOneOpenSessionException();
 		if(getSession(name)!=null) throw new DublicateNameSessionException();
+		
+		
+		int id=0;
+		if(!sessionList.isEmpty()) id=sessionList.get(0).id+1;
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.SESSION_NAME, name);
 		values.put(FallSqlHelper.SESSION_IMG, img);
 		values.put(FallSqlHelper.SESSION_START_TIME, startTime);
 		values.put(FallSqlHelper.SESSION_STOP_TIME_PREFERENCE, stopTimePreference);
+		values.put(FallSqlHelper.SESSION_ID,id);
 		database.insert(FallSqlHelper.SESSION_TABLE, null,values);
-		Session newSession= new Session(name,img,startTime,FallSqlHelper.NO_VALUE_FOR_TIME_COLUMN, stopTimePreference,FallSqlHelper.OPEN,FallSqlHelper.RUNNING, context);
+		Session newSession= new Session(name,img,startTime,FallSqlHelper.NO_VALUE_FOR_TIME_COLUMN, stopTimePreference,FallSqlHelper.OPEN,FallSqlHelper.RUNNING, FallSqlHelper.NOTARCHIVED,id, context);
 		sessionList.add(0,newSession);
 		return newSession;
 
@@ -126,13 +140,16 @@ public class SessionDataSource {
 
 		if(existCurrentSession()) throw new MoreThanOneOpenSessionException();
 		if(getSession(name)!=null) throw new DublicateNameSessionException();
-
+		
+		int id=0;
+		if(!sessionList.isEmpty()) id=sessionList.get(0).id+1;
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.SESSION_NAME, name);
 		values.put(FallSqlHelper.SESSION_IMG, img);
 		values.put(FallSqlHelper.SESSION_START_TIME, startTime);
+		values.put(FallSqlHelper.SESSION_ID,id);
 		database.insert(FallSqlHelper.SESSION_TABLE, null,values);
-		Session newSession= new Session(name,img,startTime,FallSqlHelper.NO_VALUE_FOR_TIME_COLUMN,FallSqlHelper.NO_VALUE_FOR_TIME_COLUMN,FallSqlHelper.OPEN,FallSqlHelper.RUNNING, context);
+		Session newSession= new Session(name,img,startTime,FallSqlHelper.NO_VALUE_FOR_TIME_COLUMN,FallSqlHelper.NO_VALUE_FOR_TIME_COLUMN,FallSqlHelper.OPEN,FallSqlHelper.RUNNING,FallSqlHelper.ARCHIVED,id, context);
 		sessionList.add(0,newSession);
 		return newSession;
 
@@ -175,13 +192,14 @@ public class SessionDataSource {
 		long stopTime=cursor.getLong(cursor.getColumnIndex(FallSqlHelper.SESSION_STOP_TIME_PREFERENCE));
 		int isClose=cursor.getInt(cursor.getColumnIndex(FallSqlHelper.SESSION_CLOSE_COLUMN));
 		int isOnPause=cursor.getInt(cursor.getColumnIndex(FallSqlHelper.SESSION_PAUSE_COLUMN));
+		int isArchived=cursor.getInt(cursor.getColumnIndex(FallSqlHelper.SESSION_ARCHIVED_COLUMN));
+		int id=cursor.getInt(cursor.getColumnIndex(FallSqlHelper.SESSION_ID));
 		Session session=null;
-		try{
-			session=new Session(name,img,startTime,endTime, stopTime, isClose,isOnPause,context);
-		}
-		catch(BoolNotBoolException e){
-			e.printStackTrace();
-		}
+
+		session=new Session(name,img,startTime,endTime, stopTime, isClose,isOnPause, isArchived,id,context);
+
+
+
 		return session;
 	}
 
@@ -316,7 +334,7 @@ public class SessionDataSource {
 		database.execSQL("UPDATE "+FallSqlHelper.FALL_TABLE
 				+ " SET "+ FallSqlHelper.FALL_FSESSION+" = '"+name+
 				"' WHERE "+FallSqlHelper.FALL_FSESSION+" = '"+s.getName()+"';");
-		
+
 		database.execSQL("UPDATE "+FallSqlHelper.ACQUISITION_TABLE
 				+ " SET "+ FallSqlHelper.ACQUISITION_ASESSION+" = '"+name+
 				"' WHERE "+FallSqlHelper.ACQUISITION_ASESSION+" = '"+s.getName()+"';");
@@ -344,5 +362,63 @@ public class SessionDataSource {
 				" WHERE "+FallSqlHelper.SESSION_NAME+" = '"+s.getName()+"';");
 		s.resume();
 	}
+
+	//RITORNA LISTA SESSIONI ARCHIVIATE
+	public ArrayList<Session> archivedSessions(){
+		ArrayList<Session> list=new ArrayList<Session>();
+		for(Session s: sessionList){
+			if(s.isArchived())list.add(s);
+		}
+
+		return list;
+	}
+
+
+	//RITORNA LISTA SESSIONI NON ARCHIVIATE
+	public ArrayList<Session> notArchivedSessions(){
+		ArrayList<Session> list=new ArrayList<Session>();
+		for(Session s: sessionList){
+			if(!s.isArchived())list.add(s);
+		}
+
+		return list;
+	}
+
+	public void setSessionArchived(Session s,boolean boolArchived){
+		if(!s.isValidSession()) throw new InvalidSessionException();
+
+		int archived=FallSqlHelper.NOTARCHIVED;
+		if(boolArchived) archived=FallSqlHelper.NOTARCHIVED;
+
+		ContentValues values=new ContentValues();
+		values.put(FallSqlHelper.SESSION_ARCHIVED_COLUMN,archived);
+		String[] whereArgs={s.getName()};
+		database.update(FallSqlHelper.SESSION_TABLE, values, FallSqlHelper.SESSION_NAME+" = ?",new String[]{s.name});
+		s.setArchived(boolArchived);
+
+	}
+
+	public void deleteSession(Session s){
+		if(!s.isValid)throw new InvalidSessionException();
+
+		database.delete(FallSqlHelper.SESSION_TABLE, FallSqlHelper.SESSION_NAME+" = ?", new String[]{s.name});
+		int index=0;
+		for(Session session:sessionList){
+			if(s==session){
+				sessionList.remove(index);
+				s.isValid=false;
+				break;
+			}
+			index++;
+		}
+		
+		database.delete(FallSqlHelper.FALL_TABLE, FallSqlHelper.FALL_FSESSION+" = ?", new String[]{s.name});
+		database.delete(FallSqlHelper.ACQUISITION_TABLE, FallSqlHelper.ACQUISITION_ASESSION+" = ?", new String[]{s.name});
+
+	}
+
+
+
+
 }
 

@@ -1,5 +1,6 @@
 package pisada.fallDetector;
 
+
 /*
  * test animazioni per far apparire il grafico che si forma. manca slide verticale
  */
@@ -240,5 +241,6 @@ public class FallDetailsFragment extends FallDetectorFragment {
 		mHandler.post(r);
 
 	}
+
 
 }

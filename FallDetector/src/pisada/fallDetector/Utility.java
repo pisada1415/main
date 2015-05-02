@@ -115,7 +115,7 @@ public class Utility {
 	public static Bitmap createImage(int sessionNumber){
 
 
-
+		sessionNumber+=3;
 		ArrayList<int[]> primes=getPrimes(sessionNumber);
 		int size=primes.size();
 		Bitmap icon=Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
@@ -227,8 +227,8 @@ public class Utility {
 		duration += minutes + " min, " + seconds + " sec";
 		return duration;
 	}
-	
-	
+
+
 
 
 }

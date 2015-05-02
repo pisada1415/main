@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import fallDetectorException.DublicateNameSessionException;
@@ -43,12 +44,14 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	public static class OldSessionHolder extends RecyclerView.ViewHolder
 	{
 		private TextView vName;
-		private Button btn;
+		private Button detailsBtn;
+		private Button deleteBtn;
 		private CardView card;
 		public OldSessionHolder(View v) {
 			super(v);
 			vName =  (TextView) v.findViewById(R.id.nameText);
-			btn=(Button) v.findViewById(R.id.old_details_button);
+			detailsBtn=(Button) v.findViewById(R.id.old_details_button);
+			deleteBtn=(Button) v.findViewById(R.id.old_delete_button);
 			card=(CardView) v;
 
 		}
@@ -90,14 +93,21 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		private TextView sessionName;
 		private TextView sessionStart;
 		private Button detailsButton;
+		private ImageView img;
 		private RelativeLayout rLay;
 		private CardView card;
 
+		@SuppressLint("NewApi")
 		public CurrentSessionHolder(View v) {
 			super(v);
 			sessionName=(TextView) v.findViewById(R.id.current_session_name_text);
 			sessionStart=(TextView) v.findViewById(R.id.current_session_start_text);
 			detailsButton=(Button) v.findViewById(R.id.details_current_button);
+			img=(ImageView) v.findViewById(R.id.current_session_icon);
+			int id=0;
+			Session s=sessionData.currentSession();
+			if(s!=null)id=s.getID();
+			img.setBackground(new BitmapDrawable(activity.getResources(),Utility.createImage(id)));
 			card=(CardView) v;
 			this.rLay=(RelativeLayout) v.findViewById(R.id.curr_card_session_layout);
 		}
@@ -134,7 +144,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	}
 
 	@Override
-	public void onBindViewHolder(ViewHolder holder, int i) {
+	public void onBindViewHolder(ViewHolder holder,  int i) {
 
 		Session currSession=sessionData.currentSession();
 		switch(i) {
@@ -153,7 +163,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			CurrentSessionHolder cHolder=(CurrentSessionHolder) holder;
 			if(currSession!=null){
 				cHolder.rLay.setVisibility(View.VISIBLE);
-				cHolder.sessionName.setText(currSession.getName()+"\n Close: "+currSession.booleanIsClose());
+				cHolder.sessionName.setText(currSession.getName()+"\n Close: "+currSession.booleanIsClose()+"\n ID= "+ currSession.getID());
 				cHolder.sessionStart.setText(String.valueOf(currSession.getStartTime()).toString());
 			}
 			else{
@@ -166,15 +176,30 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		OldSessionHolder Oholder=(OldSessionHolder) holder;
 		final Session session = sessionList.get(i);
-
-		Oholder.vName.setText("Name: "+session.getName());//+"\nStart Time: "+session.getStartTime()//+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
-		Oholder.btn.setOnClickListener(new OnClickListener(){
+		final int j=i;
+		Oholder.vName.setText("Name: "+session.getName()+ " ID= "+session.getID());//+"\nStart Time: "+session.getStartTime()//+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
+		Oholder.detailsBtn.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
 				Intent intent=new Intent(activity,SessionDetailsFragment.class);
 				intent.putExtra(Utility.SESSION_NAME_KEY, session.getName());
 				((FragmentCommunicator)activity).switchFragment(intent);
 			}
+		});
+		Oholder.deleteBtn.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				//sessionData.deleteSession(session);
+			
+				notifyItemRemoved(j);
+				sessionList.remove(j);
+		
+
+
+
+			}
+
 		});
 
 	}
@@ -266,7 +291,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 					super.onSingleTapUp(e);
 					View card=recycler.findChildViewUnder(e.getX(),e.getY());
 					if(card!=null&&listener!=null){
-					//	listener.onClick(card, recycler.getChildPosition(card));
+						//	listener.onClick(card, recycler.getChildPosition(card));
 					}
 
 					return false;
@@ -280,7 +305,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 					View card=recycler.findChildViewUnder(e.getX(),e.getY());
 					if(card!=null&&listener!=null){
-					//	listener.onLongClick(card, recycler.getChildPosition(card));
+						//	listener.onLongClick(card, recycler.getChildPosition(card));
 					}
 				}
 			});
@@ -291,7 +316,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		public boolean onInterceptTouchEvent(RecyclerView recycler, MotionEvent e) {
 			View card=recycler.findChildViewUnder(e.getX(),e.getY());
 			if(card!=null&&listener!=null&&gDetector.onTouchEvent(e)){
-			//	listener.onClick(card, recycler.getChildPosition(card));
+				//	listener.onClick(card, recycler.getChildPosition(card));
 			}
 			return false;
 		}
@@ -300,7 +325,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		public void onTouchEvent(RecyclerView recycler, MotionEvent e) {
 			View card=recycler.findChildViewUnder(e.getX(),e.getY());
 			if(card!=null&&listener!=null&&gDetector.onTouchEvent(e)){
-			//	listener.onClick(card, recycler.getChildPosition(card));
+				//	listener.onClick(card, recycler.getChildPosition(card));
 			}
 
 		}

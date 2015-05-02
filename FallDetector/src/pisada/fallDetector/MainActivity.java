@@ -42,8 +42,10 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+
 		fm = getSupportFragmentManager();
 		sessionData = new SessionDataSource(this); 
+
 		setContentView(R.layout.activity_navigation_drawer);
 		String[] arr = (getResources().getStringArray(R.array.navigation_items));
 		listItems = new ArrayList<NavDrawerItem>();
@@ -425,6 +427,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			mDrawerList.setItemChecked(currentUIIndex, true);
 		invalidateOptionsMenu();
 	}
+
 
 	private void unselectAllLines()
 	{

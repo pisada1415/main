@@ -24,12 +24,16 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 	public static final String SESSION_DURATION="Duration";
 	public static final String SESSION_STOP_TIME_PREFERENCE="StopTimePreference";
 	public static final String SESSION_PAUSE_COLUMN="Pause";
+	public static final String SESSION_ARCHIVED_COLUMN="Archived";
+	public static final String SESSION_ID="ID";
 	public static final int CLOSE=1;
 	public static final int OPEN=0;
 	public static final int PAUSE=1;
 	public static final int RUNNING=0;
 	public static final int NOTIFIED=1;
 	public static final int UNNOTIFIED=0;
+	public static final int ARCHIVED=1;
+	public static final int NOTARCHIVED=0;
 
 
 	//DEFINIZIONE TABELLA SESSSIONE
@@ -41,8 +45,10 @@ public class FallSqlHelper extends SQLiteOpenHelper{
 					+SESSION_IMG+" TEXT, "
 					+SESSION_CLOSE_COLUMN+ " INTEGER DEFAULT 0, "
 					+SESSION_PAUSE_COLUMN+ " INTEGER DEFAULT 0, "
+					+SESSION_ARCHIVED_COLUMN+ " INTEGER DEFAULT 0, "
 					+SESSION_DURATION+" INTEGER DEFAULT 0, "
-					+SESSION_STOP_TIME_PREFERENCE+" INTEGER DEFAULT -1,"
+					+SESSION_STOP_TIME_PREFERENCE+" INTEGER DEFAULT -1, "
+					+SESSION_ID+" INTEGER  NOT NULL UNIQUE, "
 					+ "CHECK("+SESSION_NAME+" != ''), "
 					+ "CHECK("+SESSION_CLOSE_COLUMN+" = "+0+" OR "+SESSION_CLOSE_COLUMN+" = "+1+"));";
 
