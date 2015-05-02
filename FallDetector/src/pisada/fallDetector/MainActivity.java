@@ -497,5 +497,10 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		}
 	}
 
-
+	@Override
+	public void onResume()
+	{
+		super.onResume();
+		this.fragment = (FallDetectorFragment)(fm.findFragmentById(R.id.content_frame));
+	}
 }
