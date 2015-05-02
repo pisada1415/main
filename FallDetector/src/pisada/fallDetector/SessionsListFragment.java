@@ -30,7 +30,7 @@ import fallDetectorException.BoolNotBoolException;
 
 public class SessionsListFragment extends FallDetectorFragment {
 
-	private RecyclerView rView;
+	//private RecyclerView rView;
 	private static SessionListCardAdapter cardAdapter;
 	private RecyclerView.LayoutManager mLayoutManager;
 	public static int counter;
@@ -80,7 +80,7 @@ public class SessionsListFragment extends FallDetectorFragment {
 		mLayoutManager = new LinearLayoutManager(activity);
 		rView.setLayoutManager(mLayoutManager);
 		rView.setItemAnimator(new DefaultItemAnimator());
-
+		this.scroll(MainActivity.sessionsListFragmentLastIndex);
 	}
 
 

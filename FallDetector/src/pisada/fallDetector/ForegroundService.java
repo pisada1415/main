@@ -597,10 +597,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 		protected  String doInBackground(Void... params) {
 			//params contiene la espiringlist
 			
-			int i = 0;
 			while(true){
 				
-				System.out.println("scannerando" + i++);
 				
 				if (pause) {
 					synchronized (INTERRUPTOR) {
@@ -748,7 +746,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		new Thread(new Runnable(){
 			@Override
 			public void run(){
-				FallDataSource.Fall fall = fds.insertFall(s, al, lat, lng);
+				final FallDataSource.Fall fall = fds.insertFall(s, al, lat, lng);
 
 
 
@@ -758,7 +756,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 					final long fallTime = fall.getTime();
 					final String formattedTime = Utility.getStringTime(fallTime);
 					for(final ServiceReceiver sr : connectedActs){ 
-						Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(position, link, formattedTime,fallTime, false, s.getName());}};
+						Runnable r = new Runnable(){@Override public void run() { sr.serviceUpdate(fall, fall.getSessionName());}};
 						if(sr instanceof CurrentSessionCardAdapter)
 							((CurrentSessionCardAdapter)sr).runOnUiThread(r);
 						else if(sr instanceof Activity)

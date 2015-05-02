@@ -4,6 +4,7 @@ package pisada.recycler;
 import java.util.ArrayList;
 
 import pisada.database.FallDataSource;
+import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
 import pisada.database.SessionDataSource.Session;
 import pisada.fallDetector.FragmentCommunicator;
@@ -23,7 +24,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-	private static ArrayList<CardContent> cardContentList;
+	private static ArrayList<Fall> cardContentList;
 	private Activity activity;
 	
 	private String sessionName;
@@ -92,8 +93,8 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 			
 		session = sessionData.getSession(name);
 		sessionName = name;
-		cardContentList = new ArrayList<CardContent>();
-		cardContentList.add(0, new CardContent());
+		cardContentList = new ArrayList<Fall>();
+		cardContentList.add(0, new Fall());
 		
 	}
 
@@ -115,7 +116,7 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 		if(i==0){ //se sono le prime due non fare niente
 			
 			FirstCardHolder fch = (FirstCardHolder) holder;
-			fch.thumbNail.setImageBitmap(Utility.createImage(Utility.randInt(2, 100)));
+			fch.thumbNail.setImageBitmap(Utility.createImage(session.getID()));
 			Resources res = activity.getResources();
 			String infoString = res.getString(R.string.starttime)+Utility.getStringTime(session.getStartTime())+
 					"\n"+res.getString(R.string.duration)+Utility.longToDuration(sessionData.sessionDuration(session));
@@ -126,22 +127,24 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 			/*
 			 * TODO qui anziché randint va passato il numero della sessione cui la fall fa riferimento
 			 */
-			CardContent fall = cardContentList.get(i);
+			Fall fall = cardContentList.get(i);
 			FallsHolder Oholder=(FallsHolder) holder;
-			Oholder.fallThumbnail.setImageBitmap(Utility.createImage(Utility.randInt(2, 100)));
-			String link = fall.getLink();
+			Oholder.fallThumbnail.setImageBitmap(Utility.createImage(session.getID()));
+			String link = Utility.getMapsLink(fall.getLat(), fall.getLng());
+			String position = fall.getLat() != -1 && fall.getLng() != -1 ? fall.getLat() + ", " + fall.getLng() : activity.getResources().getString(R.string.notavailable);
+
 			if(link != null){
-				Oholder.fallPosition.setText(Html.fromHtml("<a href=\""+ link + "\">" + "Position: " + fall.getPos() + "</a>"));
+				Oholder.fallPosition.setText(Html.fromHtml("<a href=\""+ link + "\">" + "Position: " + position + "</a>"));
 				
 				Oholder.fallPosition.setClickable(true);
 				Oholder.fallPosition.setMovementMethod (LinkMovementMethod.getInstance());
 			}
 			else{
-				Oholder.fallPosition.setText("Position: " + fall.getPos());
+				Oholder.fallPosition.setText("Position: " + position);
 				Oholder.fallPosition.setClickable(false);
 			}
 			
-			Oholder.fallTime.setText("Time: " + fall.getTimeLiteral());
+			Oholder.fallTime.setText("Time: " + Utility.getStringTime(fall.getTime()));
 			
 			Oholder.boolNotif.setVisibility(View.GONE);
 			
@@ -186,31 +189,26 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 		
-	private void addFallToCardList(String position, String link, String timeLiteral, long time, boolean b)
+	private void addFallToCardList(Fall f)
 	{
-		CardContent cc = new CardContent(position,link,timeLiteral, time, b);
-		if(!cardContentList.contains(cc)){
-			cardContentList.add(cc);
+		if(!cardContentList.contains(f)){
+			cardContentList.add(f);
 			notifyItemInserted(cardContentList.size()-1);
 		}
 		else
 		{
 			int i = 0;
-			for(; i < cardContentList.size() && !cardContentList.get(i).equals(cc); i++);
-			cardContentList.set(i, cc);
+			for(; i < cardContentList.size() && !cardContentList.get(i).equals(f); i++);
+			cardContentList.set(i, f);
 			notifyItemChanged(i);
 			
 		}
 	}
 
 	
-	public void addFall(FallDataSource.Fall f)
+	public void addFall(FallDataSource.Fall f) //solo per mantenere simmetria con altro adapter
 	{
-		long timeLong = f.getTime();
-		String timeLiteral = Utility.getStringTime(timeLong);
-		String position;
-		position = (f.getLat() != -1 && f.getLng() != -1) ? "" + f.getLat() + ", " + f.getLng() : "Not available";
-		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), timeLiteral, timeLong, f.wasNotified());
+		addFallToCardList(f);
 	}
 	
 	public void clearFalls()

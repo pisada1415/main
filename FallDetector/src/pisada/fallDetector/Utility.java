@@ -109,6 +109,8 @@ public class Utility {
 	}
 
 	public static String getMapsLink(double lat, double lng){
+		if(lat == -1 || lng == -1)
+			return null;
 		return "https://www.google.com/maps/@" + lat+"," + lng + ",13z";
 	}
 
