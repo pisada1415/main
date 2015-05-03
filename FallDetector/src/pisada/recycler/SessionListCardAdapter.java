@@ -15,10 +15,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.util.LruCache;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -39,8 +41,22 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	private ArrayList<Session> sessionList;
 	private static Activity activity;
 	private static SessionDataSource sessionData;
+	private static LruCache<String, Bitmap> mMemoryCache; //oggetto cache in cui mettere i bitmap (chiave-valore)
 
+	
+	//inserisce elemento nella cache chiave-valore
+	public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+	    if (getBitmapFromMemCache(key) == null) {
+	        mMemoryCache.put(key, bitmap);
+	    }
+	}
 
+	//prende elemento dalla cache
+	public Bitmap getBitmapFromMemCache(String key) {
+	    return mMemoryCache.get(key);
+	}
+	
+	
 	public static class OldSessionHolder extends RecyclerView.ViewHolder
 	{
 		private TextView vName;
@@ -100,6 +116,9 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		@SuppressLint("NewApi")
 		public CurrentSessionHolder(View v) {
 			super(v);
+			
+			
+			
 			sessionName=(TextView) v.findViewById(R.id.current_session_name_text);
 			sessionStart=(TextView) v.findViewById(R.id.current_session_start_text);
 			detailsButton=(Button) v.findViewById(R.id.details_current_button);
