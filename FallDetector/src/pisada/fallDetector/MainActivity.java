@@ -44,6 +44,15 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 
 
 		fm = getSupportFragmentManager();
+		fm.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+
+			@Override
+			public void onBackStackChanged() {
+				// TODO Auto-generated method stub
+				fragment = (FallDetectorFragment)(fm.findFragmentById(R.id.content_frame));
+
+			}
+		});
 		sessionData = new SessionDataSource(this); 
 
 		setContentView(R.layout.activity_navigation_drawer);
@@ -340,23 +349,23 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			this.switchFragment(toSamu);
 		}
 
-		FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
 
-		fragment = frag;
+
+
 
 		invalidateOptionsMenu();
 
 	}
 
-	
+
 	public static int currentSessionFragmentLastIndex ,infoFragmentLastIndex, sessionsListFragmentLastIndex , sessionDetailsFragmentLastIndex, archiveFragmentLastIndex  ;
-	
+
 	@Override
 	public void switchFragment(Intent i) {
-/*
- * 
- * idea:
- * 
+		/*
+		 * 
+		 * idea:
+		 * 
 		int index = fragment.getListPosition(); // mList.getFirstVisiblePosition();
 		View v = mList.getChildAt(0);
 		int top = (v == null) ? 0 : (v.getTop() - mList.getPaddingTop());
@@ -365,12 +374,12 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		ogni volta che switcha, salva indice visto nella lista del fragment corrente, ogni fragment manderà posizione opportuna.
 		poi ogni volta che ci torna, se il fragment ha un suo ultimo valore (i fragment che non ne hanno bisogno lasceranno il valore invariato)
 		ricarica la lista nel fragment (metodo interno) su quella posizione.
- * 
- * 
- * 
- * 
- * 
- */
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 */
 		FallDetectorFragment f = (FallDetectorFragment)(fm.findFragmentById(R.id.content_frame));
 		if (f instanceof CurrentSessionFragment) 
 		{
@@ -386,7 +395,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			archiveFragmentLastIndex = f.getListPosition();
 		}
 		if (i.getComponent().getClassName().contains("CurrentSessionFragment")){
-			
+
 			currentUIIndex = 0;
 			/*svuoto back stack*/
 			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    

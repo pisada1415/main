@@ -17,7 +17,9 @@ public abstract class FallDetectorFragment extends Fragment{
 	public void playPauseService(View v){};
 	public void stopService(View v){};
 	public String getSessionName(){return null;};
-	public void addSession(View v){};
+	public void addSession(View v){
+		System.out.println("raggiunta fine");
+	};
 	public void currentSessionDetails(View v){};
 	public void setSessionName(String name){};
 	public int getType(){return -29891;};
