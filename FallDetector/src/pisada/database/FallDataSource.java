@@ -279,7 +279,7 @@ public class FallDataSource {
 		database.execSQL("UPDATE "+FallSqlHelper.FALL_TABLE
 				+ " SET "+ FallSqlHelper.FALL_NOTIFIED_COLUMN+" = "+intNotified+
 
-				" WHERE "+FallSqlHelper.FALL_FSESSION+" = '"+fall.session.getName()+"' AND "+FallSqlHelper.FALL_TIME+" = "+fall.getTime()+")");
+				" WHERE "+FallSqlHelper.FALL_FSESSION+" = '"+fall.session.getName()+"' AND "+FallSqlHelper.FALL_TIME+" = "+fall.getTime());
 
 		fall.setNotificationSuccess(notified);
 		

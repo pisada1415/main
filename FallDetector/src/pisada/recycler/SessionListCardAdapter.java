@@ -179,6 +179,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		final int j=i;
 		Oholder.vName.setText("Name: "+session.getName()+ " ID= "+session.getID());//+"\nStart Time: "+session.getStartTime()//+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
 		Oholder.detailsBtn.setOnClickListener(new OnClickListener(){
+
 			@Override
 			public void onClick(View v) {
 				Intent intent=new Intent(activity,SessionDetailsFragment.class);
@@ -186,15 +187,17 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				((FragmentCommunicator)activity).switchFragment(intent);
 			}
 		});
+		
+		final int size=sessionList.size();
 		Oholder.deleteBtn.setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v) {
-				//sessionData.deleteSession(session);
-			
-				notifyItemRemoved(j);
+				sessionData.deleteSession(session);
 				sessionList.remove(j);
-		
+				notifyItemRemoved(j);
+				notifyItemRangeChanged(j, size-j);
+
 
 
 
