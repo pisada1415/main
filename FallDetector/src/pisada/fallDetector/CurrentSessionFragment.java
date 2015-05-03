@@ -1,11 +1,19 @@
 package pisada.fallDetector;
 
-
+/*
+ * riflessioni riguardo i metodi settati in xml:
+ * TODO
+ * potrei:
+ * 1)settarli programmaticamente come onclicklistener, stando attento a non dimenticare niente che eventualmente veniva modificato qui
+ * --non c'è altro modo direi--
+ */
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+
 import pisada.database.FallDataSource;
+import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
 import android.annotation.SuppressLint;
@@ -33,7 +41,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	private static SessionDataSource sessionData;
 	private static CurrentSessionCardAdapter cardAdapter;
 	private final int TYPE = 0;
-	private RecyclerView rView;
+	//private RecyclerView rView;
 	private LayoutManager mLayoutManager;
 	private String sessionName, sessionNameDefault;
 	private boolean startChronometerOnStartActivity = false;
@@ -137,8 +145,8 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		rView.setLayoutManager(mLayoutManager);
 		activity.setTitle(sessionName);
 
-		if(info != null)
-			cardAdapter.postEditsFirstCard(info, -1);
+		if(info != null) //quindi esiste anche currentsession
+			cardAdapter.setCurrentSessionValues(info, currentSession, -1);
 
 		if(sessionData.existCurrentSession()) //SE INVECE LA CURRENT SESSION è IN PAUSA... 
 		{
@@ -149,13 +157,14 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 				for(int i = cadute.size()-1; i >= 0; i--){
 					cardAdapter.addFall(cadute.get(i), currentSession);
 				}
+			cardAdapter.updateSessionName(sessionData.currentSession().getName());
 		}
 
 		ForegroundService.connect(this); 
 
 		pause =getResources().getDrawable(R.drawable.button_selector_pause);
 		play =getResources().getDrawable(R.drawable.button_selector_play);
-
+		this.scroll(MainActivity.currentSessionFragmentLastIndex);
 	}
 
 	@Override
@@ -342,7 +351,10 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 			}
 
 		}
-		cardAdapter.postEditsFirstCard(info, chronometer);
+
+		cardAdapter.setCurrentSessionValues(info, currentSession, chronometer);
+		if(currentSession != null)
+		cardAdapter.updateSessionName(currentSession.getName());
 	}
 
 
@@ -382,7 +394,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		if(!sessionData.existSession(name)){
 
 			try{
-				sessionData.openNewSession(name, pic, timeStart, timeEnd);
+				session = sessionData.openNewSession(name, pic, timeStart, timeEnd);
 			}
 			catch(SQLiteConstraintException e){
 				e.printStackTrace();
@@ -434,8 +446,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	}
 
 	@Override
-	public void serviceUpdate(String fallPosition, String link,
-			String timeLiteral, long time, boolean b, String sessionName) {
+	public void serviceUpdate(Fall f, String sessionName) {
 		rView.getAdapter().notifyItemChanged(rView.getAdapter().getItemCount()-1);
 		rView.scrollToPosition(rView.getAdapter().getItemCount()-1);
 
@@ -448,7 +459,10 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	@Override
 	public void setSessionName(String s)
 	{
+		if(sessionData.existCurrentSession())
+			currentSession = sessionData.currentSession();
 		sessionName = s;
+		cardAdapter.updateSessionName(s);
 	}
 
 	@Override

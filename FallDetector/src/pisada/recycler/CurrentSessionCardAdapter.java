@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import pisada.database.FallDataSource;
+import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.FragmentCommunicator;
@@ -13,12 +14,13 @@ import pisada.fallDetector.ServiceReceiver;
 import pisada.fallDetector.Utility;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
-import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -38,12 +40,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements ServiceReceiver {
 
-	private static ArrayList<CardContent> cardContentList;
+	private static ArrayList<FallDataSource.Fall> cardContentList;
 	private Activity activity;
 
 
-	private double /*lastX, lastY, lastZ,*/ last;
-	private static Plot2d /*graphX, graphY, graphZ,*/ graph;
+	private double last;
+	private static Plot2d graph;
 	private Calendar c;
 	private long millisecStartGraph;
 	private static Chronometer duration; 
@@ -51,6 +53,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static long timeWhenPaused = 0;
 	private String infoText;
 	private SharedPreferences sp;
+	private Bitmap bitmapThumbNailCurrent;
 
 	private TextView info;
 
@@ -61,13 +64,17 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static String currentSessionName;
 	private SessionDataSource sds;
 	private ProgressBar pb;
+	private ImageView fallThumbnail;
+	private ImageView thumbNailCurrent;
+	private SessionDataSource.Session session;
+	Bitmap sessionBitmap;
 	/*
 	 * 
 	 * first_new_currentsession_card
 	 */
 	public class FirstCardHolder extends RecyclerView.ViewHolder {
 
-		private ImageView thumbNail;
+		
 
 		private Button playPause;
 		
@@ -77,7 +84,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			super(v);
 			playPause = (Button) v.findViewById(R.id.start_pause_button);
 			duration = (Chronometer) v.findViewById(R.id.chronometer);
-			thumbNail = (ImageView)v.findViewById(R.id.thumbnail);
+			thumbNailCurrent = (ImageView)v.findViewById(R.id.thumbnail);
 			info =  (TextView) v.findViewById(R.id.info);
 			pb = (ProgressBar)v.findViewById(R.id.progressBarFirstCard);
 			pb.setVisibility(View.VISIBLE);
@@ -85,6 +92,11 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				info.setText(infoText);
 			else
 				info.setVisibility(View.GONE);
+			if(bitmapThumbNailCurrent != null)
+				thumbNailCurrent.setImageBitmap(bitmapThumbNailCurrent);
+			else
+				thumbNailCurrent.setVisibility(View.GONE);
+			
 			if(startChronometerOnStart)
 				startChronometer();
 			if(timeWhenPaused != 0)
@@ -152,7 +164,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	 * fall cards
 	 */
 	public class FallsHolder extends RecyclerView.ViewHolder{
-		private ImageView fallThumbnail;
+		
 		private TextView fallTime;
 		private TextView fallPosition;
 		private TextView boolNotif;
@@ -192,9 +204,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		c = Calendar.getInstance();
 		ForegroundService.connect(this);
 		millisecStartGraph = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
-		cardContentList = new ArrayList<CardContent>();
-		cardContentList.add(0, new CardContent());
-		cardContentList.add(1, new CardContent());
+		cardContentList = new ArrayList<Fall>();
+		cardContentList.add(0, new Fall());
+		cardContentList.add(1, new Fall());
 		timeSessionUp = time;
 		startChronometerOnStart = startChron;
 		sds = new SessionDataSource(activity);
@@ -218,32 +230,41 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void onBindViewHolder(ViewHolder holder, int i) {
 
 		if(i==0){ //se sono le prime due non fare niente
-			FirstCardHolder fch = (FirstCardHolder) holder;
-			fch.thumbNail.setImageBitmap(Utility.createImage(Utility.randInt(2, 100)));
+			
 		}
 		else if(i == 1){}
 		else{
 			/*
 			 * TODO qui anziché randint va passato il numero della sessione cui la fall fa riferimento
 			 */
-			CardContent fall = cardContentList.get(i);
+			Fall fall = cardContentList.get(i);
 			FallsHolder Oholder=(FallsHolder) holder;
-			Oholder.fallThumbnail.setImageBitmap(Utility.createImage(Utility.randInt(2, 100)));
-			String link = fall.getLink();
+			//loadBitmap(session.getID(), fallThumbnail, activity);
+			//fallThumbnail.setImageBitmap(Utility.createImage(session.getID()));
+			if(sessionBitmap != null)
+				fallThumbnail.setImageBitmap(sessionBitmap);
+			else
+			{
+				sessionBitmap = Utility.createImage(session.getID());
+				fallThumbnail.setImageBitmap(sessionBitmap);
+			}
+			String link = Utility.getMapsLink(fall.getLat(), fall.getLng());
+			String position = fall.getLat() != -1 && fall.getLng() != -1 ? fall.getLat() + ", " + fall.getLng() : activity.getResources().getString(R.string.notavailable);
+
 			if(link != null){
-				Oholder.fallPosition.setText(Html.fromHtml("<a href=\""+ link + "\">" + "Position: " + fall.getPos() + "</a>"));
+				Oholder.fallPosition.setText(Html.fromHtml("<a href=\""+ link + "\">" + "Position: " + position + "</a>"));
 
 				Oholder.fallPosition.setClickable(true);
 				Oholder.fallPosition.setMovementMethod (LinkMovementMethod.getInstance());
 			}
 			else{
-				Oholder.fallPosition.setText("Position: " + fall.getPos());
+				Oholder.fallPosition.setText("Position: " + position);
 				Oholder.fallPosition.setClickable(false);
 			}
 
 			//Oholder.fallPosition.setText("Position: "+ fall.getPos());
-			Oholder.fallTime.setText("Time: " + fall.getTimeLiteral());
-			if(fall.notifiedSuccess()){
+			Oholder.fallTime.setText("Time: " + Utility.getStringTime(fall.getTime()));
+			if(fall.wasNotified()){
 				Oholder.boolNotif.setText(activity.getResources().getString(R.string.sent));
 				Oholder.boolNotif.setTextColor(Color.GREEN);
 			}
@@ -369,37 +390,31 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		duration.stop();
 	}
 
-	private void addFallToCardList(String position, String link, String timeLiteral, long time, boolean b)
+	private void addFallToCardList(Fall fall)
 	{
-		CardContent cc = new CardContent(position,link,timeLiteral, time, b);
-		if(!cardContentList.contains(cc)){
-			cardContentList.add(cc);
+		if(!cardContentList.contains(fall)){
+			cardContentList.add(fall);
 			notifyItemInserted(cardContentList.size()-1);
 		}
 		else
 		{
 			int i = 0;
-			for(; i < cardContentList.size() && !cardContentList.get(i).equals(cc); i++);
-			cardContentList.set(i, cc);
+			for(; i < cardContentList.size() && !cardContentList.get(i).equals(fall); i++);
+			cardContentList.set(i, fall);
 			notifyItemChanged(i);
 
 		}
 	}
 
 	@Override
-	public void serviceUpdate(String fallPosition, String link, String timeLiteral, long time, boolean b, String sessionName) {
+	public void serviceUpdate(Fall fall, String sessionName) {
 		currentSessionName = sessionName;
-		addFallToCardList(fallPosition, link, timeLiteral, time, b);
+		addFallToCardList(fall);
 	}
 
 	public void addFall(FallDataSource.Fall f, SessionDataSource.Session s)
 	{
-		currentSessionName = s.getName();
-		long timeLong = f.getTime();
-		String timeLiteral = Utility.getStringTime(timeLong);
-		String position;
-		position = (f.getLat() != -1 && f.getLng() != -1) ? "" + f.getLat() + ", " + f.getLng() : "Not available";
-		addFallToCardList(position, Utility.getMapsLink(f.getLat(), f.getLng()), timeLiteral, timeLong, f.wasNotified());
+		addFallToCardList(f);
 	}
 
 	public void clearFalls()
@@ -426,8 +441,14 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		return false;
 	}
 
-	public void postEditsFirstCard(String infoString, int chronometer)
+	public void updateSessionName(String newName)
 	{
+		currentSessionName = newName;
+	}
+	public void setCurrentSessionValues(String infoString, SessionDataSource.Session s, int chronometer)
+	{
+		session = s;
+		sessionBitmap = Utility.createImage(session.getID());
 		if(info != null && infoString != "")
 		{
 			info.setText(infoString);
@@ -437,6 +458,15 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			info.setVisibility(View.GONE);
 		if(infoString != "" && info == null)
 			infoText = infoString;
+		
+		if(thumbNailCurrent != null && session != null){
+			thumbNailCurrent.setImageBitmap(sessionBitmap);
+			thumbNailCurrent.setVisibility(View.VISIBLE);
+		}
+		else if(thumbNailCurrent != null)
+			thumbNailCurrent.setVisibility(View.GONE);
+		if(thumbNailCurrent == null && session != null)
+			bitmapThumbNailCurrent = sessionBitmap;
 
 
 		switch(chronometer)
@@ -450,7 +480,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		default:
 			break;
 		}
+
 	}
+	
 	
 	
 }

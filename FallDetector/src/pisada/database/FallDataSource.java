@@ -37,11 +37,10 @@ public class FallDataSource {
 
 		private Session session;
 		private long time;
-		private double lng;
-		private double lat;
+		private double lng = -1;
+		private double lat = -1;
 		private int notified;
 		private boolean isValid=true;
-		private boolean diodiodihhosscoioi;
 
 		private Fall(long time,Session session, double lat, double lng, int notified){
 

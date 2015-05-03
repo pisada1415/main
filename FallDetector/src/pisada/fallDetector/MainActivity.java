@@ -9,10 +9,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -23,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -48,6 +44,15 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 
 
 		fm = getSupportFragmentManager();
+		fm.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+
+			@Override
+			public void onBackStackChanged() {
+				// TODO Auto-generated method stub
+				fragment = (FallDetectorFragment)(fm.findFragmentById(R.id.content_frame));
+
+			}
+		});
 		sessionData = new SessionDataSource(this); 
 
 		setContentView(R.layout.activity_navigation_drawer);
@@ -88,7 +93,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
 				if(currentUIIndex > -1)
 					mDrawerList.setItemChecked(currentUIIndex, true);
-				
+
 			}
 		};
 
@@ -140,7 +145,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			selectItem(position);
-			
+
 		}
 	}
 
@@ -150,6 +155,10 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		 * chiamato quando viene selezionato un elemento dal navigation drawer
 		 */
 		currentUIIndex = position;
+		/*svuoto back stack*/
+		for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
+			fm.popBackStack();
+		}
 		switch(position)
 		{
 		case 0:
@@ -316,22 +325,23 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			finish();
 		else if(currentUIIndex < 0)
 		{
-			super.onBackPressed();
-			System.out.println("super onbackpressed");
-			//TODO problema è se siamo in fall, arriva da current o da session list?
-			/*
-			if (fm.getBackStackEntryCount() > 0) {
-				fm.popBackStackImmediate();
-				List<Fragment> list = fm.getFragments();
-				FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
-				if(frag != null)
-					currentUIIndex = getFragmentIndex(frag);
-				else
-					finish();
-			} else {
-				super.onBackPressed();  
+			//se sei sulla -2 dovrebbe andare sulla -1 ma ci son casini con la back stack e i fragment
+			if(currentUIIndex == -2)
+			{
+				currentUIIndex++;
+				String session_name = fragment.getSessionName();
+				long fall_time = fragment.getFallTime();
+				Intent toPiero = new Intent(this, SessionDetailsFragment.class);
+				toPiero.putExtra(Utility.SESSION_NAME_KEY, session_name);
+				toPiero.putExtra(Utility.FALL_TIME_KEY, fall_time);
+				switchFragment(toPiero);
 			}
-			 */
+			else{
+				currentUIIndex = 1;
+				Intent toDaniel = new Intent(this, SessionsListFragment.class);
+				this.switchFragment(toDaniel);
+				setTitle(listItems.get(currentUIIndex).getTitle());
+			}
 		}
 		else
 		{
@@ -339,23 +349,53 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			this.switchFragment(toSamu);
 		}
 
-		FallDetectorFragment frag = (FallDetectorFragment)fm.getFragments().get(count>0?count-1:count);
 
-		fragment = frag;
+
+
 
 		invalidateOptionsMenu();
 
 	}
 
-	private int getFragmentIndex(FallDetectorFragment frag) {
-		// TODO Auto-generated method stub
-		return frag.getType();
-	}
+
+	public static int currentSessionFragmentLastIndex ,infoFragmentLastIndex, sessionsListFragmentLastIndex , sessionDetailsFragmentLastIndex, archiveFragmentLastIndex  ;
 
 	@Override
 	public void switchFragment(Intent i) {
-
+		/*
+		 * 
+		 * idea:
+		 * 
+		int index = fragment.getListPosition(); // mList.getFirstVisiblePosition();
+		View v = mList.getChildAt(0);
+		int top = (v == null) ? 0 : (v.getTop() - mList.getPaddingTop());
+		mList.setSelectionFromTop(index, top);
+		recyclerView.getLayoutManager().smoothScrollToPosition()
+		ogni volta che switcha, salva indice visto nella lista del fragment corrente, ogni fragment manderà posizione opportuna.
+		poi ogni volta che ci torna, se il fragment ha un suo ultimo valore (i fragment che non ne hanno bisogno lasceranno il valore invariato)
+		ricarica la lista nel fragment (metodo interno) su quella posizione.
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 */
+		FallDetectorFragment f = (FallDetectorFragment)(fm.findFragmentById(R.id.content_frame));
+		if (f instanceof CurrentSessionFragment) 
+		{
+			currentSessionFragmentLastIndex = f.getListPosition();
+		}
+		else if(f instanceof SessionDetailsFragment){
+			sessionDetailsFragmentLastIndex = f.getListPosition();
+		}
+		else if(f instanceof SessionsListFragment){
+			sessionsListFragmentLastIndex = f.getListPosition();
+		}
+		else if(f instanceof ArchiveFragment){
+			archiveFragmentLastIndex = f.getListPosition();
+		}
 		if (i.getComponent().getClassName().contains("CurrentSessionFragment")){
+
 			currentUIIndex = 0;
 			/*svuoto back stack*/
 			for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
@@ -384,10 +424,11 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			unselectAllLines();
 			fragment = new SessionDetailsFragment();
 			Bundle args = new Bundle();
-			args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
+			//args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
+			SessionDetailsFragment.sessionName = i.getStringExtra(Utility.SESSION_NAME_KEY);
 			fragment.setArguments(args);
 			fm.beginTransaction().remove(fragment)
-			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack(null)
+			.replace(R.id.content_frame, (Fragment)fragment)//.addToBackStack(null)
 			.commit();
 		}
 		else if (i.getComponent().getClassName().contains("FallDetailsFragment")){
@@ -399,7 +440,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			args.putLong(Utility.FALL_TIME_KEY, i.getLongExtra(Utility.FALL_TIME_KEY, -1));
 			fragment.setArguments(args);
 			fm.beginTransaction().remove(fragment)
-			.replace(R.id.content_frame, (Fragment)fragment).addToBackStack(null)
+			.replace(R.id.content_frame, (Fragment)fragment)//.addToBackStack(null)
 			.commit();
 		}
 		else if(i.getComponent().getClassName().contains("ArchiveFragment")){
@@ -465,5 +506,10 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		}
 	}
 
-
+	@Override
+	public void onResume()
+	{
+		super.onResume();
+		this.fragment = (FallDetectorFragment)(fm.findFragmentById(R.id.content_frame));
+	}
 }

@@ -8,6 +8,7 @@ import pisada.recycler.SessionDetailsCardAdapter;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,8 +28,8 @@ import android.widget.Toast;
  * sovrascrivere session rename
  */
 public class SessionDetailsFragment extends FallDetectorFragment {
-	String sessionName;	
-	RecyclerView rView;
+	public static String sessionName;	
+//	RecyclerView rView;
 	SessionDetailsCardAdapter cardAdapter;
 	Activity activity;
 	LayoutManager mLayoutManager;
@@ -55,7 +56,7 @@ public class SessionDetailsFragment extends FallDetectorFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState){
 		super.onActivityCreated(savedInstanceState);
-		sessionName = getArguments().getString(Utility.SESSION_NAME_KEY);
+		//sessionName = getArguments().getString(Utility.SESSION_NAME_KEY);
 		activity.setTitle(sessionName);
 		sessionData = new SessionDataSource(activity);
 		session = sessionData.getSession(sessionName);
@@ -71,13 +72,16 @@ public class SessionDetailsFragment extends FallDetectorFragment {
 		
 		if(fallDataSource == null)
 			fallDataSource = new FallDataSource(activity);
+		if(session == null){((MainActivity)activity).switchFragment(new Intent(activity,SessionsListFragment.class));return;}//viene chiamata se android chiude la classe per mancanza di memoria, in questo caso viene perso per strada il parametro name, questa riga fa ritornare alla home
 		ArrayList<FallDataSource.Fall> falls = fallDataSource.sessionFalls(session);
 		if(falls != null) //OCCHIO POTREBBE NASCONDERE PROBLEMI
 			for(int i = falls.size()-1; i >= 0; i--){
 				cardAdapter.addFall(falls.get(i));
 			}
+		this.scroll(MainActivity.sessionDetailsFragmentLastIndex);
 	}
 
+	
 	@Override
 	public void onAttach(Activity a){
 		super.onAttach(a);

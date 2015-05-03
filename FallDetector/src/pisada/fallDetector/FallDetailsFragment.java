@@ -10,10 +10,13 @@ import java.util.Calendar;
 
 import pisada.database.Acquisition;
 import pisada.database.FallDataSource;
+import pisada.database.SessionDataSource;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot2d;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,9 +38,11 @@ public class FallDetailsFragment extends FallDetectorFragment {
 	private Calendar c = Calendar.getInstance();
 	private Activity activity;
 	private String sessionName;
-	private long fallTime;
+	private Long fallTime;
 	private FallDataSource fds;
 	private FallDataSource.Fall fall;
+	private SessionDataSource sds;
+	private SessionDataSource.Session session;
 	private ImageView thumbNail;
 	private TextView info, info2;
 	private final int TYPE = -2;
@@ -57,7 +62,7 @@ public class FallDetailsFragment extends FallDetectorFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		sessionName = getArguments().getString(Utility.SESSION_NAME_KEY);
+		sessionName = getArguments().getString(Utility.SESSION_NAME_KEY);System.out.println("sessionName inizializzato");
 		fallTime = getArguments().getLong(Utility.FALL_TIME_KEY);
 
 	}
@@ -89,12 +94,27 @@ public class FallDetailsFragment extends FallDetectorFragment {
 		activity = a;
 	}
 
+	@Override
+	public String getSessionName(){
+		return this.sessionName;
+	}
+	
+	@Override
+	public long getFallTime(){
+		return this.fallTime;
+	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstance)
 	{
+		if(sessionName== null)
+			sessionName = getArguments().getString(Utility.SESSION_NAME_KEY);System.out.println("sessionName inizializzato");
+		if(fallTime== null)
+			fallTime = getArguments().getLong(Utility.FALL_TIME_KEY);
+
 		super.onActivityCreated(savedInstance);
 		fds = new FallDataSource(activity);
+		sds = new SessionDataSource(activity);
 		new Thread() //apertura database con timeout 
 		{
 			@Override
@@ -104,13 +124,16 @@ public class FallDetailsFragment extends FallDetectorFragment {
 				hideUI();
 				
 				fall = fds.getFall(fallTime, sessionName);
-					
+				session = sds.getSession(sessionName);
+				if(session == null){((MainActivity)activity).switchFragment(new Intent(activity,SessionsListFragment.class));return;} //viene chiamata se android chiude la classe per mancanza di memoria, in questo caso viene perso per strada il parametro name, questa riga fa ritornare alla home
+
+				final Bitmap picture = Utility.createImage(session.getID());
 				showUI();
 				runOnUiThread(new Runnable() {
 
 					@Override
 					public void run() {
-						thumbNail.setImageBitmap(Utility.createImage(Utility.randInt(0, 100))); //TODO prendere valore da database
+						thumbNail.setImageBitmap(picture); 
 						Resources res = activity.getResources();
 						String stringInfo = res.getString(R.string.date)+Utility.getStringTime(fallTime)+"\n"+res.getString(R.string.Position);
 						double lat = fall.getLat(), lng = fall.getLng();
@@ -242,5 +265,6 @@ public class FallDetailsFragment extends FallDetectorFragment {
 
 	}
 
+	
 
 }
