@@ -1,6 +1,12 @@
 package pisada.fallDetector;
 
-
+/*
+ * riflessioni riguardo i metodi settati in xml:
+ * TODO
+ * potrei:
+ * 1)settarli programmaticamente come onclicklistener, stando attento a non dimenticare niente che eventualmente veniva modificato qui
+ * --non c'è altro modo direi--
+ */
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
