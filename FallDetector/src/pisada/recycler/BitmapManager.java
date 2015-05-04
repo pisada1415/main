@@ -134,10 +134,9 @@ class BitmapWorkerTask extends AsyncTask<Integer, Void, Bitmap> {
 		// TODO Auto-generated method stub
 		Bitmap bitmap = Utility.createImage(data);
 		if ( w != 0 && h != 0)
-		{
 			bitmap = Bitmap.createScaledBitmap(bitmap, w, h, true);
-			BitmapManager.mMemoryCache.put(data, bitmap);
-		}
+		
+		BitmapManager.mMemoryCache.put(data, bitmap);
 		return bitmap;
 	}
 

@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,6 +26,7 @@ import android.location.LocationManager;
 import android.provider.ContactsContract.Contacts.Data;
 import android.provider.Settings;
 import android.widget.Toast;
+@SuppressLint("SimpleDateFormat")
 public class Utility {
 
 	public final static String FALL_TIME_KEY = "fall_time";
@@ -107,6 +108,27 @@ public class Utility {
 		return formatter.format(date);
 
 	}
+	
+	public static String getStringHour(long timeMillis)
+	{
+		final SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss");
+		// milliseconds to date 
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(timeMillis);
+		Date date = calendar.getTime();
+		return formatter.format(date);
+
+	}
+	public static String getStringDate(long timeMillis)
+	{
+		final SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+		// milliseconds to date 
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(timeMillis);
+		Date date = calendar.getTime();
+		return formatter.format(date);
+
+	}
 
 	public static String getMapsLink(double lat, double lng){
 		if(lat == -1 || lng == -1)
@@ -156,7 +178,6 @@ public class Utility {
 			return factors;
 		}
 
-		double  half=sNumber/2;
 		for(int i=1;i<=sNumber;i++){
 			if(!isPrime(i)||sNumber%i!=0)continue;
 			int j=1;

@@ -7,6 +7,7 @@ import pisada.database.FallDataSource;
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
 import pisada.database.SessionDataSource.Session;
+import pisada.fallDetector.FallDetailsDialogFragment;
 import pisada.fallDetector.FragmentCommunicator;
 import pisada.fallDetector.R;
 import pisada.fallDetector.Utility;
@@ -31,7 +32,6 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private String sessionName;
 	private Session session;
 	private SessionDataSource sessionData;
-	private Bitmap sessionBitmap;
 
 	/*
 	 * first card
@@ -67,9 +67,9 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 				@Override
 				public void onClick(View v) {
-					// TODO Auto-generated method stub
+					// TODO QUI CUSTOM DIALOG
 					int position = getAdapterPosition();
-					Intent intent = new Intent(activity, pisada.fallDetector.FallDetailsFragment.class);
+					Intent intent = new Intent(activity, FallDetailsDialogFragment.class);
 					long time = cardContentList.get(position).getTime();
 					intent.putExtra(Utility.FALL_TIME_KEY, time);
 					intent.putExtra(Utility.SESSION_NAME_KEY, sessionName);
@@ -117,9 +117,10 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 		if(i==0){ //se sono le prime due non fare niente
 
 			FirstCardHolder fch = (FirstCardHolder) holder;
-			if(sessionBitmap == null)
+			/*if(sessionBitmap == null)
 				sessionBitmap = Utility.createImage(session.getID());
-			fch.thumbNail.setImageBitmap(sessionBitmap);
+			fch.thumbNail.setImageBitmap(sessionBitmap);*/
+BitmapManager.loadBitmap(session.getID(), fch.thumbNail, activity);
 			Resources res = activity.getResources();
 			String infoString = res.getString(R.string.starttime)+Utility.getStringTime(session.getStartTime())+
 					"\n"+res.getString(R.string.duration)+Utility.longToDuration(sessionData.sessionDuration(session));
@@ -132,9 +133,11 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 			 */
 			Fall fall = cardContentList.get(i);
 			FallsHolder Oholder=(FallsHolder) holder;
-			if(sessionBitmap == null)
+			/*if(sessionBitmap == null)
 				sessionBitmap = Utility.createImage(session.getID());
-			Oholder.fallThumbnail.setImageBitmap(sessionBitmap);
+			Oholder.fallThumbnail.setImageBitmap(sessionBitmap);*/
+			BitmapManager.loadBitmap(session.getID(), Oholder.fallThumbnail, activity);
+
 			String link = Utility.getMapsLink(fall.getLat(), fall.getLng());
 			String position = fall.getLat() != -1 && fall.getLng() != -1 ? fall.getLat() + ", " + fall.getLng() : activity.getResources().getString(R.string.notavailable);
 

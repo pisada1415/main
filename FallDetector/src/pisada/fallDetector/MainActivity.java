@@ -3,6 +3,7 @@ package pisada.fallDetector;
 import java.util.ArrayList;
 import java.util.List;
 
+import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -34,14 +35,13 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	private FallDetectorFragment fragment;
 	private int currentUIIndex = 0;
 	private SessionDataSource sessionData;
+	private FallDataSource fallData;
 	private FragmentManager fm;
 	private final int SESSION_DETAILS_ID = -1;
-	private final int FALL_DETAILS_ID = -2;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 
 		fm = getSupportFragmentManager();
 		fm.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
@@ -53,8 +53,10 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 
 			}
 		});
+		if(savedInstanceState != null)
+			fragment = (FallDetectorFragment)fm.getFragment(savedInstanceState, "fragmentState");
 		sessionData = new SessionDataSource(this); 
-
+		fallData = new FallDataSource(this);
 		setContentView(R.layout.activity_navigation_drawer);
 		String[] arr = (getResources().getStringArray(R.array.navigation_items));
 		listItems = new ArrayList<NavDrawerItem>();
@@ -104,11 +106,12 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 		/*
 		 * di default mettiamo la currentsessionactivity
 		 */
+		if(fragment == null){
 		fragment = new CurrentSessionFragment();
 		// Insert the fragment by replacing any existing fragment
 		fm.beginTransaction()
 		.replace(R.id.content_frame, (Fragment)fragment)
-		.commit();
+		.commit();}
 	}
 
 
@@ -116,7 +119,15 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 	/*
 	 * metodi view che rimandano ai fragment ma vengono automaticamente chiamati qui
 	 */
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
 
+		//Save the fragment's instance
+		fm.putFragment(outState, "fragmentState", fragment);
+
+
+	}
 
 	@SuppressLint("NewApi")
 	public void playPauseService(View v){
@@ -325,23 +336,12 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			finish();
 		else if(currentUIIndex < 0)
 		{
-			//se sei sulla -2 dovrebbe andare sulla -1 ma ci son casini con la back stack e i fragment
-			if(currentUIIndex == -2)
-			{
-				currentUIIndex++;
-				String session_name = fragment.getSessionName();
-				long fall_time = fragment.getFallTime();
-				Intent toPiero = new Intent(this, SessionDetailsFragment.class);
-				toPiero.putExtra(Utility.SESSION_NAME_KEY, session_name);
-				toPiero.putExtra(Utility.FALL_TIME_KEY, fall_time);
-				switchFragment(toPiero);
-			}
-			else{
-				currentUIIndex = 1;
-				Intent toDaniel = new Intent(this, SessionsListFragment.class);
-				this.switchFragment(toDaniel);
-				setTitle(listItems.get(currentUIIndex).getTitle());
-			}
+
+			currentUIIndex = 1;
+			Intent toDaniel = new Intent(this, SessionsListFragment.class);
+			this.switchFragment(toDaniel);
+			setTitle(listItems.get(currentUIIndex).getTitle());
+
 		}
 		else
 		{
@@ -431,17 +431,15 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			.replace(R.id.content_frame, (Fragment)fragment)//.addToBackStack(null)
 			.commit();
 		}
-		else if (i.getComponent().getClassName().contains("FallDetailsFragment")){
-			currentUIIndex = this.FALL_DETAILS_ID;// non appare nel nav draw
-			unselectAllLines();
-			fragment = new FallDetailsFragment();
-			Bundle args = new Bundle();
-			args.putString(Utility.SESSION_NAME_KEY, i.getStringExtra(Utility.SESSION_NAME_KEY));
-			args.putLong(Utility.FALL_TIME_KEY, i.getLongExtra(Utility.FALL_TIME_KEY, -1));
-			fragment.setArguments(args);
-			fm.beginTransaction().remove(fragment)
-			.replace(R.id.content_frame, (Fragment)fragment)//.addToBackStack(null)
-			.commit();
+		else if (i.getComponent().getClassName().contains("FallDetailsDialogFragment")){
+
+			/*
+			 * qui ci mettiamo il custom dialog
+			 */
+			//FallDetailsDialogFragment.initialize(i.getStringExtra(Utility.SESSION_NAME_KEY),i.getLongExtra(Utility.FALL_TIME_KEY, -1), this, fallData, sessionData);
+			FallDetailsDialogFragment dialog = new FallDetailsDialogFragment(i.getStringExtra(Utility.SESSION_NAME_KEY), i.getLongExtra(Utility.FALL_TIME_KEY, -1));
+
+			dialog.show(fm, "");
 		}
 		else if(i.getComponent().getClassName().contains("ArchiveFragment")){
 			currentUIIndex = 2;

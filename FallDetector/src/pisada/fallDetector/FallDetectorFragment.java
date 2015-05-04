@@ -25,7 +25,7 @@ public abstract class FallDetectorFragment extends Fragment{
 	public int getType(){return -29891;};
 	public long getFallTime(){return -1;}
 	public int getListPosition(){return ((LinearLayoutManager)rView.getLayoutManager()).findFirstCompletelyVisibleItemPosition();}
-	public void scroll(int index){rView.getLayoutManager().scrollToPosition(index);}
+	public void scroll(int index){rView.scrollToPosition(index);/*getLayoutManager().scrollToPosition(index);*/}
 	@Override
 	public void onAttach(Activity a){
 		super.onAttach(a);

@@ -6,6 +6,7 @@
     <color name="foregroundGrey">#272727</color>
     <color name="lightBlue">#00d2ff</color>
     <color name="darkGreen">#00DB0F</color>
+    <color name="coolGreen">#A8D959</color>
     <color name="black_overlay">#66000000</color>
  <color name="list_background">#FFFFFF</color>
 </resources>

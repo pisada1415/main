@@ -19,7 +19,7 @@ import android.view.View;
  * quindi value iniziale di yaxis in realtà deve coincidere con secondi iniziali 
  * quindi in teoria si risolve partendo da 0?
  */
-public class Plot2d extends View {
+public class Plot extends View {
 
 	private Paint paint;
 	private ArrayList<Data> values, valuesInPixel;
@@ -27,7 +27,6 @@ public class Plot2d extends View {
 	
 	private final int MAX_VALUES_STORED = 100;
 	private DecimalFormat formatter;
-	private Context context;
 	/*
 	 * defData is a default value (like the first of the list) which is meant to initialize 
 	 * the min values
@@ -35,9 +34,8 @@ public class Plot2d extends View {
 	
 	//arriva un tempo e il value è 0. cazzo sarebbe yaxis... 
 	
-	public Plot2d(Context context, Data defData) {
+	public Plot(Context context, Data defData) {
 		super(context);
-		this.context = context;
 		paint = new Paint();
 		minX = defData.x;
 		minY = defData.y;
@@ -82,7 +80,7 @@ public class Plot2d extends View {
 		canvas.drawRGB(255, 255, 255); //white background
 		
 		for (int i = 0; i < valuesInPixel.size()-1; i++) {
-			paint.setColor(getResources().getColor(R.color.lightBlue));
+			paint.setColor(getResources().getColor(R.color.coolGreen));
 			canvas.drawLine(valuesInPixel.get(i).x,canvasHeight-valuesInPixel.get(i).y,valuesInPixel.get(i+1).x,canvasHeight-valuesInPixel.get(i+1).y,paint);
 		}
 		

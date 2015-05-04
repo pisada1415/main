@@ -7,19 +7,17 @@ import java.util.Calendar;
 import pisada.database.FallDataSource;
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
+import pisada.fallDetector.FallDetailsDialogFragment;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.FragmentCommunicator;
 import pisada.fallDetector.R;
 import pisada.fallDetector.ServiceReceiver;
 import pisada.fallDetector.Utility;
 import pisada.plotmaker.Data;
-import pisada.plotmaker.Plot2d;
+import pisada.plotmaker.Plot;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
@@ -45,7 +43,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 	private double last;
-	private static Plot2d graph;
+	private static Plot graph;
 	private Calendar c;
 	private long millisecStartGraph;
 	private static Chronometer duration; 
@@ -53,7 +51,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static long timeWhenPaused = 0;
 	private String infoText;
 	private SharedPreferences sp;
-	private Bitmap bitmapThumbNailCurrent;
 
 	private TextView info;
 
@@ -67,7 +64,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private ImageView fallThumbnail;
 	private ImageView thumbNailCurrent;
 	private SessionDataSource.Session session;
-	Bitmap sessionBitmap;
 	/*
 	 * 
 	 * first_new_currentsession_card
@@ -92,10 +88,15 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				info.setText(infoText);
 			else
 				info.setVisibility(View.GONE);
-			if(bitmapThumbNailCurrent != null)
-				thumbNailCurrent.setImageBitmap(bitmapThumbNailCurrent);
+			if(session != null)
+				BitmapManager.loadBitmap(session.getID(), thumbNailCurrent, activity);
 			else
 				thumbNailCurrent.setVisibility(View.GONE);
+
+			/*if(bitmapThumbNailCurrent != null)
+				thumbNailCurrent.setImageBitmap(bitmapThumbNailCurrent);
+			else
+				thumbNailCurrent.setVisibility(View.GONE);*/
 			
 			if(startChronometerOnStart)
 				startChronometer();
@@ -145,7 +146,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 			long timePoint = (c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - millisecStartGraph);
 
-			graph = new Plot2d(activity, new Data(timePoint, 0));
+			graph = new Plot(activity, new Data(timePoint, 0));
 			/*
 			graphX = new Plot2d(activity, new Data(timePoint,0));
 			graphY = new Plot2d(activity, new Data(timePoint,0));
@@ -168,7 +169,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		private TextView fallTime;
 		private TextView fallPosition;
 		private TextView boolNotif;
-		//TODO notifica mandata correttamente o no
 		public FallsHolder(View v) {
 			super(v);
 			fallThumbnail=(ImageView) v.findViewById(R.id.thumbnail_fall);
@@ -179,21 +179,17 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 				@Override
 				public void onClick(View v) {
-					// TODO Auto-generated method stub
+					// TODO q
 					int position = getAdapterPosition();
-					Intent intent = new Intent(activity, pisada.fallDetector.FallDetailsFragment.class);
+					Intent intent = new Intent(activity, FallDetailsDialogFragment.class);
 					long time = cardContentList.get(position).getTime();
 					intent.putExtra(Utility.FALL_TIME_KEY, time);
 					intent.putExtra(Utility.SESSION_NAME_KEY, currentSessionName);
 					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 					((FragmentCommunicator)activity).switchFragment(intent);
-					//Toast.makeText(activity, "premuta caduta " + cardContentList.get(position).getTime(), Toast.LENGTH_SHORT).show();
-
 				}
 			});
 		}
-
-
 	}
 
 
@@ -241,13 +237,16 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			FallsHolder Oholder=(FallsHolder) holder;
 			//loadBitmap(session.getID(), fallThumbnail, activity);
 			//fallThumbnail.setImageBitmap(Utility.createImage(session.getID()));
-			if(sessionBitmap != null)
+			
+			/*if(sessionBitmap != null)
 				fallThumbnail.setImageBitmap(sessionBitmap);
 			else
 			{
 				sessionBitmap = Utility.createImage(session.getID());
 				fallThumbnail.setImageBitmap(sessionBitmap);
 			}
+			*/
+			BitmapManager.loadBitmap(session.getID(), fallThumbnail, activity);
 			String link = Utility.getMapsLink(fall.getLat(), fall.getLng());
 			String position = fall.getLat() != -1 && fall.getLng() != -1 ? fall.getLat() + ", " + fall.getLng() : activity.getResources().getString(R.string.notavailable);
 
@@ -448,7 +447,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public void setCurrentSessionValues(String infoString, SessionDataSource.Session s, int chronometer)
 	{
 		session = s;
-		sessionBitmap = Utility.createImage(session.getID());
 		if(info != null && infoString != "")
 		{
 			info.setText(infoString);
@@ -460,13 +458,13 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			infoText = infoString;
 		
 		if(thumbNailCurrent != null && session != null){
-			thumbNailCurrent.setImageBitmap(sessionBitmap);
+			BitmapManager.loadBitmap(session.getID(), thumbNailCurrent, activity);
 			thumbNailCurrent.setVisibility(View.VISIBLE);
 		}
 		else if(thumbNailCurrent != null)
 			thumbNailCurrent.setVisibility(View.GONE);
-		if(thumbNailCurrent == null && session != null)
-			bitmapThumbNailCurrent = sessionBitmap;
+		/*if(thumbNailCurrent == null && session != null)
+			bitmapThumbNailCurrent = sessionBitmap;*/
 
 
 		switch(chronometer)
