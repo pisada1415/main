@@ -125,6 +125,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 					stopChronometer();
 					clearFalls();
 					String closedSessionName = null;
+					if(serviceIntent == null)
+						serviceIntent = new Intent(activity, ForegroundService.class);
 					if(sds.existCurrentSession())
 						closedSessionName = sds.currentSession().getName();
 					if(serviceIntent!=null && ForegroundService.isRunning()){
