@@ -95,7 +95,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 			activity = getActivity(); //ma dovrebbe essere già settata in onAttach()
 
 		serviceIntent = new Intent(activity, ForegroundService.class);
-		
+
 
 		//INIZIALIZZO DATABASE
 
@@ -131,9 +131,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 		}
 
-		String title = activity.getIntent().getStringExtra("title");
-		if(title != null && !title.equals(""))
-			sessionName = title;
+
 
 		//INIZIALIZZO LA RECYCLERVIEW
 		rView=(RecyclerView) getView().findViewById(R.id.currentsession_list_recycler);
@@ -142,7 +140,8 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(activity);
 		rView.setLayoutManager(mLayoutManager);
-		activity.setTitle(sessionName);
+		if(sessionName != null)
+			activity.setTitle(sessionName);
 
 		if(info != null) //quindi esiste anche currentsession
 			cardAdapter.setCurrentSessionValues(info, currentSession, -1);
@@ -194,37 +193,6 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		}
 	}
 
-
-
-
-	//METODO CHIAMATO DAL TASTO STOP NELLA PRIMA CARD
-	@Override
-	public void stopService(View v) {
-
-
-		cardAdapter.stopChronometer();
-		cardAdapter.clearFalls();
-		String closedSessionName = null;
-		if(sessionData.existCurrentSession())
-			closedSessionName = sessionData.currentSession().getName();
-		if(serviceIntent!=null && ForegroundService.isRunning()){
-			ForegroundService.killSessionOnDestroy();
-			activity.stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
-		}
-		else if(sessionData.existCurrentSession())
-			sessionData.closeSession(sessionData.currentSession());
-		serviceIntent = null;
-		currentSession = null;
-		sessionName = sessionNameDefault;
-		activity.setTitle(sessionNameDefault);
-		cardAdapter.clearGraphs();
-
-		if(closedSessionName != null){
-			Intent toPiero = new Intent(activity, SessionDetailsFragment.class);
-			toPiero.putExtra(Utility.SESSION_NAME_KEY, closedSessionName); 
-			((FragmentCommunicator)activity).switchFragment(toPiero); 
-		}
-	}
 
 
 	public CurrentSessionCardAdapter getAdapter()

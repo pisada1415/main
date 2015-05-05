@@ -2,6 +2,7 @@ package pisada.fallDetector;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import android.annotation.SuppressLint;
@@ -15,6 +16,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,7 +26,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity implements FragmentCommunicator, android.text.TextWatcher{
+public class MainActivity extends AppCompatActivity implements FragmentCommunicator, android.text.TextWatcher{
 	private List<NavDrawerItem> listItems;
 	private DrawerLayout mDrawerLayout;
 	private ListView mDrawerList;
