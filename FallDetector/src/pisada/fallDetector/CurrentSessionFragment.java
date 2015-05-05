@@ -95,8 +95,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 			activity = getActivity(); //ma dovrebbe essere già settata in onAttach()
 
 		serviceIntent = new Intent(activity, ForegroundService.class);
-		sessionNameDefault = getResources().getString(R.string.defaultSessionName);
-		sessionName = sessionNameDefault;
+		
 
 		//INIZIALIZZO DATABASE
 
@@ -197,166 +196,6 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 
 
-	//CHIAMATO QUANDO VIENE PREMUTO IL TASTO SOPRA (PLAY/PAUSA)
-	@SuppressLint("NewApi")
-	@Override
-	public void playPauseService(final View v){
-
-		final Drawable selection;
-		v.setClickable(false);
-		
-
-		
-		SessionDataSource.Session currentSession;
-		if(sessionData.existCurrentSession()){
-			currentSession = sessionData.currentSession();
-			if(currentSession.isOnPause())
-			{
-				selection = pause;
-
-			}
-			else
-			{
-				selection = play;
-
-			}
-		}
-		else
-		{
-			selection = pause;
-		}
-		v.setBackgroundDrawable(getResources().getDrawable(R.drawable.nonclickable));
-		/*
-		 * qui per due secondi setto un background blu con caricamento in mezzo. poi cambia. per quei due secondi è anche inclickabile
-		 */
-
-		new Thread(){
-			@Override
-			public void run(){
-
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				activity.runOnUiThread(new Runnable() {
-
-
-					@Override
-					public void run() {
-						v.setClickable(true);
-						int sdk = android.os.Build.VERSION.SDK_INT;
-							if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-								v.setBackgroundDrawable(selection);
-							} else {
-								v.setBackground(selection);
-							}
-
-					}		
-				});
-
-			}
-		}.start();
-
-		int chronometer;
-
-		long time = System.currentTimeMillis(); //MEMORIZZA IL MOMENTO IN CUI è STATO PREMUTO IL TASTO
-		if(sessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
-			sessionName = "Session:"+ Utility.getStringTime(time); //assegno nome default UNICO (altrimenti tengo quello cambiato)
-
-
-		if(!ForegroundService.isRunning()){
-			//il service non sta andando
-			if(!sessionData.existCurrentSession()){
-				//non esiste sessione corrente: creane una nuova
-				currentSession = null;
-				currentSession = addSession(sessionName, "" + time, time, 0);
-				activity.setTitle(sessionName);
-				//FA PARTIRE IL SERVICE
-				serviceIntent = new Intent(activity, ForegroundService.class);
-				String activeServ = Utility.checkLocationServices(activity, true);
-				serviceIntent.putExtra("activeServices", activeServ);
-				activity.startService(serviceIntent);
-
-
-
-				info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
-				chronometer = 0;
-			}
-			else
-			{
-				currentSession = sessionData.currentSession();
-
-				//ESISTE SESSIONE CORRENTE
-				if(sessionData.currentSession().isOnPause()){
-					//è IN PAUSA
-					sessionData.resumeSession(currentSession); //LA FACCIO RIPARTIRE
-					//FA PARTIRE IL SERVICE
-					serviceIntent = new Intent(activity, ForegroundService.class);
-					String activeServ = Utility.checkLocationServices(activity, true);
-					serviceIntent.putExtra("activeServices", activeServ);
-					activity.startService(serviceIntent);
-					chronometer = 0;
-
-
-					info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(currentSession.getStartTime());
-
-				}
-				else{
-					//STA ANDANDO, QUINDI VA MESSA IN PAUSA
-
-					sessionData.setSessionOnPause(sessionData.currentSession());
-					activity.stopService(serviceIntent); //dovrebbe essere inutile
-					chronometer = 1;
-					info = "";
-				}
-			}
-
-		}
-		else
-		{
-
-			//il service sta già andando (STESSA COSA DI PRIMA MA QUI NON FA PARTIRE IL SERVICE)
-			if(!sessionData.existCurrentSession()){
-				//non esiste sessione corrente: creane una nuova
-				currentSession = null;
-				currentSession = addSession(sessionName, "" + time, time, 0);
-				activity.setTitle(sessionName);
-				chronometer = 0;
-				info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(currentSession.getStartTime());
-			}
-			else
-			{
-				currentSession = sessionData.currentSession();
-
-				if(sessionData.currentSession().isOnPause()){
-					sessionData.resumeSession(currentSession);
-					activity.setTitle(currentSession.getName());
-					chronometer = 0;
-
-					info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
-
-
-				}
-				else{
-					//pausa
-
-					sessionData.setSessionOnPause(currentSession);
-					//	ForegroundService.storeDuration(sessionData);
-					activity.stopService(serviceIntent); 
-					chronometer = 1;
-				}
-			}
-
-		}
-
-		cardAdapter.setCurrentSessionValues(info, currentSession, chronometer);
-		if(currentSession != null)
-		cardAdapter.updateSessionName(currentSession.getName());
-	}
-
 
 	//METODO CHIAMATO DAL TASTO STOP NELLA PRIMA CARD
 	@Override
@@ -386,38 +225,6 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 			((FragmentCommunicator)activity).switchFragment(toPiero); 
 		}
 	}
-
-
-	public SessionDataSource.Session addSession(String name, String pic, long timeStart, long timeEnd) {
-
-		SessionDataSource.Session session = null;
-		if(!sessionData.existSession(name)){
-
-			try{
-				session = sessionData.openNewSession(name, pic, timeStart, timeEnd);
-			}
-			catch(SQLiteConstraintException e){
-				e.printStackTrace();
-			} catch (fallDetectorException.BoolNotBoolException e) {
-				e.printStackTrace();
-			} catch (MoreThanOneOpenSessionException e) {
-				e.printStackTrace();
-			} catch (DublicateNameSessionException e) {
-				e.printStackTrace();
-			}
-
-		}
-		else
-		{
-			Toast.makeText(activity, "Can't add session with same name", Toast.LENGTH_LONG).show();
-			if(ForegroundService.isRunning())
-				activity.stopService(serviceIntent);
-			cardAdapter.stopChronometer();
-		}
-
-		return session;
-	}
-
 
 
 	public CurrentSessionCardAdapter getAdapter()

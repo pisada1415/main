@@ -8,7 +8,11 @@
     <color name="darkGreen">#00DB0F</color>
     <color name="coolGreen">#A8D959</color>
     <color name="black_overlay">#66000000</color>
- <color name="list_background">#FFFFFF</color>
- <color name="everGreen">#2dbe60</color>
-  <color name="lightGrey">#E6E6E6</color>
+    <color name="list_background">#FFFFFF</color>
+    <color name="everGreen">#2dbe60</color>
+    <color name="lightGrey">#E6E6E6</color>
+    <color name="material_green_700">#00C853</color>
+    <color name="material_green_400">#00E676</color>
+    <color name="material_green_500">#4CAF50</color>
+
 </resources>

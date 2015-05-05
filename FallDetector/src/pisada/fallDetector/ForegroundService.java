@@ -477,7 +477,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 				if(connectedActs != null && connectedActs.size() > 0){
 
 					for(final ServiceReceiver sr : connectedActs){
-						Runnable r = new Runnable(){@Override public void run() { if(sr != null) sr.serviceUpdate(x, y, z, time);}};
+						Runnable r = new Runnable(){@Override public void run() { if(sr != null) sr.serviceUpdate(x, y, z, getSessionDuration(sessionDataSource));}};
 						if(sr instanceof CurrentSessionCardAdapter)
 							((CurrentSessionCardAdapter)sr).runOnUiThread(r);
 						else if(sr instanceof Activity)
@@ -776,7 +776,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 	/*
 	 * dice all'esterno se il service sta girando
 	 */
-	protected static boolean isRunning(){
+	public static boolean isRunning(){
 		return isRunning;
 	}
 

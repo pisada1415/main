@@ -28,7 +28,7 @@
                 android:layout_width="190dp"
                 android:layout_height="90dp"
                 android:background="@drawable/button_selector_play"
-                android:onClick="playPauseService" />
+               />
 
             <ProgressBar
                 android:id="@+id/progressBarFirstCard"
@@ -46,7 +46,7 @@
             android:layout_below="@id/buttonWrapper"
             android:layout_centerHorizontal="true"
             android:background="@drawable/button_selector_stop"
-            android:onClick="stopService" />
+            />
 
         <Chronometer
             android:id="@+id/chronometer"

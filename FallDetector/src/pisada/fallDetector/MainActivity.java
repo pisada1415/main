@@ -2,7 +2,6 @@ package pisada.fallDetector;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import android.annotation.SuppressLint;
@@ -129,17 +128,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 
 	}
 
-	@SuppressLint("NewApi")
-	public void playPauseService(View v){
-		fragment.playPauseService(v);
-	}
-
-
-
-	public void stopService(View v)
-	{
-		fragment.stopService(v);
-	}
+	
 
 	public void addSession(View v)
 	{
