@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -26,7 +27,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class FallDetailsDialogFragment extends DialogFragment {
@@ -67,14 +67,12 @@ public class FallDetailsDialogFragment extends DialogFragment {
 		fds = new FallDataSource(act);
 		sds = new SessionDataSource(act);
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MyDialog);
 		// otteniamo layout inflater
 		LayoutInflater inflater = getActivity().getLayoutInflater();
 
 		// Passa null come parent view perché andrà nel layout del dialog
 		View view = inflater.inflate(R.layout.dialog_fall_details, null);
-
-
 		/*
 		 * parte presa dall'ex activity-fragment
 		 */
@@ -203,6 +201,7 @@ public class FallDetailsDialogFragment extends DialogFragment {
 		return builder.create();
 	}
 
+	
 	private void hideUI()
 	{
 		runOnUiThread(new Runnable() {

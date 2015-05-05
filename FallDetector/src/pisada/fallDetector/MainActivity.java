@@ -438,7 +438,7 @@ public class MainActivity extends ActionBarActivity implements FragmentCommunica
 			 */
 			//FallDetailsDialogFragment.initialize(i.getStringExtra(Utility.SESSION_NAME_KEY),i.getLongExtra(Utility.FALL_TIME_KEY, -1), this, fallData, sessionData);
 			FallDetailsDialogFragment dialog = new FallDetailsDialogFragment(i.getStringExtra(Utility.SESSION_NAME_KEY), i.getLongExtra(Utility.FALL_TIME_KEY, -1));
-
+			
 			dialog.show(fm, "");
 		}
 		else if(i.getComponent().getClassName().contains("ArchiveFragment")){

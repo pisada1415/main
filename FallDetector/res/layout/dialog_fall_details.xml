@@ -3,7 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center_horizontal"
-    android:background="#FFFFFF"
+    android:background="@drawable/fall_details_dialog_background"
     android:orientation="vertical" >
 
     <TextView
@@ -71,7 +71,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/infoFallDate"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="2dp"
                 android:layout_alignLeft="@id/infoFallDate"
                 android:layout_alignStart="@id/infoFallDate"
                 android:text="@string/Time"
@@ -110,8 +110,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/infoFall02"
+                android:gravity="center"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
+                android:layout_marginBottom="5dp"
                 android:ems="10"
                  >
             </TextView>
@@ -131,6 +133,7 @@
         android:id="@+id/graphView"
         android:layout_width="match_parent"
         android:layout_height="150dp"
+        android:layout_marginBottom="2dp"
         android:orientation="vertical" >
     </LinearLayout>
 
