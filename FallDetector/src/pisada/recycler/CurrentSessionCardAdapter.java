@@ -577,7 +577,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		@Override
 		public void onClick(final View v) {
 			// TODO Auto-generated method stub
-
+			if(serviceIntent == null)
+				serviceIntent = new Intent(activity, ForegroundService.class);
+			
 			final Drawable selection;
 			v.setClickable(false);
 			String info = null;

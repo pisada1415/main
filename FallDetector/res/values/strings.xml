@@ -45,7 +45,7 @@
     <string name="notsent">not sent yet</string>
     <string name="sent">sent</string>
     <string name="requiresSetup">requires setup</string>
-    <string name="starttime">Start time:&#160;</string>
+    <string name="starttime">Start:&#160;</string>
     <string name="duration">Duration:&#160;</string>
     <string name="date">Date:&#160;</string>
     <string name="notifSentCorrectly">Notification was sent correctly to your contacts for this event</string>
