@@ -13,6 +13,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -39,7 +40,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 	private FallDataSource fallData;
 	private FragmentManager fm;
 	private final int SESSION_DETAILS_ID = -1;
-
+	public static boolean isPortrait = true;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -242,10 +244,22 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		mDrawerToggle.syncState();
 	}
 
+	
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		mDrawerToggle.onConfigurationChanged(newConfig);
+		if(newConfig.orientation==Configuration.ORIENTATION_LANDSCAPE)
+				isPortrait = false;
+			else
+				isPortrait = true;
+		// Reload current fragment
+		Fragment frg = null;
+		frg = fm.findFragmentById(R.id.content_frame);
+		final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		ft.detach(frg);
+		ft.attach(frg);
+		ft.commit();
 	}
 
 	@Override
@@ -501,4 +515,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		super.onResume();
 		this.fragment = (FallDetectorFragment)(fm.findFragmentById(R.id.content_frame));
 	}
+	
+	
 }

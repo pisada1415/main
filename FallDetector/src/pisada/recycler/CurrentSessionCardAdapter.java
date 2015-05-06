@@ -3,6 +3,7 @@ package pisada.recycler;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
 import pisada.database.FallDataSource;
@@ -34,6 +35,7 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -68,18 +70,18 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private ImageView thumbNailCurrent;
 	private SessionDataSource.Session session;
 	private Drawable pause, play;
-	
+	private boolean isPortrait = true;
 	/*
 	 * 
 	 * first_new_currentsession_card
 	 */
 	public class FirstCardHolder extends RecyclerView.ViewHolder {
 
-		
+
 
 		private Button playPause;
 		private Button stop;
-		
+
 		@SuppressWarnings("deprecation")
 		public FirstCardHolder(View v) {
 			super(v);
@@ -117,185 +119,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_pause));
 				//devo usare il deprecato perché per setBackground serve API Level 16
 			}
-			stop.setOnClickListener(new View.OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
+			stop.setOnClickListener(onStopClick);
+			playPause.setOnClickListener(onPlayPauseClick);
 
-					stopChronometer();
-					clearFalls();
-					String closedSessionName = null;
-					if(serviceIntent == null)
-						serviceIntent = new Intent(activity, ForegroundService.class);
-					if(sds.existCurrentSession())
-						closedSessionName = sds.currentSession().getName();
-					if(serviceIntent!=null && ForegroundService.isRunning()){
-						ForegroundService.killSessionOnDestroy();
-						activity.stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
-					}
-					else if(sds.existCurrentSession())
-						sds.closeSession(sds.currentSession());
-					serviceIntent = null;
-					session = null;
-					currentSessionName = sessionNameDefault;
-					activity.setTitle(sessionNameDefault);
-					clearGraphs();
-
-					if(closedSessionName != null){
-						Intent toPiero = new Intent(activity, SessionDetailsFragment.class);
-						toPiero.putExtra(Utility.SESSION_NAME_KEY, closedSessionName); 
-						((FragmentCommunicator)activity).switchFragment(toPiero); 
-					}
-				}
-			});
-			playPause.setOnClickListener(new View.OnClickListener() {
-				
-				@Override
-				public void onClick(final View v) {
-					
-					final Drawable selection;
-					v.setClickable(false);
-					String info = null;
-					
-					if(sds.existCurrentSession()){
-						session = sds.currentSession();
-						if(session.isOnPause())
-							selection = pause;
-						else
-							selection = play;
-					}
-					else
-						selection = pause;
-					
-					v.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.nonclickable));
-					/*
-					 * qui per due secondi setto un background blu con caricamento in mezzo. poi cambia. per quei due secondi è anche inclickabile
-					 */
-
-					new Thread(){
-						@Override
-						public void run(){
-
-							try {
-								Thread.sleep(2000);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-
-							activity.runOnUiThread(new Runnable() {
-
-
-								@SuppressLint("NewApi")
-								@Override
-								public void run() {
-									v.setClickable(true);
-									int sdk = android.os.Build.VERSION.SDK_INT;
-										if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-											v.setBackgroundDrawable(selection);
-										} else {
-											v.setBackground(selection);
-										}
-
-								}		
-							});
-
-						}
-					}.start();
-
-					int chronometer;
-
-					long time = System.currentTimeMillis(); //MEMORIZZA IL MOMENTO IN CUI è STATO PREMUTO IL TASTO
-					if(currentSessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
-						currentSessionName = "Session:"+ Utility.getStringTime(time); //assegno nome default UNICO (altrimenti tengo quello cambiato)
-
-
-					if(!ForegroundService.isRunning()){
-						//il service non sta andando
-						if(!sds.existCurrentSession()){
-							//non esiste sessione corrente: creane una nuova
-							session = null;
-							session = addSession(currentSessionName, "" + time, time, 0);
-							activity.setTitle(currentSessionName);
-							//FA PARTIRE IL SERVICE
-							serviceIntent = new Intent(activity, ForegroundService.class);
-							String activeServ = Utility.checkLocationServices(activity, true);
-							serviceIntent.putExtra("activeServices", activeServ);
-							activity.startService(serviceIntent);
-							info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
-							chronometer = 0;
-						}
-						else
-						{
-							session = sds.currentSession();
-
-							//ESISTE SESSIONE CORRENTE
-							if(sds.currentSession().isOnPause()){
-								//è IN PAUSA
-								sds.resumeSession(session); //LA FACCIO RIPARTIRE
-								//FA PARTIRE IL SERVICE
-								serviceIntent = new Intent(activity, ForegroundService.class);
-								String activeServ = Utility.checkLocationServices(activity, true);
-								serviceIntent.putExtra("activeServices", activeServ);
-								activity.startService(serviceIntent);
-								chronometer = 0;
-								info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(session.getStartTime());
-							}
-							else{
-								//STA ANDANDO, QUINDI VA MESSA IN PAUSA
-
-								sds.setSessionOnPause(sds.currentSession());
-								activity.stopService(serviceIntent); //dovrebbe essere inutile
-								chronometer = 1;
-								info = "";
-							}
-						}
-
-					}
-					else
-					{
-
-						//il service sta già andando (STESSA COSA DI PRIMA MA QUI NON FA PARTIRE IL SERVICE)
-						if(!sds.existCurrentSession()){
-							//non esiste sessione corrente: creane una nuova
-							session = null;
-							session = addSession(currentSessionName, "" + time, time, 0);
-							activity.setTitle(currentSessionName);
-							chronometer = 0;
-							info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(session.getStartTime());
-						}
-						else
-						{
-							session = sds.currentSession();
-
-							if(sds.currentSession().isOnPause()){
-								sds.resumeSession(session);
-								activity.setTitle(session.getName());
-								chronometer = 0;
-
-								info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
-
-
-							}
-							else{
-								//pausa
-
-								sds.setSessionOnPause(session);
-								//	ForegroundService.storeDuration(sds);
-								activity.stopService(serviceIntent); 
-								chronometer = 1;
-							}
-						}
-
-					}
-
-					setCurrentSessionValues(info, session, chronometer);
-					if(session != null)
-					updateSessionName(session.getName());
-
-				}
-			});
-			
 
 		}
 	}	
@@ -305,9 +131,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	 */
 	public  class SecondCardHolder extends RecyclerView.ViewHolder {
 		private LinearLayout graphLayout;
-		/*private LinearLayout graphXLayout;
-		private LinearLayout graphYLayout;
-		private LinearLayout graphZLayout;*/
 
 		/*
 		 * qui aggiungiamo sui parametri del costruttore la roba da passare per buttarla nelle card (penso)
@@ -318,25 +141,13 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT); 
 
 			graphLayout = (LinearLayout) v.findViewById(R.id.graph);
-			/*
-			graphXLayout=(LinearLayout) v.findViewById(R.id.graphx);
-			graphYLayout=(LinearLayout) v.findViewById(R.id.graphy);
-			graphZLayout=(LinearLayout) v.findViewById(R.id.graphz);*/
 
 			long timePoint = (c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - millisecStartGraph);
 
 			graph = new Plot(activity, new Data(timePoint, 0));
-			/*
-			graphX = new Plot2d(activity, new Data(timePoint,0));
-			graphY = new Plot2d(activity, new Data(timePoint,0));
-			graphZ = new Plot2d(activity, new Data(timePoint,0));
-			 */
+
 			graphLayout.addView(graph, lp);
-			/*
-			graphXLayout.addView(graphX, lp);
-			graphYLayout.addView(graphY, lp);
-			graphZLayout.addView(graphZ, lp);
-			 */
+
 		}
 
 	}
@@ -344,7 +155,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	 * fall cards
 	 */
 	public class FallsHolder extends RecyclerView.ViewHolder{
-		
+
 		private TextView fallTime;
 		private TextView fallPosition;
 		private TextView boolNotif;
@@ -373,15 +184,18 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 
-	public CurrentSessionCardAdapter(Activity activity, long time, boolean startChron, long pauseTime) {
+	public CurrentSessionCardAdapter(View v, Activity activity, long time, boolean startChron, long pauseTime, boolean isPort) {
 
 		this.activity=activity;
+		isPortrait = isPort;
 		c = Calendar.getInstance();
 		ForegroundService.connect(this);
 		millisecStartGraph = c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND);
 		cardContentList = new ArrayList<Fall>();
-		cardContentList.add(0, new Fall());
-		cardContentList.add(1, new Fall());
+		if(isPortrait){
+			cardContentList.add(0, new Fall());
+			cardContentList.add(1, new Fall());
+		}
 		timeSessionUp = time;
 		startChronometerOnStart = startChron;
 		sds = new SessionDataSource(activity);
@@ -393,6 +207,96 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		sessionNameDefault = activity.getResources().getString(R.string.defaultSessionName);
 		currentSessionName = sessionNameDefault;
 		sp = PreferenceManager.getDefaultSharedPreferences(activity);
+
+		if (!this.isPortrait){
+
+			Button playPause = (Button) v.findViewById(R.id.start_pause_button);
+			Button stop = (Button) v.findViewById(R.id.stop_button);
+			duration = (Chronometer) v.findViewById(R.id.chronometer);
+			thumbNailCurrent = (ImageView)v.findViewById(R.id.thumbnail);
+			info =  (TextView) v.findViewById(R.id.info);
+			pb = (ProgressBar)v.findViewById(R.id.progressBarFirstCard);
+			pb.setVisibility(View.VISIBLE);
+			if(infoText != null)
+				info.setText(infoText);
+			else
+				info.setVisibility(View.GONE);
+			if(session != null)
+				BitmapManager.loadBitmap(session.getID(), thumbNailCurrent, activity);
+			else
+				thumbNailCurrent.setVisibility(View.GONE);
+
+			if(startChronometerOnStart)
+				startChronometer();
+			if(timeWhenPaused != 0)
+			{
+				duration.setBase(SystemClock.elapsedRealtime() - timeWhenPaused);
+				duration.start();
+				duration.stop();
+				timeWhenPaused = 0;
+			}
+
+			if(sds.existCurrentSession())
+			{
+				if(sds.currentSession().isOnPause())
+					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_play));
+				else
+					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_pause));
+				//devo usare il deprecato perché per setBackground serve API Level 16
+			}
+			stop.setOnClickListener(onStopClick);
+			playPause.setOnClickListener(onPlayPauseClick);
+
+
+
+
+			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT); 
+
+			LinearLayout graphLayout = (LinearLayout) v.findViewById(R.id.graph);
+
+			long timePoint = (c.get(Calendar.MINUTE)*60*1000 + c.get(Calendar.SECOND)*1000+ c.get(Calendar.MILLISECOND) - millisecStartGraph);
+
+			graph = new Plot(activity, new Data(timePoint, 0));
+
+			graphLayout.addView(graph, lp);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		}
 	}
 
 	Handler mHandler;
@@ -407,27 +311,17 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	@Override
 	public void onBindViewHolder(ViewHolder holder, int i) {
 
-		if(i==0){ //se sono le prime due non fare niente
-			
+		if(i==0 && isPortrait){ //se sono le prime due non fare niente
+
 		}
-		else if(i == 1){}
+		else if(i == 1 && isPortrait){}
 		else{
 			/*
 			 * TODO qui anziché randint va passato il numero della sessione cui la fall fa riferimento
 			 */
 			Fall fall = cardContentList.get(i);
 			FallsHolder Oholder=(FallsHolder) holder;
-			//loadBitmap(session.getID(), fallThumbnail, activity);
-			//fallThumbnail.setImageBitmap(Utility.createImage(session.getID()));
-			
-			/*if(sessionBitmap != null)
-				fallThumbnail.setImageBitmap(sessionBitmap);
-			else
-			{
-				sessionBitmap = Utility.createImage(session.getID());
-				fallThumbnail.setImageBitmap(sessionBitmap);
-			}
-			*/
+
 			BitmapManager.loadBitmap(session.getID(), fallThumbnail, activity);
 			String link = Utility.getMapsLink(fall.getLat(), fall.getLng());
 			String position = fall.getLat() != -1 && fall.getLng() != -1 ? fall.getLat() + ", " + fall.getLng() : activity.getResources().getString(R.string.notavailable);
@@ -467,22 +361,19 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int type) {
 
 
-		if(type==0){
+		if(type==0 && isPortrait){
 			return new FirstCardHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.first_current_session_currentsession_card, parent, false));
 		}
-		if(type==1)
+		if(type==1 && isPortrait)
 		{
 			return new SecondCardHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.plots_card, parent, false));
 
 		}
-		else 
-		{
-
-			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fall_card, parent, false);
 
 
-			return new FallsHolder(view);
-		}
+		View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fall_card, parent, false);
+		return new FallsHolder(view);
+
 
 	}
 
@@ -512,19 +403,13 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		if(graph != null){
 			graph.pushValue(new Data(time, last));
 			graph.invalidate();
-			
+
 		}
 	}
 
 
 	public void clearGraphs()
 	{
-		/*
-		if(graphX != null && graphY != null && graphZ != null){
-			graphX.clear();
-			graphY.clear();
-			graphZ.clear();
-		}*/
 		if(graph != null)
 			graph.clear();
 		//altrimenti fallisce silenziosamente
@@ -630,7 +515,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			info.setVisibility(View.GONE);
 		if(infoString != "" && info == null)
 			infoText = infoString;
-		
+
 		if(thumbNailCurrent != null && session != null){
 			BitmapManager.loadBitmap(session.getID(), thumbNailCurrent, activity);
 			thumbNailCurrent.setVisibility(View.VISIBLE);
@@ -654,8 +539,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 
 	}
-	
-	
+
+
 	public SessionDataSource.Session addSession(String name, String pic, long timeStart, long timeEnd) {
 
 		SessionDataSource.Session session = null;
@@ -685,7 +570,188 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		return session;
 	}
+
 	
-	
+	private OnClickListener onPlayPauseClick = new View.OnClickListener() {
+		
+		@Override
+		public void onClick(final View v) {
+			// TODO Auto-generated method stub
+
+			final Drawable selection;
+			v.setClickable(false);
+			String info = null;
+
+			if(sds.existCurrentSession()){
+				session = sds.currentSession();
+				if(session.isOnPause())
+					selection = pause;
+				else
+					selection = play;
+			}
+			else
+				selection = pause;
+
+			v.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.nonclickable));
+			/*
+			 * qui per due secondi setto un background blu con caricamento in mezzo. poi cambia. per quei due secondi è anche inclickabile
+			 */
+
+			new Thread(){
+				@Override
+				public void run(){
+
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					activity.runOnUiThread(new Runnable() {
+
+
+						@SuppressLint("NewApi")
+						@Override
+						public void run() {
+							v.setClickable(true);
+							int sdk = android.os.Build.VERSION.SDK_INT;
+							if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+								v.setBackgroundDrawable(selection);
+							} else {
+								v.setBackground(selection);
+							}
+
+						}		
+					});
+
+				}
+			}.start();
+
+			int chronometer;
+
+			long time = System.currentTimeMillis(); //MEMORIZZA IL MOMENTO IN CUI è STATO PREMUTO IL TASTO
+			if(currentSessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
+				currentSessionName = "Session:"+ Utility.getStringTime(time); //assegno nome default UNICO (altrimenti tengo quello cambiato)
+
+
+			if(!ForegroundService.isRunning()){
+				//il service non sta andando
+				if(!sds.existCurrentSession()){
+					//non esiste sessione corrente: creane una nuova
+					session = null;
+					session = addSession(currentSessionName, "" + time, time, 0);
+					activity.setTitle(currentSessionName);
+					//FA PARTIRE IL SERVICE
+					serviceIntent = new Intent(activity, ForegroundService.class);
+					String activeServ = Utility.checkLocationServices(activity, true);
+					serviceIntent.putExtra("activeServices", activeServ);
+					activity.startService(serviceIntent);
+					info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
+					chronometer = 0;
+				}
+				else
+				{
+					session = sds.currentSession();
+
+					//ESISTE SESSIONE CORRENTE
+					if(sds.currentSession().isOnPause()){
+						//è IN PAUSA
+						sds.resumeSession(session); //LA FACCIO RIPARTIRE
+						//FA PARTIRE IL SERVICE
+						serviceIntent = new Intent(activity, ForegroundService.class);
+						String activeServ = Utility.checkLocationServices(activity, true);
+						serviceIntent.putExtra("activeServices", activeServ);
+						activity.startService(serviceIntent);
+						chronometer = 0;
+						info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(session.getStartTime());
+					}
+					else{
+						//STA ANDANDO, QUINDI VA MESSA IN PAUSA
+
+						sds.setSessionOnPause(sds.currentSession());
+						activity.stopService(serviceIntent); //dovrebbe essere inutile
+						chronometer = 1;
+						info = "";
+					}
+				}
+
+			}
+			else
+			{
+
+				//il service sta già andando (STESSA COSA DI PRIMA MA QUI NON FA PARTIRE IL SERVICE)
+				if(!sds.existCurrentSession()){
+					//non esiste sessione corrente: creane una nuova
+					session = null;
+					session = addSession(currentSessionName, "" + time, time, 0);
+					activity.setTitle(currentSessionName);
+					chronometer = 0;
+					info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(session.getStartTime());
+				}
+				else
+				{
+					session = sds.currentSession();
+
+					if(sds.currentSession().isOnPause()){
+						sds.resumeSession(session);
+						activity.setTitle(session.getName());
+						chronometer = 0;
+
+						info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
+
+
+					}
+					else{
+						//pausa
+
+						sds.setSessionOnPause(session);
+						//	ForegroundService.storeDuration(sds);
+						activity.stopService(serviceIntent); 
+						chronometer = 1;
+					}
+				}
+
+			}
+
+			setCurrentSessionValues(info, session, chronometer);
+			if(session != null)
+				updateSessionName(session.getName());
+
+
+		}
+	};
+	private OnClickListener onStopClick = new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			stopChronometer();
+			clearFalls();
+			String closedSessionName = null;
+			if(serviceIntent == null)
+				serviceIntent = new Intent(activity, ForegroundService.class);
+			if(sds.existCurrentSession())
+				closedSessionName = sds.currentSession().getName();
+			if(serviceIntent!=null && ForegroundService.isRunning()){
+				ForegroundService.killSessionOnDestroy();
+				activity.stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
+			}
+			else if(sds.existCurrentSession())
+				sds.closeSession(sds.currentSession());
+			serviceIntent = null;
+			session = null;
+			currentSessionName = sessionNameDefault;
+			activity.setTitle(sessionNameDefault);
+			clearGraphs();
+
+			if(closedSessionName != null){
+				Intent toPiero = new Intent(activity, SessionDetailsFragment.class);
+				toPiero.putExtra(Utility.SESSION_NAME_KEY, closedSessionName); 
+				((FragmentCommunicator)activity).switchFragment(toPiero); 
+			}
+		}
+	};
+
 }
 

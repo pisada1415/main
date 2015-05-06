@@ -47,7 +47,6 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	private boolean startChronometerOnStartActivity = false;
 	private long pauseTime = 0;
 	private String info;
-
 	private FallDataSource fallDataSource;
 	private SessionDataSource.Session currentSession;
 
@@ -136,7 +135,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		//INIZIALIZZO LA RECYCLERVIEW
 		rView=(RecyclerView) getView().findViewById(R.id.currentsession_list_recycler);
 		rView.setHasFixedSize(true);
-		cardAdapter = new CurrentSessionCardAdapter(activity, ForegroundService.getSessionDuration(sessionData), startChronometerOnStartActivity, pauseTime);
+		cardAdapter = new CurrentSessionCardAdapter(this.getView(), activity, ForegroundService.getSessionDuration(sessionData), startChronometerOnStartActivity, pauseTime, MainActivity.isPortrait);
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(activity);
 		rView.setLayoutManager(mLayoutManager);
@@ -201,12 +200,6 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	}
 
 
-
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		//azioni da compiere quando avviene la rotazione (---ATTENZIONE---) non togliere questo metodo anche se vuoto.
-	}
 
 
 	@Override
