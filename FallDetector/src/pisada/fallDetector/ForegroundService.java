@@ -401,9 +401,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 								((Activity)sr).runOnUiThread(r);
 							}
 						}
+						storeDuration();
 						if(sessionDataSource.existCurrentSession())
 							sessionDataSource.closeSession(sessionDataSource.currentSession());
-
 					}
 
 

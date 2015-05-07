@@ -24,7 +24,7 @@
         android:layout_toEndOf="@id/icon"
         android:paddingEnd="6dp"
         android:paddingStart="6dp"
-        android:textColor="#d0d0d0"
+        android:textColor="@color/black_overlay"
         android:textSize="20sp"
         android:typeface="sans" />
 

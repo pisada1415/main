@@ -5,17 +5,17 @@ import java.util.List;
 
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 	private final int SESSION_DETAILS_ID = -1;
 	public static boolean isPortrait = true;
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -63,17 +64,23 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		setContentView(R.layout.activity_navigation_drawer);
 		String[] arr = (getResources().getStringArray(R.array.navigation_items));
 		listItems = new ArrayList<NavDrawerItem>();
-		listItems.add(new NavDrawerItem(arr[0], R.drawable.ic_launcher)); //TODO icone adatte
-		listItems.add(new NavDrawerItem(arr[1], R.drawable.ic_launcher));
-		listItems.add(new NavDrawerItem(arr[2], R.drawable.ic_launcher));
-		listItems.add(new NavDrawerItem(arr[3], R.drawable.ic_launcher));
-		listItems.add(new NavDrawerItem(arr[4], R.drawable.ic_launcher));
+		listItems.add(new NavDrawerItem(arr[0], R.drawable.currentsession)); //TODO icone adatte
+		listItems.add(new NavDrawerItem(arr[1], R.drawable.sessionlist));
+		listItems.add(new NavDrawerItem(arr[2], R.drawable.archive));
+		listItems.add(new NavDrawerItem(arr[3], R.drawable.settings));
+		listItems.add(new NavDrawerItem(arr[4], R.drawable.info));
+		int[] greenIcons = new int[5];
+		greenIcons[0] = (R.drawable.currentsessionpressed);
+		greenIcons[1] = (R.drawable.sessionslistpressed);
+		greenIcons[2]=(R.drawable.archivepressed);
+		greenIcons[3]=(R.drawable.settingspressed);
+		greenIcons[4]=(R.drawable.infopressed);
 
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
 		// Set the adapter for the list view
-		mDrawerList.setAdapter(new NavDrawListAdapter(this,  listItems));
+		mDrawerList.setAdapter(new NavDrawListAdapter(this,  listItems, greenIcons));
 		// Set the list's click listener
 		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
@@ -149,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			selectItem(position);
-
+			((NavDrawListAdapter)parent.getAdapter()).selectItem(position);
 		}
 	}
 
@@ -158,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		/*
 		 * chiamato quando viene selezionato un elemento dal navigation drawer
 		 */
+		
 		currentUIIndex = position;
 		/*svuoto back stack*/
 		for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
