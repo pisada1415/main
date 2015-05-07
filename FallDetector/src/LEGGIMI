@@ -26,8 +26,8 @@
  
  
  da fare:
- -archivio, info(?)
- -sistemare icona +39 nei settings aggiungi contatto (action bar)
- -rendere sessioni archiviabili/eliminabili (direi di usare un long press che porta al context menu)
- -rivedere utilizzo ram ecc
- -sistemare bug tempo cronometro
+ -archivio
+ -info
+ -sistemare grafica sessions list e rendere sessioni archiviabili - animazioni ecc
+ -rivedere utilizzo ram ecc. (DDMS)
+ -sistemare bug tempo cronometro che va in pausa, torna indietro nel tempo e fa cagate.
