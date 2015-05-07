@@ -73,7 +73,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private boolean isPortrait = true;
 
 	Thread blink;
-	boolean keepBlinking = true;
+	private static boolean keepBlinking = true;
 	/*
 	 * 
 	 * first_new_currentsession_card
@@ -146,6 +146,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				else
 					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_pause));
 				//devo usare il deprecato perché per setBackground serve API Level 16
+				
 			}
 			stop.setOnClickListener(onStopClick);
 			playPause.setOnClickListener(onPlayPauseClick);
@@ -265,10 +266,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				info1v.setVisibility(View.GONE);
 				info2v.setVisibility(View.GONE);
 				}
-				if(sds.existCurrentSession() && sds.currentSession().isOnPause())
-					startPauseBlink();
-				else
-					stopPauseBlink();
 			}
 			if(session != null)
 				BitmapManager.loadBitmap(session.getID(), thumbNailCurrent, activity);
@@ -292,6 +289,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				else
 					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_pause));
 				//devo usare il deprecato perché per setBackground serve API Level 16
+				
 			}
 			stop.setOnClickListener(onStopClick);
 			playPause.setOnClickListener(onPlayPauseClick);
@@ -308,43 +306,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			graph = new Plot(activity, new Data(timePoint, 0));
 
 			graphLayout.addView(graph, lp);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		}
 	}
 
@@ -621,10 +582,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			info1v.setVisibility(View.GONE);
 			info2v.setVisibility(View.GONE);
 			}
-			if(sds.existCurrentSession() && sds.currentSession().isOnPause())
-				startPauseBlink();
-			else
-				stopPauseBlink();
 		}
 		if(time != -1 && info1 == null){
 			infoText1 = activity.getResources().getString(R.string.Date);
@@ -693,7 +650,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		@Override
 		public void onClick(final View v) {
-			// TODO Auto-generated method stub
 			if(serviceIntent == null)
 				serviceIntent = new Intent(activity, ForegroundService.class);
 
@@ -703,13 +659,20 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 			if(sds.existCurrentSession()){
 				session = sds.currentSession();
-				if(session.isOnPause())
+				if(session.isOnPause()){
 					selection = pause;
-				else
+					stopPauseBlink();
+				}
+				else{
 					selection = play;
+					startPauseBlink();
+					
+				}
 			}
-			else
+			else{
 				selection = pause;
+				stopPauseBlink();
+			}
 
 			v.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.nonclickable));
 			/*
@@ -737,8 +700,10 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 							int sdk = android.os.Build.VERSION.SDK_INT;
 							if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
 								v.setBackgroundDrawable(selection);
+								
 							} else {
 								v.setBackground(selection);
+								
 							}
 
 						}		
