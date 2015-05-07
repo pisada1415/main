@@ -46,7 +46,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	private String sessionName, sessionNameDefault;
 	private boolean startChronometerOnStartActivity = false;
 	private long pauseTime = 0;
-	private String info;
+	private long infoTime = -1;
 	private FallDataSource fallDataSource;
 	private SessionDataSource.Session currentSession;
 
@@ -106,7 +106,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 			sessionName = currentSession.getName();
 
-			info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(currentSession.getStartTime());
+			infoTime = currentSession.getStartTime();
 
 			if(!currentSession.isOnPause())
 				startChronometerOnStartActivity = true; //FA SI CHE PARTA IL CRONOMETRO AL LANCIO DELL'ACTIVITY
@@ -142,8 +142,8 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		if(sessionName != null)
 			activity.setTitle(sessionName);
 
-		if(info != null) //quindi esiste anche currentsession
-			cardAdapter.setCurrentSessionValues(info, currentSession, -1);
+		if(infoTime != -1) //quindi esiste anche currentsession
+			cardAdapter.setCurrentSessionValues(infoTime, currentSession, -1);
 
 		if(sessionData.existCurrentSession()) //SE INVECE LA CURRENT SESSION è IN PAUSA... 
 		{

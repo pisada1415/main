@@ -13,6 +13,7 @@
     <string name="time_elapsed">00:00:00</string>
     <string name="info">info.</string>
     <string name="position">position</string>
+    <string name="paused">PAUSED</string>
     <string name="Position">Pos:&#160;</string>
     <string name="Date">Date:&#160;</string>
     <string name="Time">Time:&#160;</string>

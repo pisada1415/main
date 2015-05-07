@@ -41,12 +41,17 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 	private FragmentManager fm;
 	private final int SESSION_DETAILS_ID = -1;
 	public static boolean isPortrait = true;
-	
+	NavDrawListAdapter navAdapter;
 	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+
+		sessionData = new SessionDataSource(this); 
+		fallData = new FallDataSource(this);
+		setContentView(R.layout.activity_navigation_drawer);
+		isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true : false;
 		fm = getSupportFragmentManager();
 		fm.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
 
@@ -59,9 +64,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		});
 		if(savedInstanceState != null)
 			fragment = (FallDetectorFragment)fm.getFragment(savedInstanceState, "fragmentState");
-		sessionData = new SessionDataSource(this); 
-		fallData = new FallDataSource(this);
-		setContentView(R.layout.activity_navigation_drawer);
+
+
 		String[] arr = (getResources().getStringArray(R.array.navigation_items));
 		listItems = new ArrayList<NavDrawerItem>();
 		listItems.add(new NavDrawerItem(arr[0], R.drawable.currentsession)); //TODO icone adatte
@@ -80,7 +84,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
 		// Set the adapter for the list view
-		mDrawerList.setAdapter(new NavDrawListAdapter(this,  listItems, greenIcons));
+		navAdapter = new NavDrawListAdapter(this,  listItems, greenIcons);
+		mDrawerList.setAdapter(navAdapter);
 		// Set the list's click listener
 		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
@@ -93,8 +98,10 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 				super.onDrawerClosed(view);
 				getSupportActionBar().setTitle(mTitle);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-				if(currentUIIndex > -1)
+				if(currentUIIndex > -1){
 					mDrawerList.setItemChecked(currentUIIndex, true);
+					navAdapter.selectItem(currentUIIndex);
+				}
 
 			}
 
@@ -103,8 +110,10 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 				super.onDrawerOpened(drawerView);
 				getSupportActionBar().setTitle(mDrawerTitle);
 				invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-				if(currentUIIndex > -1)
+				if(currentUIIndex > -1){
 					mDrawerList.setItemChecked(currentUIIndex, true);
+					navAdapter.selectItem(currentUIIndex);
+				}
 
 			}
 		};
@@ -117,11 +126,11 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		 * di default mettiamo la currentsessionactivity
 		 */
 		if(fragment == null){
-		fragment = new CurrentSessionFragment();
-		// Insert the fragment by replacing any existing fragment
-		fm.beginTransaction()
-		.replace(R.id.content_frame, (Fragment)fragment)
-		.commit();}
+			fragment = new CurrentSessionFragment();
+			// Insert the fragment by replacing any existing fragment
+			fm.beginTransaction()
+			.replace(R.id.content_frame, (Fragment)fragment)
+			.commit();}
 	}
 
 
@@ -139,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
 	}
 
-	
+
 
 	public void addSession(View v)
 	{
@@ -165,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		/*
 		 * chiamato quando viene selezionato un elemento dal navigation drawer
 		 */
-		
+
 		currentUIIndex = position;
 		/*svuoto back stack*/
 		for(int j = 0; j < fm.getBackStackEntryCount(); ++j) {    
@@ -213,6 +222,8 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
 		// Highlight the selected item, update the title, and close the drawer
 		mDrawerList.setItemChecked(position, true);
+		navAdapter.selectItem(position);
+
 		setTitle(listItems.get(position).getTitle());
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
@@ -252,22 +263,32 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		mDrawerToggle.syncState();
 	}
 
-	
+
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		mDrawerToggle.onConfigurationChanged(newConfig);
 		if(newConfig.orientation==Configuration.ORIENTATION_LANDSCAPE)
-				isPortrait = false;
-			else
-				isPortrait = true;
+			isPortrait = false;
+		else
+			isPortrait = true;
 		// Reload current fragment
-		Fragment frg = null;
-		frg = fm.findFragmentById(R.id.content_frame);
-		final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		ft.detach(frg);
-		ft.attach(frg);
-		ft.commit();
+		if(fm != null){
+			try{
+				Fragment frg = null;
+				frg = fm.findFragmentById(R.id.content_frame);
+				final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+				ft.detach(frg);
+				ft.attach(frg);
+				ft.commit();
+			}
+			catch(IllegalStateException ex){
+				//se onsavedinstancestate è già stato chiamato, non deve essere effettuato alcun cambio fragment
+				//questo avviene se l'activity riceve una rotazione prima che il fragment sia stato attaccato
+				//in questo caso non vogliamo effettuare "refresh" del fragment in quanto verrà già caricato
+				//con il giusto layout
+			}
+		}
 	}
 
 	@Override
@@ -451,7 +472,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 			 */
 			//FallDetailsDialogFragment.initialize(i.getStringExtra(Utility.SESSION_NAME_KEY),i.getLongExtra(Utility.FALL_TIME_KEY, -1), this, fallData, sessionData);
 			FallDetailsDialogFragment dialog = new FallDetailsDialogFragment(i.getStringExtra(Utility.SESSION_NAME_KEY), i.getLongExtra(Utility.FALL_TIME_KEY, -1));
-			
+
 			dialog.show(fm, "");
 		}
 		else if(i.getComponent().getClassName().contains("ArchiveFragment")){
@@ -479,8 +500,11 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 			.commit();
 			System.out.println("rimosso");
 		}
-		if(currentUIIndex > -1)
+		if(currentUIIndex > -1){
 			mDrawerList.setItemChecked(currentUIIndex, true);
+			navAdapter.selectItem(currentUIIndex);
+
+		}
 		invalidateOptionsMenu();
 	}
 
@@ -511,7 +535,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		String text = s.toString();
 		int length = text.length();
 
-		if(!text.matches("[a-zA-Z ]+")) {
+		if(!text.matches("[a-zA-Z ]+") && length > 0) {
 			s.delete(length - 1, length);
 			Toast.makeText(this, getResources().getString(R.string.notavalidchar), Toast.LENGTH_SHORT).show();
 		}
@@ -521,8 +545,28 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 	public void onResume()
 	{
 		super.onResume();
+		isPortrait =  getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true : false;
+		
+			if(fm != null){
+				try{
+					Fragment frg = null;
+					frg = fm.findFragmentById(R.id.content_frame);
+					final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+					ft.detach(frg);
+					ft.attach(frg);
+					ft.commit();
+				}
+				catch(IllegalStateException ex){
+					//se onsavedinstancestate è già stato chiamato, non deve essere effettuato alcun cambio fragment
+					//questo avviene se l'activity riceve una rotazione prima che il fragment sia stato attaccato
+					//in questo caso non vogliamo effettuare "refresh" del fragment in quanto verrà già caricato
+					//con il giusto layout
+				}
+			}
+		
+		
 		this.fragment = (FallDetectorFragment)(fm.findFragmentById(R.id.content_frame));
 	}
-	
-	
+
+
 }

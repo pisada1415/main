@@ -23,13 +23,6 @@
             android:layout_marginBottom="10dp"
             android:layout_marginTop="10dp" >
 
-            <Button
-                android:id="@+id/start_pause_button"
-                android:layout_width="180dp"
-                android:layout_height="90dp"
-                android:background="@drawable/button_selector_play"
-               />
-
             <ProgressBar
                 android:id="@+id/progressBarFirstCard"
                 android:layout_width="wrap_content"
@@ -37,6 +30,12 @@
                 android:layout_centerInParent="true"
                 android:visibility="visible" >
             </ProgressBar>
+
+            <Button
+                android:id="@+id/start_pause_button"
+                android:layout_width="180dp"
+                android:layout_height="90dp"
+                android:background="@drawable/button_selector_play" />
         </RelativeLayout>
 
         <Button
@@ -45,8 +44,7 @@
             android:layout_height="90dp"
             android:layout_below="@id/buttonWrapper"
             android:layout_centerHorizontal="true"
-            android:background="@drawable/button_selector_stop"
-            />
+            android:background="@drawable/button_selector_stop" />
 
         <Chronometer
             android:id="@+id/chronometer"
@@ -55,29 +53,75 @@
             android:layout_below="@id/stop_button"
             android:layout_centerHorizontal="true"
             android:text=""
-            android:textColor="@color/lightBlue"
+            android:textColor="@color/material_green_400"
             android:textSize="30sp" />
 
-        <ImageView
-            android:id="@+id/thumbnail"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/buttonWrapper"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="145dp"
-            android:src="@drawable/ic_launcher" />
+            android:layout_below="@+id/chronometer"
+            android:layout_marginBottom="20dp" >
 
-        <TextView
-            android:id="@+id/info"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/thumbnail"
-            android:layout_margin="5dp"
-            android:text="@string/info"
-            android:textColor="@color/lightBlue"
-            android:textSize="20sp" />
+            <ImageView
+                android:id="@+id/thumbnail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_margin="10dp"
+                android:src="@drawable/ic_launcher" />
+
+            <TextView
+                android:id="@+id/infoDateValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginBottom="15dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/info"
+                android:textColor="@color/black_overlay"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/infoTimeValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginBottom="15dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/info"
+                android:textColor="@color/black_overlay"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/infoTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="10dp"
+                android:layout_toRightOf="@+id/thumbnail"
+                android:text="@string/info"
+                android:textColor="@color/material_green_400"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/infoDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="10dp"
+                android:layout_toRightOf="@+id/thumbnail"
+                android:text="@string/info"
+                android:textColor="@color/material_green_400"
+                android:textSize="20sp" />
+        </RelativeLayout>
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

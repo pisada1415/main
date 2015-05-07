@@ -38,10 +38,15 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 	 */
 	public  class FirstCardHolder extends RecyclerView.ViewHolder {
 		private ImageView thumbNail;
-		private TextView info;
+		private TextView infoStartDate, infoStartTime, infoDuration, infoStartDateValue, infoStartTimeValue, infoDurationValue;
 		public FirstCardHolder(View v) {
 			super(v);
-			info = (TextView)v.findViewById(R.id.info);
+			infoStartDate = (TextView)v.findViewById(R.id.infoStartDate);
+			infoStartTime = (TextView)v.findViewById(R.id.infoStartTime);
+			infoDuration = (TextView)v.findViewById(R.id.infoDuration);
+			infoStartDateValue = (TextView)v.findViewById(R.id.infoStartDateValue);
+			infoStartTimeValue = (TextView)v.findViewById(R.id.infoStartTimeValue);
+			infoDurationValue = (TextView)v.findViewById(R.id.infoDurationValue);
 			thumbNail = (ImageView)v.findViewById(R.id.thumbnailSessionDetails);
 
 		}
@@ -122,10 +127,15 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 			fch.thumbNail.setImageBitmap(sessionBitmap);*/
 BitmapManager.loadBitmap(session.getID(), fch.thumbNail, activity);
 			Resources res = activity.getResources();
-			String infoString = res.getString(R.string.starttime)+Utility.getStringTime(session.getStartTime())+
-					"\n"+res.getString(R.string.duration)+Utility.longToDuration(sessionData.sessionDuration(session));
-
-			fch.info.setText(infoString);
+						
+			long startTimeMillis = session.getStartTime();
+			fch.infoStartDate.setText(res.getString(R.string.Date));
+			fch.infoStartTime.setText(res.getString(R.string.Time));
+			fch.infoDuration.setText(res.getString(R.string.duration));
+			fch.infoStartDateValue.setText(Utility.getStringDate(startTimeMillis));
+			fch.infoStartTimeValue.setText(Utility.getStringHour(startTimeMillis));
+			fch.infoDurationValue.setText(Utility.longToDuration(sessionData.sessionDuration(session)));
+			
 		}
 		else{
 			/*

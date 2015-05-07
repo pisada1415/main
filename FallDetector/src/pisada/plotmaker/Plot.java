@@ -96,6 +96,7 @@ public class Plot extends View {
 		paint.setTextSize(20.0f);
 		for (int i=1;i<=n;i++){
 			temp = Math.round(10*(minX+(i-1)*(maxX-minX)/n))/10; //valore in millisecondi /1000 = valore in secondi
+			if(temp != 0) //scriviamo solo uno zero se no si sovrappongono, farà da origine
 			canvas.drawText(""+formatter.format(temp/1000), (float)toPixelInt(canvasWidth, minX, maxX, temp),canvasHeight-xAxisInPixels+20, paint);
 			temp = Math.round(10*(minY+(i-1)*(maxY-minY)/n))/10;
 			canvas.drawText(""+temp, yAxisInPixels+20,canvasHeight-(float)toPixelInt(canvasHeight, minY, maxY, temp), paint);

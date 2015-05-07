@@ -57,10 +57,10 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private static Chronometer duration; 
 	private static long timeSessionUp;
 	private static long timeWhenPaused = 0;
-	private String infoText,  sessionNameDefault;
+	private String infoText1, infoText1v, infoText2, infoText2v,  sessionNameDefault;
 	private SharedPreferences sp;
 	private Intent serviceIntent;
-	private TextView info;
+	private TextView info1, info1v, info2, info2v;
 	private static boolean startChronometerOnStart = false;
 	private final String CONTACTS_KEY = "contacts";
 	private static String currentSessionName;
@@ -71,6 +71,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private SessionDataSource.Session session;
 	private Drawable pause, play;
 	private boolean isPortrait = true;
+
+	Thread blink;
+	boolean keepBlinking = true;
 	/*
 	 * 
 	 * first_new_currentsession_card
@@ -89,13 +92,38 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			stop = (Button) v.findViewById(R.id.stop_button);
 			duration = (Chronometer) v.findViewById(R.id.chronometer);
 			thumbNailCurrent = (ImageView)v.findViewById(R.id.thumbnail);
-			info =  (TextView) v.findViewById(R.id.info);
+			info1 =  (TextView) v.findViewById(R.id.infoDate);
+			info1v =  (TextView) v.findViewById(R.id.infoDateValue);
+			info2 =  (TextView) v.findViewById(R.id.infoTime);
+			info2v =  (TextView) v.findViewById(R.id.infoTimeValue);
+
+			if(sds.existCurrentSession() && sds.currentSession().isOnPause())
+				startPauseBlink();
+			else
+				stopPauseBlink();
+
+
 			pb = (ProgressBar)v.findViewById(R.id.progressBarFirstCard);
 			pb.setVisibility(View.VISIBLE);
-			if(infoText != null)
-				info.setText(infoText);
-			else
-				info.setVisibility(View.GONE);
+			if(infoText1 != null){
+				info1.setText(infoText1);
+				info1v.setText(infoText1v);
+				info2.setText(infoText2);
+				info2v.setText(infoText2v);
+				if(sds.existCurrentSession() && !sds.currentSession().isOnPause())
+					stopPauseBlink();
+			}
+			else{
+				if(!sds.existCurrentSession())
+				{
+				info1.setVisibility(View.GONE);
+				info2.setVisibility(View.GONE);
+				info1v.setVisibility(View.GONE);
+				info2v.setVisibility(View.GONE);
+				}
+				
+				
+			}
 			if(session != null)
 				BitmapManager.loadBitmap(session.getID(), thumbNailCurrent, activity);
 			else
@@ -202,6 +230,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		if(pauseTime != 0) {
 			timeWhenPaused = pauseTime;
 		}
+		
 		pause =activity.getResources().getDrawable(R.drawable.button_selector_pause);
 		play =activity.getResources().getDrawable(R.drawable.button_selector_play);
 		sessionNameDefault = activity.getResources().getString(R.string.defaultSessionName);
@@ -214,13 +243,33 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			Button stop = (Button) v.findViewById(R.id.stop_button);
 			duration = (Chronometer) v.findViewById(R.id.chronometer);
 			thumbNailCurrent = (ImageView)v.findViewById(R.id.thumbnail);
-			info =  (TextView) v.findViewById(R.id.info);
+			info1 =  (TextView) v.findViewById(R.id.infoDate);
+			info1v =  (TextView) v.findViewById(R.id.infoDateValue);
+			info2 =  (TextView) v.findViewById(R.id.infoTime);
+			info2v =  (TextView) v.findViewById(R.id.infoTimeValue);
+
 			pb = (ProgressBar)v.findViewById(R.id.progressBarFirstCard);
 			pb.setVisibility(View.VISIBLE);
-			if(infoText != null)
-				info.setText(infoText);
-			else
-				info.setVisibility(View.GONE);
+			if(infoText1 != null){
+				info1.setText(infoText1);
+				info1v.setText(infoText1v);
+				info2.setText(infoText2);
+				info2v.setText(infoText2v);
+
+			}
+			else{
+				if(!sds.existCurrentSession())
+				{
+				info1.setVisibility(View.GONE);
+				info2.setVisibility(View.GONE);
+				info1v.setVisibility(View.GONE);
+				info2v.setVisibility(View.GONE);
+				}
+				if(sds.existCurrentSession() && sds.currentSession().isOnPause())
+					startPauseBlink();
+				else
+					stopPauseBlink();
+			}
 			if(session != null)
 				BitmapManager.loadBitmap(session.getID(), thumbNailCurrent, activity);
 			else
@@ -297,6 +346,51 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 		}
+	}
+
+	private void stopPauseBlink() {
+		keepBlinking = false;
+	}
+	private void startPauseBlink() {
+		keepBlinking = true;
+		blink = new Thread(){
+			@Override
+			public void run(){
+				while(keepBlinking){
+					runOnUiThread(new Runnable(){
+						@Override
+						public void run(){
+							duration.setVisibility(View.VISIBLE);
+						}
+					});
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					runOnUiThread(new Runnable(){
+						@Override
+						public void run(){
+							duration.setVisibility(View.INVISIBLE);
+						}
+					});
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				runOnUiThread(new Runnable(){
+					@Override
+					public void run(){
+						duration.setVisibility(View.VISIBLE);
+					}
+				});
+			}
+		};
+		blink.start();
 	}
 
 	Handler mHandler;
@@ -503,18 +597,41 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	{
 		currentSessionName = newName;
 	}
-	public void setCurrentSessionValues(String infoString, SessionDataSource.Session s, int chronometer)
+	public void setCurrentSessionValues(long time, SessionDataSource.Session s, int chronometer)
 	{
 		session = s;
-		if(info != null && infoString != "")
+		if(info1 != null && time != -1)
 		{
-			info.setText(infoString);
-			info.setVisibility(View.VISIBLE);
+			info1.setText(activity.getResources().getString(R.string.Date));
+			info2.setText(activity.getResources().getString(R.string.Time));
+			info1v.setText(Utility.getStringDate(time));
+			info2v.setText(Utility.getStringHour(time));
+			info1.setVisibility(View.VISIBLE);
+			info2.setVisibility(View.VISIBLE);
+			info1v.setVisibility(View.VISIBLE);
+			info2v.setVisibility(View.VISIBLE);
+			if(sds.existCurrentSession() && !sds.currentSession().isOnPause())
+				stopPauseBlink();
 		}
-		else if(info != null)
-			info.setVisibility(View.GONE);
-		if(infoString != "" && info == null)
-			infoText = infoString;
+		else if(info1 != null){
+			if(!sds.existCurrentSession())
+			{
+			info1.setVisibility(View.GONE);
+			info2.setVisibility(View.GONE);
+			info1v.setVisibility(View.GONE);
+			info2v.setVisibility(View.GONE);
+			}
+			if(sds.existCurrentSession() && sds.currentSession().isOnPause())
+				startPauseBlink();
+			else
+				stopPauseBlink();
+		}
+		if(time != -1 && info1 == null){
+			infoText1 = activity.getResources().getString(R.string.Date);
+			infoText2 = activity.getResources().getString(R.string.Time);
+			infoText1v = (Utility.getStringDate(time));
+			infoText2v = (Utility.getStringHour(time));
+		}
 
 		if(thumbNailCurrent != null && session != null){
 			BitmapManager.loadBitmap(session.getID(), thumbNailCurrent, activity);
@@ -571,18 +688,18 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		return session;
 	}
 
-	
+
 	private OnClickListener onPlayPauseClick = new View.OnClickListener() {
-		
+
 		@Override
 		public void onClick(final View v) {
 			// TODO Auto-generated method stub
 			if(serviceIntent == null)
 				serviceIntent = new Intent(activity, ForegroundService.class);
-			
+
 			final Drawable selection;
 			v.setClickable(false);
-			String info = null;
+			long infoTime = -1;
 
 			if(sds.existCurrentSession()){
 				session = sds.currentSession();
@@ -649,7 +766,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 					String activeServ = Utility.checkLocationServices(activity, true);
 					serviceIntent.putExtra("activeServices", activeServ);
 					activity.startService(serviceIntent);
-					info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
+					infoTime = (System.currentTimeMillis());
 					chronometer = 0;
 				}
 				else
@@ -657,7 +774,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 					session = sds.currentSession();
 
 					//ESISTE SESSIONE CORRENTE
-					if(sds.currentSession().isOnPause()){
+					if(session.isOnPause()){
 						//è IN PAUSA
 						sds.resumeSession(session); //LA FACCIO RIPARTIRE
 						//FA PARTIRE IL SERVICE
@@ -666,7 +783,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 						serviceIntent.putExtra("activeServices", activeServ);
 						activity.startService(serviceIntent);
 						chronometer = 0;
-						info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(session.getStartTime());
+						infoTime = session.getStartTime();
 					}
 					else{
 						//STA ANDANDO, QUINDI VA MESSA IN PAUSA
@@ -674,7 +791,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 						sds.setSessionOnPause(sds.currentSession());
 						activity.stopService(serviceIntent); //dovrebbe essere inutile
 						chronometer = 1;
-						info = "";
+						infoTime = -1;
 					}
 				}
 
@@ -689,7 +806,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 					session = addSession(currentSessionName, "" + time, time, 0);
 					activity.setTitle(currentSessionName);
 					chronometer = 0;
-					info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(session.getStartTime());
+					infoTime = session.getStartTime();
 				}
 				else
 				{
@@ -700,7 +817,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 						activity.setTitle(session.getName());
 						chronometer = 0;
 
-						info = activity.getResources().getString(R.string.starttime) + Utility.getStringTime(System.currentTimeMillis());
+						infoTime = System.currentTimeMillis();
 
 
 					}
@@ -716,7 +833,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 			}
 
-			setCurrentSessionValues(info, session, chronometer);
+			setCurrentSessionValues(infoTime, session, chronometer);
 			if(session != null)
 				updateSessionName(session.getName());
 
@@ -724,7 +841,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 	};
 	private OnClickListener onStopClick = new View.OnClickListener() {
-		
+
 		@Override
 		public void onClick(View v) {
 			// TODO Auto-generated method stub

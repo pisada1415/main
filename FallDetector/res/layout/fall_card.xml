@@ -25,7 +25,8 @@
             android:layout_margin="5dp"
             android:gravity="center"
             android:text="@string/fall_event_occurred"
-            android:textColor="@color/red"
+            android:textColor="@color/black_overlay"
+            android:textStyle="bold"
             android:textSize="20sp" />
 
         <ImageView
@@ -47,7 +48,7 @@
             android:layout_toRightOf="@id/thumbnail_fall"
             android:singleLine="true"
             android:text="@string/time_elapsed"
-            android:textColor="@color/lightBlue"
+            android:textColor="@color/black_overlay"
             android:textSize="20sp" />
 
         <TextView
@@ -59,8 +60,8 @@
             android:layout_toRightOf="@id/thumbnail_fall"
             android:singleLine="true"
             android:text="@string/position"
-            android:textColor="@color/lightBlue"
-            android:textColorLink="@color/lightBlue" />
+            android:textColor="@color/material_green_400"
+            android:textColorLink="@color/material_green_400" />
 
         <TextView
             android:id="@+id/successNotif"
@@ -71,7 +72,7 @@
             android:layout_toRightOf="@id/thumbnail_fall"
             android:singleLine="true"
             android:text="@string/successNotif"
-            android:textColor="@color/lightBlue" />
+            android:textColor="@color/material_green_400" />
 
         <TextView
             android:id="@+id/booleanSent"
