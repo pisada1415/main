@@ -1,27 +1,16 @@
 package pisada.fallDetector;
 
-/*
- * questa è la mainactivity. Vorrei farla in stile Google FIT (dateci un'occhiata) così rispettiamo
- * le richieste di mettere lo start stop (bottone in alto iniziale) nella stessa schermata
- * della lista di sessions..
- */
-//Samuele gay
-//
-//Canaglia
+
 import pisada.database.SessionDataSource;
 import pisada.recycler.SessionListCardAdapter;
 import android.app.Activity;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import fallDetectorException.BoolNotBoolException;
@@ -34,8 +23,6 @@ public class SessionsListFragment extends FallDetectorFragment {
 	private static SessionListCardAdapter cardAdapter;
 	private RecyclerView.LayoutManager mLayoutManager;
 	public static int counter;
-	private SensorManager mSensorManager;
-	private Sensor mSensor;
 	private static SessionDataSource sessionData;
 	Intent serviceIntent;
 	Activity activity;
@@ -114,8 +101,6 @@ public class SessionsListFragment extends FallDetectorFragment {
 
 		this.addSession(v);
 	}
-
-
 
 }
 

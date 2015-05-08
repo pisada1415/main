@@ -58,10 +58,14 @@
     <string name="credits">
 	<![CDATA[
 	    <p>Designed, built and implemented by <br>
-	    
+	    <b>
 	    <font color=\'#00C853\'>PiSaDa</font>
-	    
-	    <br><br><br>Samuele Illuminati<br>Daniel Chenet<br>Piero Seminerio
+	    </b>
+	    <small>
+	    <br><br><br><br>Samuele Illuminati
+	    <br><br>Daniel Chenet
+	    <br><br>Piero Seminerio
+	    </small>
 	    </p>
 	    ]]>
     </string>
