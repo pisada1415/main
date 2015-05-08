@@ -159,8 +159,9 @@ public class FallDetailsDialogFragment extends DialogFragment {
 				int numLeft = 0;
 				if(acquisitionList.size()!=0)
 					numLeft = acquisitionList.size();
-				for(Acquisition a : acquisitionList)
+				for(int i = acquisitionList.size()-1; i >= 0 ; i--)
 				{
+					Acquisition a = acquisitionList.get(i);
 					try {
 						Thread.sleep(10);
 					} catch (InterruptedException e) {

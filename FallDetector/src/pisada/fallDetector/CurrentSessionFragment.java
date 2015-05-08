@@ -10,6 +10,7 @@ package pisada.fallDetector;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+
 import pisada.database.FallDataSource;
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
@@ -210,7 +211,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	@Override
 	public void serviceUpdate(Fall f, String sessionName) {
 		rView.getAdapter().notifyItemChanged(rView.getAdapter().getItemCount()-1);
-		rView.scrollToPosition(rView.getAdapter().getItemCount()-1);
+	rView.scrollToPosition(rView.getAdapter().getItemCount()-1);
 
 	}
 	@Override
@@ -233,6 +234,11 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		if(obj instanceof CurrentSessionFragment)
 			return true;
 		return false;
+	}
+
+	@Override
+	public void runOnUiThread(Runnable r) {
+		this.getActivity().runOnUiThread(r);
 	}
 
 

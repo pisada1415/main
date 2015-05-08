@@ -11,4 +11,6 @@ public interface ServiceReceiver {
 	public void sessionTimeOut();
 	
 	public boolean equalsClass(ServiceReceiver obj);
+	
+	public void runOnUiThread(Runnable r);
 }

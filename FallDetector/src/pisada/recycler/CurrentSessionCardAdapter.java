@@ -114,13 +114,13 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			else{
 				if(!sds.existCurrentSession())
 				{
-				info1.setVisibility(View.GONE);
-				info2.setVisibility(View.GONE);
-				info1v.setVisibility(View.GONE);
-				info2v.setVisibility(View.GONE);
+					info1.setVisibility(View.GONE);
+					info2.setVisibility(View.GONE);
+					info1v.setVisibility(View.GONE);
+					info2v.setVisibility(View.GONE);
 				}
-				
-				
+
+
 			}
 			if(session != null)
 				BitmapManager.loadBitmap(session.getID(), thumbNailCurrent, activity);
@@ -144,7 +144,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				else
 					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_pause));
 				//devo usare il deprecato perché per setBackground serve API Level 16
-				
+
 			}
 			stop.setOnClickListener(onStopClick);
 			playPause.setOnClickListener(onPlayPauseClick);
@@ -229,7 +229,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		if(pauseTime != 0) {
 			timeWhenPaused = pauseTime;
 		}
-		
+
 		pause =activity.getResources().getDrawable(R.drawable.button_selector_pause);
 		play =activity.getResources().getDrawable(R.drawable.button_selector_play);
 		sessionNameDefault = activity.getResources().getString(R.string.defaultSessionName);
@@ -259,10 +259,10 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			else{
 				if(!sds.existCurrentSession())
 				{
-				info1.setVisibility(View.GONE);
-				info2.setVisibility(View.GONE);
-				info1v.setVisibility(View.GONE);
-				info2v.setVisibility(View.GONE);
+					info1.setVisibility(View.GONE);
+					info2.setVisibility(View.GONE);
+					info1v.setVisibility(View.GONE);
+					info2v.setVisibility(View.GONE);
 				}
 			}
 			if(session != null)
@@ -287,7 +287,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				else
 					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_pause));
 				//devo usare il deprecato perché per setBackground serve API Level 16
-				
+
 			}
 			stop.setOnClickListener(onStopClick);
 			playPause.setOnClickListener(onPlayPauseClick);
@@ -542,12 +542,11 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 	@Override
 	public void sessionTimeOut() {
-		//NON NECESSARIO QUI
+		this.stop();
 	}
 
 	@Override
 	public boolean equalsClass(ServiceReceiver obj) {
-		// TODO Auto-generated method stub
 		if(obj instanceof CurrentSessionCardAdapter)
 			return true;
 		return false;
@@ -576,10 +575,10 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		else if(info1 != null){
 			if(!sds.existCurrentSession())
 			{
-			info1.setVisibility(View.GONE);
-			info2.setVisibility(View.GONE);
-			info1v.setVisibility(View.GONE);
-			info2v.setVisibility(View.GONE);
+				info1.setVisibility(View.GONE);
+				info2.setVisibility(View.GONE);
+				info1v.setVisibility(View.GONE);
+				info2v.setVisibility(View.GONE);
 			}
 		}
 		if(time != -1 && info1 == null){
@@ -665,7 +664,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				else{
 					selection = play;
 					startPauseBlink();
-					
+
 				}
 			}
 			else{
@@ -699,10 +698,10 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 							int sdk = android.os.Build.VERSION.SDK_INT;
 							if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
 								v.setBackgroundDrawable(selection);
-								
+
 							} else {
 								v.setBackground(selection);
-								
+
 							}
 
 						}		
@@ -808,33 +807,37 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		@Override
 		public void onClick(View v) {
-			// TODO Auto-generated method stub
-			stopChronometer();
-			clearFalls();
-			String closedSessionName = null;
-			if(serviceIntent == null)
-				serviceIntent = new Intent(activity, ForegroundService.class);
-			if(sds.existCurrentSession())
-				closedSessionName = sds.currentSession().getName();
-			if(serviceIntent!=null && ForegroundService.isRunning()){
-				ForegroundService.killSessionOnDestroy();
-				activity.stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
-			}
-			else if(sds.existCurrentSession())
-				sds.closeSession(sds.currentSession());
-			serviceIntent = null;
-			session = null;
-			currentSessionName = sessionNameDefault;
-			activity.setTitle(sessionNameDefault);
-			clearGraphs();
-
-			if(closedSessionName != null){
-				Intent toPiero = new Intent(activity, SessionDetailsFragment.class);
-				toPiero.putExtra(Utility.SESSION_NAME_KEY, closedSessionName); 
-				((FragmentCommunicator)activity).switchFragment(toPiero); 
-			}
+			CurrentSessionCardAdapter.this.stop();
 		}
 	};
+
+	private void stop(){
+		stopChronometer();
+		clearFalls();
+		String closedSessionName = null;
+		if(serviceIntent == null)
+			serviceIntent = new Intent(activity, ForegroundService.class);
+		if(sds.existCurrentSession())
+			closedSessionName = sds.currentSession().getName();
+		if(serviceIntent!=null && ForegroundService.isRunning()){
+			ForegroundService.killSessionOnDestroy();
+			activity.stopService(serviceIntent);//altro metodo con stesso nome ma di Activity che semplicemente stoppa il service
+		}
+		else if(sds.existCurrentSession())
+			sds.closeSession(sds.currentSession());
+		serviceIntent = null;
+		session = null;
+		currentSessionName = sessionNameDefault;
+		activity.setTitle(sessionNameDefault);
+		clearGraphs();
+
+		if(closedSessionName != null){
+			Intent toPiero = new Intent(activity, SessionDetailsFragment.class);
+			toPiero.putExtra(Utility.SESSION_NAME_KEY, closedSessionName); 
+			((FragmentCommunicator)activity).switchFragment(toPiero); 
+
+		}
+	}
 
 }
 
