@@ -152,6 +152,7 @@ public class Utility {
 		for(int i=size-1;i>=0;i--){
 			int prime=primes.get(i)[0];
 			int exp=primes.get(i)[1];
+		//	paint.setARGB(((prime*101)%128)+128, ((exp*153)%128)+128,(int) ((Math.pow(prime, exp)*91)%128)+128, 0);
 			paint.setColor(colors[(int)(Math.pow(prime, exp))%6]);
 			canvas.drawPath(getPolygon(prime*exp,new Point(100,100),100/exp), paint);
 

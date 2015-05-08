@@ -74,7 +74,7 @@ public class SessionsListFragment extends FallDetectorFragment {
 		//INIZIALIZZO RECYCLERVIEW
 
 		rView=(RecyclerView) getView().findViewById(R.id.session_list_recycler);
-		rView.setHasFixedSize(true);
+	
 		cardAdapter=new SessionListCardAdapter(activity, rView);
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(activity);

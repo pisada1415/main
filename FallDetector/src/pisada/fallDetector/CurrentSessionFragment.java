@@ -9,18 +9,13 @@ package pisada.fallDetector;
  */
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-
 import pisada.database.FallDataSource;
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -33,8 +28,6 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-import fallDetectorException.DublicateNameSessionException;
-import fallDetectorException.MoreThanOneOpenSessionException;
 
 public class CurrentSessionFragment extends FallDetectorFragment implements ServiceReceiver {
 	private static Intent serviceIntent;
@@ -113,12 +106,13 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 
 			//SE CURRENTSESSION NON è IN PAUSA E NON C'è IL SERVICE ATTIVO... FAI PARTIRE IL SERVICE (C'è STATA UNA CHIUSURA INASPETTATA)
+			pauseTime = 0;
 			if(!currentSession.isOnPause() && !ForegroundService.isRunning()){
 				serviceIntent = new Intent(activity, ForegroundService.class);
 				String activeServ = Utility.checkLocationServices(activity, true);
 				serviceIntent.putExtra("activeServices", activeServ);
 				activity.startService(serviceIntent);
-				pauseTime = 0;
+			
 			}
 
 

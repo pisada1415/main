@@ -51,8 +51,19 @@
     <string name="date">Date:&#160;</string>
     <string name="notifSentCorrectly">Notification was sent correctly to your contacts for this event</string>
     <string name="notifNotSent">Notification was not sent to anyone for this event</string>
-	<string name="notavailable">not available</string>
-	<string name="notavalidchar">Accepter characters: a-z, A-Z</string>
-	<string name="fall_details">Fall details</string>
-	<string name="thumbnailFall">Fall thumbnail</string>
+    <string name="notavailable">not available</string>
+    <string name="notavalidchar">Accepter characters: a-z, A-Z</string>
+    <string name="fall_details">Fall details</string>
+    <string name="thumbnailFall">Fall thumbnail</string>
+    <string name="credits">
+	<![CDATA[
+	    <p>Designed, built and implemented by <br>
+	    
+	    <font color=\'#00C853\'>PiSaDa</font>
+	    
+	    <br><br><br>Samuele Illuminati<br>Daniel Chenet<br>Piero Seminerio
+	    </p>
+	    ]]>
+    </string>
+
 </resources>

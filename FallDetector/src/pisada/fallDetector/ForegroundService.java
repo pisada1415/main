@@ -598,7 +598,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 			//params contiene la espiringlist
 			
 			while(true){
-				
+
+			//	System.out.println("scannerando" + i++);
+
 				
 				if (pause) {
 					synchronized (INTERRUPTOR) {
@@ -621,7 +623,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 					if(lastInserted != null){
 						float objectX = lastInserted.getXaxis(); final float objectY = lastInserted.getYaxis(); final float objectZ = lastInserted.getZaxis();
-						if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) > 17){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
+						if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) <5){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
 
 
 							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)

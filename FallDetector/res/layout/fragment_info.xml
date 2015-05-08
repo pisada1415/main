@@ -1,8 +1,19 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/relative01"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="match_parent" >
 
-    
+    <TextView 
+        android:id="@+id/creditsview"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:typeface="monospace"
+        android:text="@string/credits"
+        android:textSize="25sp"
+        android:clickable="true"
+        />
 
 </RelativeLayout>

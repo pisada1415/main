@@ -48,8 +48,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 	private static ArrayList<FallDataSource.Fall> cardContentList;
 	private Activity activity;
-
-
 	private double last;
 	private static Plot graph;
 	private Calendar c;
@@ -493,6 +491,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 			duration.setBase(SystemClock.elapsedRealtime() + timePause);
 			duration.start();
+			timePause = 0;
 		}
 	}
 	public void stopChronometer()
