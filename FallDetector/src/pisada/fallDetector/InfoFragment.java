@@ -50,17 +50,7 @@ public class InfoFragment extends FallDetectorFragment  {
 		
 		credits = ((TextView)v.findViewById(R.id.creditsview));
 		credits.setText(Html.fromHtml(getString(R.string.credits)));
-		credits.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				if(counter++ == 50){
-					showIdiotDialog();
-				}
-				
-			}
-
-		});
+		
 		return v;  
 	}
 
@@ -97,30 +87,9 @@ public class InfoFragment extends FallDetectorFragment  {
 	
 	
 
-	private void showIdiotDialog() {
-		
-		new DumbDialogFragment().show(getFragmentManager(), "dumb");		
-		
-	}
 
 
 	
-	private class DumbDialogFragment extends DialogFragment {
-		
-		@Override
-		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MyDialog);
-			// otteniamo layout inflater
-			LayoutInflater inflater = getActivity().getLayoutInflater();
-			// Passa null come parent view perché andrà nel layout del dialog
-			View view = inflater.inflate(R.layout.dialog_idiot, null);
-			//inflate e setta il layout al dialog
-			builder.setView(view); 
-			return builder.create();
-		}
-
-		
-		
-	}
+	
 
 }

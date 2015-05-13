@@ -32,7 +32,6 @@ public class Plot extends View {
 	 * the min values
 	 */
 	
-	//arriva un tempo e il value è 0. cazzo sarebbe yaxis... 
 	
 	public Plot(Context context, Data defData) {
 		super(context);
@@ -94,9 +93,10 @@ public class Plot extends View {
 		int n=5; //number of values per-axis
 		paint.setTextAlign(Paint.Align.CENTER);
 		paint.setTextSize(20.0f);
-		for (int i=1;i<=n;i++){
+		if(!(minX == 0 && maxX == 0 && minY == 0 && maxY == 0))
+		{
+			for (int i=1;i<=n;i++){
 			temp = Math.round(10*(minX+(i-1)*(maxX-minX)/n))/10; //valore in millisecondi /1000 = valore in secondi
-			if(temp != 0) //scriviamo solo uno zero se no si sovrappongono, farà da origine
 			canvas.drawText(""+formatter.format(temp/1000), (float)toPixelInt(canvasWidth, minX, maxX, temp),canvasHeight-xAxisInPixels+20, paint);
 			temp = Math.round(10*(minY+(i-1)*(maxY-minY)/n))/10;
 			canvas.drawText(""+temp, yAxisInPixels+20,canvasHeight-(float)toPixelInt(canvasHeight, minY, maxY, temp), paint);
@@ -106,7 +106,8 @@ public class Plot extends View {
 		canvas.drawText(output, (float)toPixelInt(canvasWidth, minX, maxX, maxX),canvasHeight-xAxisInPixels+20, paint);
 		output = formatter.format(maxY);
 		canvas.drawText(output, yAxisInPixels+20,canvasHeight-(float)toPixelInt(canvasHeight, minY, maxY, maxY), paint);
-				
+		}
+		
 	}
 	
 	private ArrayList<Data> toPixel(float pixelsX, float pixelsY, float minX, float maxX, float minY, float maxY, ArrayList<Data>val) {
