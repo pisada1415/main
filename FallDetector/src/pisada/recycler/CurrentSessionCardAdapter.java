@@ -68,7 +68,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private ImageView thumbNailCurrent;
 	private SessionDataSource.Session session;
 	private Drawable pause, play;
-	private boolean isPortrait = true;
+	private boolean isPortrait = true, updateGraphs = true;
 
 	Thread blink;
 	private static boolean keepBlinking = true;
@@ -445,11 +445,18 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		return cardContentList.size();
 	}
 
+	public void stopGraphs(){
+		updateGraphs = false;
+	}
 
+	public void resumeGraphs(){
+		updateGraphs = true;
+	}
 
 	@Override
 	public void serviceUpdate(float x, float y, float z, long time) {
 		//lastX = x; lastY = y; lastZ = z; 
+		if(!updateGraphs)return;
 		last = Math.sqrt(x*x + y*y + z*z);
 
 		c = Calendar.getInstance();

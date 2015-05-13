@@ -241,8 +241,8 @@ public class Utility {
 		String duration = "";
 		int days = (int)(TimeUnit.MILLISECONDS.toDays(l));
 		int hours = (int)(TimeUnit.MILLISECONDS.toHours(l) - TimeUnit.DAYS.toHours(days));
-		int minutes = (int)(TimeUnit.MILLISECONDS.toMinutes(l) - TimeUnit.HOURS.toMinutes(hours));
-		int seconds = (int)(TimeUnit.MILLISECONDS.toSeconds(l)- TimeUnit.MINUTES.toSeconds(minutes));
+		int minutes = (int)(TimeUnit.MILLISECONDS.toMinutes(l) - TimeUnit.HOURS.toMinutes(hours) - TimeUnit.DAYS.toMinutes(days));
+		int seconds = (int)(TimeUnit.MILLISECONDS.toSeconds(l)- TimeUnit.MINUTES.toSeconds(minutes) - TimeUnit.HOURS.toSeconds(hours) - TimeUnit.DAYS.toSeconds(days));
 
 		if(days != 0)
 			duration += days + " days,";

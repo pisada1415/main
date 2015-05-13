@@ -5,6 +5,7 @@ import java.util.List;
 
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
+import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -37,19 +38,16 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 	private FallDetectorFragment fragment;
 	private int currentUIIndex = 0;
 	private SessionDataSource sessionData;
-	private FallDataSource fallData;
 	private FragmentManager fm;
 	private final int SESSION_DETAILS_ID = -1;
-	public static boolean isPortrait = true;
+	public static boolean isPortrait = true, isForeground = false;
 	NavDrawListAdapter navAdapter;
-	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 
 		sessionData = new SessionDataSource(this); 
-		fallData = new FallDataSource(this);
 		setContentView(R.layout.activity_navigation_drawer);
 		isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true : false;
 		fm = getSupportFragmentManager();
@@ -74,11 +72,11 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		listItems.add(new NavDrawerItem(arr[3], R.drawable.settings));
 		listItems.add(new NavDrawerItem(arr[4], R.drawable.info));
 		int[] greenIcons = new int[5];
-		greenIcons[0] = (R.drawable.currentsessionpressed);
-		greenIcons[1] = (R.drawable.sessionslistpressed);
-		greenIcons[2]=(R.drawable.archivepressed);
-		greenIcons[3]=(R.drawable.settingspressed);
-		greenIcons[4]=(R.drawable.infopressed);
+		greenIcons[0]= (R.drawable.currentsessionpressed);
+		greenIcons[1]= (R.drawable.sessionslistpressed);
+		greenIcons[2]= (R.drawable.archivepressed);
+		greenIcons[3]= (R.drawable.settingspressed);
+		greenIcons[4]= (R.drawable.infopressed);
 
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
@@ -396,6 +394,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
 	@Override
 	public void switchFragment(Intent i) {
+		if(!isForeground) return ;
 		/*
 		 * 
 		 * idea:
@@ -542,9 +541,17 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 	}
 
 	@Override
+	public void onPause()
+	{
+		super.onPause();
+		isForeground = false;
+	}
+	
+	@Override
 	public void onResume()
 	{
 		super.onResume();
+		isForeground = true;
 		isPortrait =  getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true : false;
 		
 			if(fm != null){

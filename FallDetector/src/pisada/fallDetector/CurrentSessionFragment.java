@@ -131,6 +131,7 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		rView=(RecyclerView) getView().findViewById(R.id.currentsession_list_recycler);
 		rView.setHasFixedSize(true);
 		cardAdapter = new CurrentSessionCardAdapter(this.getView(), activity, ForegroundService.getSessionDuration(sessionData), startChronometerOnStartActivity, pauseTime, MainActivity.isPortrait);
+		startChronometerOnStartActivity = false;
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(activity);
 		rView.setLayoutManager(mLayoutManager);
@@ -166,11 +167,20 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 		ForegroundService.disconnect(this);
 		ForegroundService.disconnect(cardAdapter);//disconnette l'activity connessa
 	}
+	
+	@Override
+	public void onPause(){
+		super.onPause();
+		if(cardAdapter != null)
+			cardAdapter.stopGraphs();
+	}
 
 	@Override
 	public void onResume()
 	{
 		super.onResume();
+		if(cardAdapter != null)
+			cardAdapter.resumeGraphs();
 		ForegroundService.connect(cardAdapter);
 
 		ForegroundService.connect(this);

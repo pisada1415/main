@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
 import pisada.database.Acquisition;
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import pisada.fallDetector.smSender.SMSender;
+import pisada.recycler.CurrentSessionCardAdapter;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -356,7 +358,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 					 */
 
 					MAX_SENSOR_UPDATE_RATE = Integer.parseInt(sp.getString("sample_rate", "10"));
-					TIMEOUT_SESSION = Integer.parseInt(sp.getString("max_duration_session", "24"))*3600000;
+					TIMEOUT_SESSION = Integer.parseInt(sp.getString("max_duration_session", "24"))* 3600000;
 
 					if(activeService == null){
 						activeService = Utility.checkLocationServices(getApplicationContext(), false);		
@@ -381,16 +383,21 @@ public class ForegroundService extends Service implements SensorEventListener {
 					/*
 					 *qui check se la sessione rispetta la durata massima, se la sfora, chiuderla
 					 */
-					if((sessionDataSource != null && getSessionDuration(sessionDataSource) > TIMEOUT_SESSION) && (connectedActs != null && connectedActs.size() > 0)){
+					if((sessionDataSource != null && getSessionDuration(sessionDataSource) > TIMEOUT_SESSION) ){
 						storeDuration();
 						killSessionOnDestroy();
-						for(final ServiceReceiver sr : connectedActs){
 
-							Runnable r = new Runnable(){@Override public void run() { if(sr != null) sr.sessionTimeOut();}};
-							sr.runOnUiThread(r);
+						if(connectedActs != null || connectedActs.size()==0)
+							for(final ServiceReceiver sr : connectedActs){
 
-						}
-						//non serve fare altro, l'activity chiuderà il service che salverà e chiuderà la session in ondestroy
+								Runnable r = new Runnable(){@Override public void run() { if(sr != null) sr.sessionTimeOut();}};
+								sr.runOnUiThread(r);
+
+							}
+
+							stopSelf();
+
+
 					}
 
 
@@ -515,6 +522,20 @@ public class ForegroundService extends Service implements SensorEventListener {
 	{
 		if(connectedActs != null)
 			connectedActs.remove(sr);
+	}
+
+	public static void disconnectAdapter()
+	{
+		if(connectedActs != null)
+			for(ServiceReceiver sr : connectedActs)
+				if(sr instanceof CurrentSessionCardAdapter) connectedActs.remove(sr);
+	}
+
+	public static void disconnectAll()
+	{
+		if(connectedActs != null)
+			for(ServiceReceiver sr : connectedActs)
+				connectedActs.remove(sr);
 	}
 
 	/*
