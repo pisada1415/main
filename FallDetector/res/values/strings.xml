@@ -55,8 +55,10 @@
     <string name="notavalidchar">Accepter characters: a-z, A-Z</string>
     <string name="fall_details">Fall details</string>
     <string name="thumbnailFall">Fall thumbnail</string>
+    <string name="thumbnail">thumbnail</string>
+    <string name="navdrawic">navigation drawer icon</string>
     <string name="credits">
-	<![CDATA[
+<![CDATA[
 	    <p>Designed, built and implemented by <br>
 	    <b>
 	    <font color=\'#00C853\'>PiSaDa</font>

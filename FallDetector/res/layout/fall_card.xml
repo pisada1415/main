@@ -31,8 +31,9 @@
 
         <ImageView
             android:id="@+id/thumbnail_fall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:contentDescription="@string/thumbnailFall"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_below="@id/fall_event_occurred"

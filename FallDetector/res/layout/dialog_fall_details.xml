@@ -26,12 +26,12 @@
 
         <ImageView
             android:id="@+id/thumbNailFallDetails"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_margin="18dp"
+            android:layout_margin="15dp"
             android:contentDescription="@string/thumbnailFall"
             android:src="@drawable/ic_launcher" />
 

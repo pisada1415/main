@@ -2,7 +2,6 @@ package pisada.recycler;
 
 
 import java.util.ArrayList;
-
 import pisada.database.FallDataSource;
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
@@ -14,7 +13,6 @@ import pisada.fallDetector.Utility;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.Html;
@@ -60,7 +58,7 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 		private TextView fallTime;
 		private TextView fallPosition;
 		private TextView boolNotif;
-		//TODO notifica mandata correttamente o no
+
 		public FallsHolder(View v) {
 			super(v);
 			fallThumbnail=(ImageView) v.findViewById(R.id.thumbnail_fall);
@@ -72,7 +70,6 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 				@Override
 				public void onClick(View v) {
-					// TODO QUI CUSTOM DIALOG
 					int position = getAdapterPosition();
 					Intent intent = new Intent(activity, FallDetailsDialogFragment.class);
 					long time = cardContentList.get(position).getTime();
@@ -80,7 +77,6 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 					intent.putExtra(Utility.SESSION_NAME_KEY, sessionName);
 					intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 					((FragmentCommunicator)activity).switchFragment(intent);
-					//Toast.makeText(activity, "premuta caduta " + cardContentList.get(position).getTime(), Toast.LENGTH_SHORT).show();
 
 				}
 			});
@@ -115,19 +111,14 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 		if(sessionData == null)
 			sessionData = new SessionDataSource(activity);
-		/*
-		 * TODO qui vanno messi i valori al titolo cronometro ecc ecc in base a session
-		 */
 
 		if(i==0){ //se sono le prime due non fare niente
 
 			FirstCardHolder fch = (FirstCardHolder) holder;
-			/*if(sessionBitmap == null)
-				sessionBitmap = Utility.createImage(session.getID());
-			fch.thumbNail.setImageBitmap(sessionBitmap);*/
-BitmapManager.loadBitmap(session.getID(), fch.thumbNail, activity);
+
+			BitmapManager.loadBitmap(session.getID(), fch.thumbNail, activity);
 			Resources res = activity.getResources();
-						
+
 			long startTimeMillis = session.getStartTime();
 			fch.infoStartDate.setText(res.getString(R.string.Date));
 			fch.infoStartTime.setText(res.getString(R.string.Time));
@@ -135,17 +126,12 @@ BitmapManager.loadBitmap(session.getID(), fch.thumbNail, activity);
 			fch.infoStartDateValue.setText(Utility.getStringDate(startTimeMillis));
 			fch.infoStartTimeValue.setText(Utility.getStringHour(startTimeMillis));
 			fch.infoDurationValue.setText(Utility.longToDuration(sessionData.sessionDuration(session)));
-			
+
 		}
 		else{
-			/*
-			 * TODO qui anziché randint va passato il numero della sessione cui la fall fa riferimento
-			 */
+			
 			Fall fall = cardContentList.get(i);
 			FallsHolder Oholder=(FallsHolder) holder;
-			/*if(sessionBitmap == null)
-				sessionBitmap = Utility.createImage(session.getID());
-			Oholder.fallThumbnail.setImageBitmap(sessionBitmap);*/
 			BitmapManager.loadBitmap(session.getID(), Oholder.fallThumbnail, activity);
 
 			String link = Utility.getMapsLink(fall.getLat(), fall.getLng());
@@ -184,8 +170,6 @@ BitmapManager.loadBitmap(session.getID(), fch.thumbNail, activity);
 		{
 
 			View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fall_card, parent, false);
-
-
 			return new FallsHolder(view);
 		}
 

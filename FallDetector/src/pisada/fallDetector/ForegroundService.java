@@ -384,7 +384,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 					 *qui check se la sessione rispetta la durata massima, se la sfora, chiuderla
 					 */
 					if((sessionDataSource != null && getSessionDuration(sessionDataSource) > TIMEOUT_SESSION) ){
-						storeDuration();
+						
 						killSessionOnDestroy();
 
 						if(connectedActs != null || connectedActs.size()==0)

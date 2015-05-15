@@ -143,9 +143,10 @@ public class Utility {
 		ArrayList<int[]> primes=getPrimes(sessionNumber);
 		int size=primes.size();
 		Bitmap icon=Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
-		icon.eraseColor(Color.rgb(224, 224, 224));
+		icon.eraseColor(Color.TRANSPARENT);//rgb(224, 224, 224));
 		Canvas canvas=new Canvas(icon);
 		Paint paint=new Paint();
+		paint.setAntiAlias(true); //aggiunta per depixellare e rendere più "smooth" le forme
 		paint.setStyle(Style.FILL);
 		int[] colors={Color.CYAN,Color.GREEN,Color.MAGENTA,Color.YELLOW,Color.BLUE,Color.RED};
 

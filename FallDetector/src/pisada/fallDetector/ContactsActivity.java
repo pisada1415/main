@@ -1,13 +1,10 @@
 package pisada.fallDetector;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,14 +14,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -32,7 +27,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class ContactsActivity extends ActionBarActivity {
+public class ContactsActivity extends AppCompatActivity {
 
 
 	private final String CONTACTS_KEY = "contacts";
@@ -40,7 +35,7 @@ public class ContactsActivity extends ActionBarActivity {
 	private SharedPreferences sp;
 	private ActionBar actionBar;
 	private static final int CONTACT_PICKER_RESULT = 1021;
-	private ArrayAdapter adapter;
+	private ArrayAdapter<String> adapter;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -50,7 +45,7 @@ public class ContactsActivity extends ActionBarActivity {
 		contacts = numbers != null ? new ArrayList<String>(numbers) : new ArrayList<String>();
 		actionBar = getSupportActionBar();
 		ListView listView = (ListView) findViewById(R.id.listView1);
-		adapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1, contacts);
+		adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, contacts);
 		listView.setAdapter(adapter);
 
 
@@ -87,17 +82,6 @@ public class ContactsActivity extends ActionBarActivity {
 		actionBar.setDisplayHomeAsUpEnabled(true);
 	}
 
-	private class StableArrayAdapter extends ArrayAdapter<String> {
-
-		HashMap<String, Integer> mIdMap = new HashMap<String, Integer>();
-
-		public StableArrayAdapter(Context context, int layoutResourceId, List<String> objects) {
-			super(context, layoutResourceId, objects);
-			for (int i = 0; i < objects.size(); ++i) {
-				mIdMap.put(objects.get(i), i);
-			}
-		}
-	}
 
 
 
@@ -108,6 +92,8 @@ public class ContactsActivity extends ActionBarActivity {
 		return super.onCreateOptionsMenu(menu);
 	}
 
+	//motivo suppresslint: la textview del dialog non ha parent al momento della creazione: va messa nel dialog
+	@SuppressLint("InflateParams")
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
@@ -134,10 +120,7 @@ public class ContactsActivity extends ActionBarActivity {
 			/*
 			 *  apri dialog [nome-numero] e salva numero nella lista poi salva la lista in sp
 			 */
-			final View textEntryView = LayoutInflater.from(this).inflate(R.layout.doubletextview, null);
-
-
-
+			final View textEntryView = LayoutInflater.from(this).inflate(R.layout.doubletextview, null); 
 			final AlertDialog dialog = new AlertDialog.Builder(ContactsActivity.this)
 			.setTitle(getResources().getString(R.string.insertNumber))
 			.setMessage(getResources().getString(R.string.insertContactNumber))
@@ -145,7 +128,7 @@ public class ContactsActivity extends ActionBarActivity {
 			.setPositiveButton(getResources().getString(R.string.ok), null)
 			.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
-					// Do nothing.
+					// esci
 				}
 			}).create();
 
@@ -153,7 +136,9 @@ public class ContactsActivity extends ActionBarActivity {
 			final EditText inputNumber = (EditText) textEntryView.findViewById(R.id.editText2);
 			inputNumber.setInputType(InputType.TYPE_CLASS_PHONE);
 
-
+			//questo ha lo scopo di settare i tasti dopo aver inizializzato le textview:
+			//se le textview non vengono inizializzate dopo averle già messe nel dialog non funziona
+			//quindi imposto il comportamento dei pulsanti nell'onshowlistener
 			dialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
 				@Override
@@ -164,12 +149,11 @@ public class ContactsActivity extends ActionBarActivity {
 
 						@Override
 						public void onClick(View view) {
-
-							if(inputName.getText().toString() == "" || inputNumber.getText().toString() == "")
+							String name = inputName.getText().toString();
+							String number = inputNumber.getText().toString();
+							if(name.equals("") || number.equals(""))
 								Toast.makeText(ContactsActivity.this, getResources().getString(R.string.complainInsertionContact), Toast.LENGTH_SHORT).show();
 							else{
-								String name = inputName.getText().toString(); 
-								String number = inputNumber.getText().toString();
 								String contact = name + "\n" + number;
 								if(!contacts.contains(contact))
 									contacts.add(contact);
@@ -178,8 +162,6 @@ public class ContactsActivity extends ActionBarActivity {
 								sp.edit().putStringSet(CONTACTS_KEY, set).commit();
 								dialog.dismiss();
 							}
-
-
 						}
 					});
 				}
