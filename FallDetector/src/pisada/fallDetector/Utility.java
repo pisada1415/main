@@ -158,13 +158,7 @@ public class Utility {
 			canvas.drawPath(getPolygon(prime*exp,new Point(100,100),100/exp), paint);
 
 		}
-
-
-
-
-
 		return icon;
-
 	}
 
 

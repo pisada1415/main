@@ -388,7 +388,8 @@ public class SessionDataSource {
 		if(!s.isValidSession()) throw new InvalidSessionException();
 
 		int archived=FallSqlHelper.NOTARCHIVED;
-		if(boolArchived) archived=FallSqlHelper.NOTARCHIVED;
+		if(boolArchived) 
+			archived=FallSqlHelper.ARCHIVED; //TODO ATTENZIONE MODIFICA SAMU
 
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.SESSION_ARCHIVED_COLUMN,archived);

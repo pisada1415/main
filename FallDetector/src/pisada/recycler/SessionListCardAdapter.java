@@ -3,8 +3,6 @@ package pisada.recycler;
 
 import java.util.ArrayList;
 import java.util.Random;
-
-import pisada.database.FallSqlHelper;
 import pisada.database.SessionDataSource;
 import pisada.database.SessionDataSource.Session;
 import pisada.fallDetector.FragmentCommunicator;
@@ -15,12 +13,10 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.util.LruCache;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -41,34 +37,20 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	private ArrayList<Session> sessionList;
 	private static Activity activity;
 	private static SessionDataSource sessionData;
-	private static LruCache<String, Bitmap> mMemoryCache; //oggetto cache in cui mettere i bitmap (chiave-valore)
+	
 
-	
-	//inserisce elemento nella cache chiave-valore
-	public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
-	    if (getBitmapFromMemCache(key) == null) {
-	        mMemoryCache.put(key, bitmap);
-	    }
-	}
-
-	//prende elemento dalla cache
-	public Bitmap getBitmapFromMemCache(String key) {
-	    return mMemoryCache.get(key);
-	}
-	
-	
 	public static class OldSessionHolder extends RecyclerView.ViewHolder
 	{
 		private TextView vName;
 		private Button detailsBtn;
 		private Button deleteBtn;
-		private CardView card;
+		private Button archiveBtn;
 		public OldSessionHolder(View v) {
 			super(v);
 			vName =  (TextView) v.findViewById(R.id.nameText);
 			detailsBtn=(Button) v.findViewById(R.id.old_details_button);
 			deleteBtn=(Button) v.findViewById(R.id.old_delete_button);
-			card=(CardView) v;
+			archiveBtn =(Button)v.findViewById(R.id.old_rename_button); //TEMPORANEO
 
 		}
 
@@ -139,7 +121,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		this.activity=activity;
 		this.sessionData=new SessionDataSource(activity);
 
-		this.sessionList=sessionData.sessions();
+		this.sessionList=sessionData.notArchivedSessions();
 		sessionList.add(0,new Session());
 		if(!sessionData.existCurrentSession()){
 			sessionList.add(1,new Session());
@@ -216,13 +198,22 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				sessionList.remove(j);
 				notifyItemRemoved(j);
 				notifyItemRangeChanged(j, size-j);
-
-
-
-
 			}
-
 		});
+	
+		Oholder.archiveBtn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				sessionData.setSessionArchived(session, true);
+				sessionList.remove(j);
+				notifyItemRemoved(j);
+				notifyItemRangeChanged(j, size-j);
+			}
+		});
+		
+	
 
 	}
 
@@ -275,13 +266,11 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	}
 
 	public void check(){
-		sessionList=sessionData.sessions();
+		sessionList=sessionData.notArchivedSessions();
 		sessionList.add(0,new Session());
 		if(!sessionData.existCurrentSession()){
 			sessionList.add(0, new Session());
 		}
-
-
 	}
 
 	@Override
@@ -351,9 +340,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			}
 
 		}
-
-
-
 
 	}
 	public interface ClickListener{
