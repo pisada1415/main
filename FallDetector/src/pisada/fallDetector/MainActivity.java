@@ -3,15 +3,11 @@ package pisada.fallDetector;
 import java.util.ArrayList;
 import java.util.List;
 
-import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
-import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -55,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
 			@Override
 			public void onBackStackChanged() {
-				// TODO Auto-generated method stub
 				fragment = (FallDetectorFragment)(fm.findFragmentById(R.id.content_frame));
 
 			}
@@ -193,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 			Intent intent = new Intent(this, SettingsActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 			startActivity(intent);
-			SettingsActivity.setActivity(this);
 			Intent intent2 = new Intent(MainActivity.this, CurrentSessionFragment.class);
 			currentUIIndex = 0; //sto rimandando la schermata a currentsession
 			switchFragment(intent2);
@@ -348,7 +342,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 			Intent intent = new Intent(this, SettingsActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 			startActivity(intent);
-			SettingsActivity.setActivity(this);
 			Intent intent2 = new Intent(this, CurrentSessionFragment.class);
 			this.switchFragment(intent2);
 			return true;
@@ -363,7 +356,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 	@Override
 	public void onBackPressed()
 	{
-		int count = this.getSupportFragmentManager().getBackStackEntryCount();
 		if(currentUIIndex == 0)
 			finish();
 		else if(currentUIIndex < 0)
@@ -530,7 +522,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
 	@Override
 	public void afterTextChanged(Editable s) {
-		// TODO Auto-generated method stub
 		String text = s.toString();
 		int length = text.length();
 

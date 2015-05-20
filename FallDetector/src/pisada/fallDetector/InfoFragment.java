@@ -13,17 +13,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.support.v4.app.DialogFragment;
-
-
 public class InfoFragment extends FallDetectorFragment  {
 
 	private final boolean HASOPTIONSMENU = false;
 	private final int TYPE = 4;
 	private TextView credits;
-	private int counter;
 	
 	public InfoFragment()
 	{
@@ -70,7 +64,6 @@ public class InfoFragment extends FallDetectorFragment  {
 	@Override
 	public void onAttach(Activity a){
 		super.onAttach(a);
-		counter = 0;
 	}
 	
 	@Override

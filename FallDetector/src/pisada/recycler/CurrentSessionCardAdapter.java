@@ -3,7 +3,6 @@ package pisada.recycler;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-
 import fallDetectorException.DublicateNameSessionException;
 import fallDetectorException.MoreThanOneOpenSessionException;
 import pisada.database.FallDataSource;
@@ -18,7 +17,6 @@ import pisada.fallDetector.SessionDetailsFragment;
 import pisada.fallDetector.Utility;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -140,7 +138,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			if(sds.existCurrentSession())
 			{
 				if(sds.currentSession().isOnPause())
-					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_play));
+					playPause.setBackground(activity.getResources().getDrawable(R.drawable.button_selector_play));
 				else
 					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_pause));
 				//devo usare il deprecato perché per setBackground serve API Level 16
@@ -211,6 +209,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 
 
+	@SuppressWarnings("deprecation") //(serve api level 22)
 	public CurrentSessionCardAdapter(View v, Activity activity, long time, boolean startChron, long pauseTime, boolean isPort) {
 
 		this.activity=activity;
@@ -283,9 +282,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			if(sds.existCurrentSession())
 			{
 				if(sds.currentSession().isOnPause())
-					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_play));
+					playPause.setBackground(activity.getResources().getDrawable(R.drawable.button_selector_play));
 				else
-					playPause.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.button_selector_pause));
+					playPause.setBackground(activity.getResources().getDrawable(R.drawable.button_selector_pause));
 				//devo usare il deprecato perché per setBackground serve API Level 16
 
 			}
@@ -653,6 +652,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 	private OnClickListener onPlayPauseClick = new View.OnClickListener() {
 
+		@SuppressWarnings("deprecation") //(serve api level 22 altrimenti)
 		@Override
 		public void onClick(final View v) {
 			if(serviceIntent == null)
@@ -679,7 +679,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 				stopPauseBlink();
 			}
 
-			v.setBackgroundDrawable(activity.getResources().getDrawable(R.drawable.nonclickable));
+			v.setBackground(activity.getResources().getDrawable(R.drawable.nonclickable));
 			/*
 			 * qui per due secondi setto un background blu con caricamento in mezzo. poi cambia. per quei due secondi è anche inclickabile
 			 */
@@ -698,19 +698,10 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 					activity.runOnUiThread(new Runnable() {
 
 
-						@SuppressLint("NewApi")
 						@Override
 						public void run() {
 							v.setClickable(true);
-							int sdk = android.os.Build.VERSION.SDK_INT;
-							if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-								v.setBackgroundDrawable(selection);
-
-							} else {
-								v.setBackground(selection);
-
-							}
-
+							v.setBackground(selection);		
 						}		
 					});
 

@@ -1,5 +1,6 @@
 package fallDetectorException;
 
+@SuppressWarnings("serial") //(non vogliamo serializzare)
 public class InvalidFallException extends RuntimeException{
 	private static final String message="Caduta non valida";
 

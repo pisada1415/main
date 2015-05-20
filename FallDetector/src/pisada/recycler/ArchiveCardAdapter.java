@@ -47,8 +47,8 @@ public class ArchiveCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
 
 	public ArchiveCardAdapter(final Activity activity, RecyclerView rView) {
-		this.activity=activity;
-		this.sessionData=new SessionDataSource(activity);
+		ArchiveCardAdapter.activity=activity;
+		sessionData=new SessionDataSource(activity);
 
 		this.sessionList=sessionData.archivedSessions();
 		

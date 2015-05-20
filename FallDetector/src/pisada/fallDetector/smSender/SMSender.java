@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import pisada.database.FallDataSource;
 import pisada.fallDetector.ForegroundService;
 import pisada.fallDetector.ServiceReceiver;
-import pisada.fallDetector.Utility;
 import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -82,12 +81,8 @@ public class SMSender {
 					
 					if(ForegroundService.connectedActs != null && ForegroundService.connectedActs.size() > 0){
 
-						final double latitude = fall.getLat(), longitude = fall.getLng();
-						final String position = "" + latitude + ", " + longitude;
-						final String link = Utility.getMapsLink(latitude, longitude);
-						final String formattedTime = Utility.getStringTime(fall.getTime());
 						for(final ServiceReceiver sr : ForegroundService.connectedActs){ 
-							Runnable r = new Runnable(){@Override public void run() {String pos = latitude != -1 && longitude != -1? position : "Not available";sr.serviceUpdate(fall, fall.getSessionName());}};
+							Runnable r = new Runnable(){@Override public void run() {sr.serviceUpdate(fall, fall.getSessionName());}};
 							if(sr instanceof CurrentSessionCardAdapter)
 								((CurrentSessionCardAdapter)sr).runOnUiThread(r);
 							else if(sr instanceof Activity)

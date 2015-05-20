@@ -1,25 +1,16 @@
 package pisada.fallDetector;
 
-/*
- * riflessioni riguardo i metodi settati in xml:
- * TODO
- * potrei:
- * 1)settarli programmaticamente come onclicklistener, stando attento a non dimenticare niente che eventualmente veniva modificato qui
- * --non c'è altro modo direi--
- */
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-
 import pisada.database.FallDataSource;
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
 import pisada.recycler.CurrentSessionCardAdapter;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.LayoutManager;
@@ -35,19 +26,15 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 	private static SessionDataSource sessionData;
 	private static CurrentSessionCardAdapter cardAdapter;
 	private final int TYPE = 0;
-	//private RecyclerView rView;
 	private LayoutManager mLayoutManager;
-	private String sessionName, sessionNameDefault;
+	private String sessionName;
 	private boolean startChronometerOnStartActivity = false;
 	private long pauseTime = 0;
 	private long infoTime = -1;
 	private FallDataSource fallDataSource;
 	private SessionDataSource.Session currentSession;
 
-	private ActionBar actionBar;
-
 	private Activity activity;
-	private Drawable pause, play;
 
 	public int getType()
 	{
@@ -155,8 +142,6 @@ public class CurrentSessionFragment extends FallDetectorFragment implements Serv
 
 		ForegroundService.connect(this); 
 
-		pause =getResources().getDrawable(R.drawable.button_selector_pause);
-		play =getResources().getDrawable(R.drawable.button_selector_play);
 		this.scroll(MainActivity.currentSessionFragmentLastIndex);
 	}
 

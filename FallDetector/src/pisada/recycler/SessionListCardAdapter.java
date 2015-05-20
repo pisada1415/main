@@ -58,7 +58,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	}
 
 
-	public  class NewSessionHolder extends RecyclerView.ViewHolder{
+	public class NewSessionHolder extends RecyclerView.ViewHolder{
 		private TextView newSessionText;
 		private Button addSessionButton;
 		private EditText typeSession;
@@ -66,7 +66,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		private CardView card;
 
 
-		@SuppressLint("NewApi")
 		public NewSessionHolder(View v) {
 			super(v);
 			card=(CardView) v;
@@ -77,8 +76,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			this.rLay=(RelativeLayout) card.findViewById(R.id.new_session_layout);
 			Random random=new Random();
 			addSessionButton.setBackground(new BitmapDrawable(activity.getResources(),Utility.createImage(Math.abs((int)random.nextLong()%50))));
-
-
 		}
 
 
@@ -118,8 +115,9 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 	public SessionListCardAdapter(final Activity activity, RecyclerView rView) {
 
-		this.activity=activity;
-		this.sessionData=new SessionDataSource(activity);
+		SessionListCardAdapter.activity=activity;
+		sessionData=new SessionDataSource(activity);
+
 
 		this.sessionList=sessionData.notArchivedSessions();
 		sessionList.add(0,new Session());
@@ -168,7 +166,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				cHolder.sessionStart.setText(String.valueOf(currSession.getStartTime()).toString());
 			}
 			else{
-				CurrentSessionHolder Cholder=(CurrentSessionHolder) holder;
 				cHolder.rLay.setVisibility(View.GONE);
 			}
 
@@ -220,8 +217,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int type) {
 
-
-		Session currSession=sessionData.currentSession();
 
 		if(type==0) {
 			View v=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_session_card, viewGroup, false);

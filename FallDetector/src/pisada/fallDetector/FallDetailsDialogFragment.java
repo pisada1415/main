@@ -1,13 +1,12 @@
 package pisada.fallDetector;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-
 import pisada.database.Acquisition;
 import pisada.database.FallDataSource;
 import pisada.database.SessionDataSource;
 import pisada.plotmaker.Data;
 import pisada.plotmaker.Plot;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -31,7 +30,6 @@ import android.widget.TextView;
 public class FallDetailsDialogFragment extends DialogFragment {
 	private Plot plot;
 	private LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT); 
-	private Calendar c = Calendar.getInstance();
 	private String sessionName;
 	private Long fallTime;
 	private FallDataSource fds;
@@ -40,7 +38,6 @@ public class FallDetailsDialogFragment extends DialogFragment {
 	private SessionDataSource.Session session;
 	private ImageView thumbNail;
 	private TextView info2, info3, info_date, info_time;
-	private final int TYPE = -2;
 	private ProgressBar pb;
 	private final String fallTimeKey = "FALL_TIME";
 	private final String sessionNameKey = "SESSION_NAME";
@@ -55,6 +52,7 @@ public class FallDetailsDialogFragment extends DialogFragment {
 		fallTime = time;
 	}
 
+	@SuppressLint("InflateParams")
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		if(savedInstanceState != null)
