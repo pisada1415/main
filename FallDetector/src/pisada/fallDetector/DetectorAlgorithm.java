@@ -23,7 +23,7 @@ public class DetectorAlgorithm {
 		int j=0;
 		for(Acquisition a : list.timerAcquisitionList){
 
-			if(module(a)>4 && i>10){
+			if(module(a)>2.5 && i>10){
 				fall=true;
 				break;
 			}
@@ -36,10 +36,9 @@ public class DetectorAlgorithm {
 				if(i>0)i--;
 			}
 
-			if(j>100){
+			if(j>150){
 				j=0;i=0;
 			}
-
 
 
 		}

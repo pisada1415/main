@@ -3,20 +3,25 @@ package pisada.recycler;
 
 import java.util.ArrayList;
 import java.util.Random;
+
 import pisada.database.SessionDataSource;
 import pisada.database.SessionDataSource.Session;
 import pisada.fallDetector.FragmentCommunicator;
+import pisada.fallDetector.MainActivity;
 import pisada.fallDetector.R;
 import pisada.fallDetector.SessionDetailsFragment;
 import pisada.fallDetector.Utility;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.text.TextWatcher;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -24,11 +29,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import fallDetectorException.DublicateNameSessionException;
 
 
@@ -37,20 +46,31 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	private ArrayList<Session> sessionList;
 	private static Activity activity;
 	private static SessionDataSource sessionData;
-	
+	private ArrayList<Boolean> expandedArray=new ArrayList<Boolean>();
+
+
 
 	public static class OldSessionHolder extends RecyclerView.ViewHolder
 	{
 		private TextView vName;
-		private Button detailsBtn;
+		private ImageView sessionIcon;
+		private Button expandButton;
+
+		private RelativeLayout buttonsLayout;
 		private Button deleteBtn;
 		private Button archiveBtn;
+		private Button renameBtn;
+		private CardView oldCard;
 		public OldSessionHolder(View v) {
 			super(v);
-			vName =  (TextView) v.findViewById(R.id.nameText);
-			detailsBtn=(Button) v.findViewById(R.id.old_details_button);
+			oldCard=(CardView) v;
+			vName =  (TextView) v.findViewById(R.id.old_session_description);
+			renameBtn=(Button) v.findViewById(R.id.old_rename_button);
 			deleteBtn=(Button) v.findViewById(R.id.old_delete_button);
-			archiveBtn =(Button)v.findViewById(R.id.old_rename_button); //TEMPORANEO
+			archiveBtn =(Button)v.findViewById(R.id.old_archive_button); //TEMPORANEO
+			sessionIcon=(ImageView) v.findViewById(R.id.old_session_icon);
+			buttonsLayout= (RelativeLayout) v.findViewById(R.id.buttons_layout);
+			expandButton=(Button) v.findViewById(R.id.expand_button);
 
 		}
 
@@ -95,9 +115,9 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		@SuppressLint("NewApi")
 		public CurrentSessionHolder(View v) {
 			super(v);
-			
-			
-			
+
+
+
 			sessionName=(TextView) v.findViewById(R.id.current_session_name_text);
 			sessionStart=(TextView) v.findViewById(R.id.current_session_start_text);
 			detailsButton=(Button) v.findViewById(R.id.details_current_button);
@@ -124,7 +144,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		if(!sessionData.existCurrentSession()){
 			sessionList.add(1,new Session());
 		}
-		rView.addOnItemTouchListener(new TouchListener(activity, rView, new ClickListener() {
+		/*	rView.addOnItemTouchListener(new TouchListener(activity, rView, new ClickListener() {
 
 			@Override
 			public void onLongClick(View view, int position) {
@@ -135,6 +155,10 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				notifyItemChanged(position);
 			}
 		}));
+		 */
+		for(int i=0;i<sessionList.size();i++){
+			expandedArray.add(false);
+		}
 	}
 
 	@Override
@@ -148,7 +172,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		Session currSession=sessionData.currentSession();
 		switch(i) {
 		case 0: 
-			if(sessionData.existCurrentSession())	{
+			if(!sessionData.existCurrentSession())	{
 				NewSessionHolder Nholder=(NewSessionHolder) holder;
 				Nholder.rLay.setVisibility(View.GONE);
 			}
@@ -172,20 +196,94 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			return;
 		}
 
-		OldSessionHolder Oholder=(OldSessionHolder) holder;
+		final OldSessionHolder Oholder=(OldSessionHolder) holder;
 		final Session session = sessionList.get(i);
 		final int j=i;
-		Oholder.vName.setText("Name: "+session.getName()+ " ID= "+session.getID());//+"\nStart Time: "+session.getStartTime()//+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
-		Oholder.detailsBtn.setOnClickListener(new OnClickListener(){
 
+		OnClickListener sessionDetailListener=new OnClickListener() {
+			
 			@Override
 			public void onClick(View v) {
 				Intent intent=new Intent(activity,SessionDetailsFragment.class);
 				intent.putExtra(Utility.SESSION_NAME_KEY, session.getName());
 				((FragmentCommunicator)activity).switchFragment(intent);
+				
+			}
+		};
+		Oholder.vName.setText(session.getName());
+		BitmapManager.loadBitmap(session.getID(), Oholder.sessionIcon, activity);
+		Oholder.oldCard.setOnClickListener(sessionDetailListener);
+		Oholder.vName.setOnClickListener(sessionDetailListener);
+		Oholder.sessionIcon.setOnClickListener(sessionDetailListener);
+		Oholder.renameBtn.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				final EditText input = new EditText(activity);
+				input.setText( session.getName());
+				input.addTextChangedListener((TextWatcher) activity);
+				new AlertDialog.Builder(activity)
+				.setTitle("Rename")
+				.setMessage("Insert name")
+				.setView(input)
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						String value = input.getText().toString(); 
+						sessionData.renameSession(session, value);
+						notifyItemChanged(j);
+					
+					}
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// Do nothing.
+					}
+				}).show();
 			}
 		});
 		
+		if(expandedArray.get(i))Oholder.buttonsLayout.setVisibility(View.VISIBLE);
+		else Oholder.buttonsLayout.setVisibility(View.GONE);
+		Oholder.expandButton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if(expandedArray.get(j)==false){
+					expandedArray.set(j, true);
+					Oholder.buttonsLayout.setVisibility(View.VISIBLE);
+					Animation animation = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.expandanimation);
+					Oholder.buttonsLayout.startAnimation(animation);
+				}
+				else{
+					expandedArray.set(j, false);
+					Animation animation = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.collapseanimation);
+					animation.setAnimationListener(new AnimationListener() {
+
+						@Override
+						public void onAnimationStart(Animation animation) {
+
+
+						}
+
+						@Override
+						public void onAnimationRepeat(Animation animation) {
+							// TODO Auto-generated method stub
+
+						}
+
+						@Override
+						public void onAnimationEnd(Animation animation) {
+							Oholder.buttonsLayout.setVisibility(View.GONE);
+
+
+						}
+					});
+					Oholder.buttonsLayout.startAnimation(animation);
+				}
+
+
+			}
+		});
+
 		final int size=sessionList.size();
 		Oholder.deleteBtn.setOnClickListener(new OnClickListener(){
 
@@ -193,24 +291,25 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			public void onClick(View v) {
 				sessionData.deleteSession(session);
 				sessionList.remove(j);
+				expandedArray.remove(j);
 				notifyItemRemoved(j);
 				notifyItemRangeChanged(j, size-j);
 			}
 		});
-	
+
 		Oholder.archiveBtn.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				sessionData.setSessionArchived(session, true);
 				sessionList.remove(j);
+				expandedArray.remove(j);
 				notifyItemRemoved(j);
 				notifyItemRangeChanged(j, size-j);
 			}
 		});
-		
-	
+
 
 	}
 
@@ -280,7 +379,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	}
 
 
-	class TouchListener implements RecyclerView.OnItemTouchListener{
+	/*	class TouchListener implements RecyclerView.OnItemTouchListener{
 
 		GestureDetector gDetector;
 		private ClickListener listener;
@@ -341,7 +440,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		public void onClick(View view,int position);
 		public void onLongClick(View view,int position);
 	}
-
+	 */
 
 
 }

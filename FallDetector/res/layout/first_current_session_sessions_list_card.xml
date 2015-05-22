@@ -20,7 +20,8 @@
             android:layout_height="120dp"
             android:gravity="center"
             android:text="cazzo"
-            android:textSize="20sp" />
+            android:textSize="20sp" 
+                android:textColor="@color/material_green_400"/>
 
         <TextView
             android:id="@+id/current_session_start_text"
@@ -29,7 +30,8 @@
             android:layout_below="@id/current_session_name_text"
             android:gravity="center"
             android:text="cazzo"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+                android:textColor="@color/material_green_400" />
 
         <ImageView
             android:id="@+id/current_session_icon"
@@ -37,7 +39,8 @@
             android:layout_height="150dp"
             android:layout_centerHorizontal="true"
             android:layout_below="@id/current_session_start_text"
-            android:gravity="center" />
+            android:gravity="center"
+                android:textColor="@color/material_green_400" />
 
         <Button
             android:id="@+id/details_current_button"
@@ -47,7 +50,8 @@
             android:layout_centerHorizontal="true"
             android:onClick="currentSessionDetails"
             android:text="Dettaglio Session"
-            android:textSize="20sp" />
+            android:textSize="20sp" 
+                android:textColor="@color/material_green_400"/>
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

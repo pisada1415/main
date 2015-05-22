@@ -33,13 +33,12 @@ public class ArchiveCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 	public static class SessionHolder extends RecyclerView.ViewHolder
 	{
 		private TextView vName;
-		private Button detailsBtn;
+	
 		private Button deleteBtn;
 		private Button archiveBtn;
 		public SessionHolder(View v) {
 			super(v);
-			vName =  (TextView) v.findViewById(R.id.nameText);
-			detailsBtn=(Button) v.findViewById(R.id.old_details_button);
+			vName =  (TextView) v.findViewById(R.id.old_session_description);
 			deleteBtn=(Button) v.findViewById(R.id.old_delete_button);
 			archiveBtn =(Button)v.findViewById(R.id.old_rename_button);
 		}
@@ -77,15 +76,7 @@ public class ArchiveCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 		final Session session = sessionList.get(i);
 		final int j=i;
 		Oholder.vName.setText("Name: "+session.getName()+ " ID= "+session.getID());//+"\nStart Time: "+session.getStartTime()//+"\nendTime: "+session.getEndTime()+"\n Close: "+session.booleanIsClose()+"\n Duration: "+sessionData.sessionDuration(session));
-		Oholder.detailsBtn.setOnClickListener(new OnClickListener(){
 
-			@Override
-			public void onClick(View v) {
-				Intent intent=new Intent(activity,SessionDetailsFragment.class);
-				intent.putExtra(Utility.SESSION_NAME_KEY, session.getName());
-				((FragmentCommunicator)activity).switchFragment(intent);
-			}
-		});
 
 		final int size=sessionList.size();
 		Oholder.deleteBtn.setOnClickListener(new OnClickListener(){
