@@ -2,6 +2,7 @@ package pisada.recycler;
 
 
 import java.util.ArrayList;
+
 import pisada.database.FallDataSource;
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
@@ -12,7 +13,10 @@ import pisada.fallDetector.R;
 import pisada.fallDetector.Utility;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.Html;
@@ -30,6 +34,8 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 	private String sessionName;
 	private Session session;
 	private SessionDataSource sessionData;
+	private SharedPreferences sp;
+	private final String CONTACTS_KEY = "contacts";
 
 	/*
 	 * first card
@@ -65,7 +71,6 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 			fallTime=(TextView) v.findViewById(R.id.fall_time);
 			fallPosition=(TextView) v.findViewById(R.id.position);
 			boolNotif = (TextView) v.findViewById(R.id.booleanSent);
-			((TextView) v.findViewById(R.id.successNotif)).setVisibility(View.GONE);
 			v.setOnClickListener(new View.OnClickListener() {
 
 				@Override
@@ -97,6 +102,7 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 		sessionName = name;
 		cardContentList = new ArrayList<Fall>();
 		cardContentList.add(0, new Fall());
+		sp = PreferenceManager.getDefaultSharedPreferences(activity);
 
 	}
 
@@ -150,7 +156,16 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 			Oholder.fallTime.setText("Time: " + Utility.getStringTime(fall.getTime()));
 
-			Oholder.boolNotif.setVisibility(View.GONE);
+			if(fall.wasNotified()){
+				Oholder.boolNotif.setText(activity.getResources().getString(R.string.sent));
+				Oholder.boolNotif.setTextColor(Color.GREEN);
+			}
+			else if(sp.getStringSet(CONTACTS_KEY, null) == null || sp.getStringSet(CONTACTS_KEY, null).size()==0)
+			{
+				Oholder.boolNotif.setText(activity.getResources().getString(R.string.requiresSetup));
+				Oholder.boolNotif.setTextColor(Color.RED);
+			}
+		//	Oholder.boolNotif.setVisibility(View.GONE);
 
 
 
