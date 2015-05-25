@@ -61,8 +61,8 @@ import android.widget.Toast;
 public class ForegroundService extends Service implements SensorEventListener {
 
 	protected static int MAX_SENSOR_UPDATE_RATE = 10; //ogni quanti millisecondi update
-	private final int TIME_BETWEEN_FALLS = 2000, CYCLES_FOR_LOCATION_REQUESTS = 50, SERVICE_SLEEP_TIME = 5000, MIN_TIME_LOCATION_UPDATES = 5000, MIN_DISTANCE_LOCATION_UPDATES = 500; 
-	private long TIMEOUT_SESSION = 86400000;
+	private final int TIME_BETWEEN_FALLS = 2000, CYCLES_FOR_LOCATION_REQUESTS = 50, SERVICE_SLEEP_TIME = 300000, MIN_TIME_LOCATION_UPDATES = 5000, MIN_DISTANCE_LOCATION_UPDATES = 500; 
+	public static long TIMEOUT_SESSION = 86400000;
 	private final static String CONTACTS_KEY = "contacts";
 
 	private final String GPSProvider = LocationManager.GPS_PROVIDER;
@@ -116,10 +116,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 		 * ) by calling stopSelf() or stopService()
 		 */
 
-		// handleCommand(intent);
-		// We want this service to continue running until it is explicitly
-		// stopped, so return sticky.
-
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "fall_detector");
 		wl.acquire();
@@ -133,7 +129,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 		}
 
 		//questo fa si che totalTime tenga il tempo per cui la sessione è aperta in totale
-		if(!timeInitialized /*&& sessionDataSource.existCurrentSession()TODO ultima modifica pericolosa*/){
+		if(!timeInitialized){
 
 			totalTime = sessionDataSource.sessionDuration(sessionDataSource.currentSession());
 			timeInitialized = true;
@@ -160,7 +156,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 			@Override
 			public void onLocationChanged(Location location) {
 				stopLocationUpdates();
-				Toast.makeText(getApplicationContext(), "ricevuta posizione gps", Toast.LENGTH_LONG).show();
 			}
 
 			@Override
@@ -186,7 +181,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 			@Override
 			public void onLocationChanged(Location location) {
 				stopLocationUpdates();
-				Toast.makeText(getApplicationContext(), "ricevuta posizione network", Toast.LENGTH_LONG).show();
 			}
 
 			@Override
@@ -238,10 +232,14 @@ public class ForegroundService extends Service implements SensorEventListener {
 		nm.notify(717232, n);
 		//=========================NOTIFICATION(END)==============
 
+		/*
+		 * vogliamo che il service continui a girare finche' non viene esplicitamente stoppato, quindi restituiamo sticky
+		 */
 
 		if(running)
 		{
 			Toast.makeText(this, "Already running", Toast.LENGTH_LONG).show();
+
 			return Service.START_STICKY;
 		}
 		else
@@ -353,13 +351,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 					 * the check for the service to stop occurs every SERVICE_SLEEP_TIME/1000 seconds (to save battery)
 					 */
 
-					/*
-					 * qui aggiorniamo tutte le variabili che possono variare in base alle preferenze (es: TIMEOUT_SESSION)
-					 */
-
-					MAX_SENSOR_UPDATE_RATE = Integer.parseInt(sp.getString("sample_rate", "10"));
-					TIMEOUT_SESSION = Integer.parseInt(sp.getString("max_duration_session", "24"))* 3600000;
-
 					if(activeService == null){
 						activeService = Utility.checkLocationServices(getApplicationContext(), false);		
 					}
@@ -384,7 +375,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 					 *qui check se la sessione rispetta la durata massima, se la sfora, chiuderla
 					 */
 					if((sessionDataSource != null && getSessionDuration(sessionDataSource) > TIMEOUT_SESSION) ){
-						
+
 						killSessionOnDestroy();
 
 						if(connectedActs != null || connectedActs.size()==0)
@@ -394,13 +385,8 @@ public class ForegroundService extends Service implements SensorEventListener {
 								sr.runOnUiThread(r);
 
 							}
-
-							stopSelf();
-
-
+						stopSelf();
 					}
-
-
 					try {
 						Thread.sleep(SERVICE_SLEEP_TIME);
 					} catch (InterruptedException e) {
@@ -453,8 +439,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 			}
 
 
-
-
 			if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 				float[] values = event.values;
 
@@ -491,10 +475,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 		}
 	}
-
-
-
-
 
 
 	@Override
@@ -552,7 +532,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 	}
 
 
-
 	private void runOnUiThread(Runnable runnable) {
 		if(uiHandler == null)
 			uiHandler = new Handler();
@@ -588,11 +567,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 			}
 		}
 
-
 		public boolean getPause() {
 			return pause;
 		}
-
 
 		@Override
 		protected  String doInBackground(Void... params) {
@@ -602,16 +579,11 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 				//	System.out.println("scannerando" + i++);
 
-
 				if (pause) {
 					synchronized (INTERRUPTOR) {
 						try {
-
 							// aspetta risveglio tramite notify su oggetto INTERRUPTOR
-
 							INTERRUPTOR.wait();
-
-
 						} catch (InterruptedException e) {e.printStackTrace();}
 						pause = false;
 
@@ -627,7 +599,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 						if(Math.sqrt(objectX*objectX + objectY*objectY + objectZ*objectZ) <5){ //CONTROLLO PRIMO IMPULSO CADUTA PASSANDO SOLO VAL CENTRALE
 
 
-							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO (AGGIUNGERE IF)
+							//SE PRIMA PARTE CADUTA CONFERMATA QUI PASSO IL RESTO COME COPIA. SE CONTINUA A ESSERE CADUTA, CONTINUIAMO
 
 							if(DetectorAlgorithm.danielAlgorithm(acquisitionList)){
 								lastFallTime = System.currentTimeMillis();
@@ -677,11 +649,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 								}
 								else
 									position = "Not available";
-
-
-
-
-
 							}
 						}
 					}
@@ -693,9 +660,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 				//sempre e comunque, metto in sleep l'asynctask alla fine dell'esecuzione del codice che effettua il controllo sulla singola acquisizione
 				pauseMyTask();
-
-
-
 			}
 			return "done";
 		}
@@ -780,23 +744,7 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 	private void manageFallOccured(String position, Context ctx, FallDataSource.Fall fall)
 	{
-		/*
-		 * TODO: stobene - activity
-		 */
-
-
-
-		/*
-		 * creo nuovo oggetto broadcastreceiver inizializzato con i valori sopra ^^^^^
-		 * 
-		 * no
-		 * passo tutti i parametri in sendsms e salvo in database solo quando è stata mandata. oppure salvo subito e modifico tanto ho l'oggetto li dentro
-		 * 
-		 * 
-		 * devo anche passare riferimento alla lista adapter per poter modificare il campo della fall dall'interno di smsender per quanto riguarda la notifica mandata o no
-		 * poi ogni 5 secondi possiam chiamare notifydatasetchanged chi cazzo se ne frega
-		 *
-		 */
+		//gestisce la caduta avvenuta: si occupa di avvisare via sms le persone nella lista
 
 		Scanner scan;
 

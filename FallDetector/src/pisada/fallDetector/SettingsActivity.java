@@ -3,6 +3,7 @@ package pisada.fallDetector;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+
 import android.app.AlarmManager;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -77,9 +78,7 @@ public class SettingsActivity extends AppCompatActivity {
 
 
 	public static class GeneralPreferenceFragment extends PreferenceFragment {
-		private Preference smsNotiPref;
-		private Preference maxDurationSession;
-		private Preference alarmTime;
+		private Preference smsNotiPref, maxDurationSession, sampleRate, alarmTime;
 		private static AlarmManager alarmManager;
 		
 		@Override
@@ -95,12 +94,21 @@ public class SettingsActivity extends AppCompatActivity {
 			 addPreferencesFromResource(R.xml.pref_notification);
 			 smsNotiPref = (Preference) findPreference("sms_list");
 			 smsNotiPref.setOnPreferenceClickListener(clickListener);
+			 sampleRate = (Preference) findPreference("sample_rate");
+			 sampleRate.setOnPreferenceChangeListener(sampleRateChangeListener);
 			 maxDurationSession = (Preference) findPreference("max_duration_session");
 			 maxDurationSession.setOnPreferenceChangeListener(sessionDurationChangeListener);
 			 alarmTime = (Preference) findPreference("time");
 			 alarmTime.setOnPreferenceChangeListener(alarmTimeChangeListener);
 		}
 
+		private Preference.OnPreferenceChangeListener sampleRateChangeListener = new Preference.OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				ForegroundService.MAX_SENSOR_UPDATE_RATE = Integer.parseInt((String)newValue);
+				return true;
+			}
+		};
 
 
 		private Preference.OnPreferenceClickListener clickListener = new Preference.OnPreferenceClickListener(){
@@ -119,9 +127,6 @@ public class SettingsActivity extends AppCompatActivity {
 		};
 
 		private Preference.OnPreferenceChangeListener sessionDurationChangeListener = new Preference.OnPreferenceChangeListener(){
-
-
-
 			@Override
 			public boolean onPreferenceChange(Preference preference,
 					Object newValue) {
@@ -132,7 +137,7 @@ public class SettingsActivity extends AppCompatActivity {
 					//settings.edit().putString("max_duration_session",lastValidDurationValue);
 					return false;
 				}
-
+				ForegroundService.TIMEOUT_SESSION = Long.parseLong(value) *  3600000;
 				return true;
 			}
 
