@@ -57,6 +57,10 @@
     <string name="thumbnailFall">Fall thumbnail</string>
     <string name="thumbnail">thumbnail</string>
     <string name="navdrawic">navigation drawer icon</string>
+    <string name="areyouok">Are you OK?</string>
+    <string name="title_activity_sto_bene">I Feel Fine</string>
+    <string name="leavetimetopress">I\'m about to warn your contacts about your fall, press cancel to dismiss</string>
+    
     <string name="credits">
 <![CDATA[
 	    <p>Designed, built and implemented by <br>

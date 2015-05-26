@@ -728,9 +728,17 @@ public class ForegroundService extends Service implements SensorEventListener {
 					}
 				}
 				//==============================INVIO ALLE ACTIVITY CONNESSE I DATI (FINE)=================================
+				
+				Intent intent = new Intent(ForegroundService.this, StoBeneActivity.class);
+				intent.putExtra("sessionName", sessionDataSource.currentSession().getName());
+				intent.putExtra("time", fall.getTime());
+				intent.putExtra("position", position);
+				
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(intent);
+ 
 
-
-				manageFallOccured(position, ctx, fall); //fa quello che c'è da fare quando avviene una fall!
+				//manageFallOccured(position, ctx, fall); //fa quello che c'è da fare quando avviene una fall!
 			}
 		}).start();
 	}

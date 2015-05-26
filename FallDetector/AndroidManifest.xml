@@ -48,6 +48,13 @@
             android:label="@string/title_activity_start_session_reminder"
             android:theme="@style/FullscreenTheme" >
         </activity>
+        
+        <activity
+            android:name=".StoBeneActivity"
+            android:label="@string/title_activity_sto_bene"
+            android:theme="@android:style/Theme.Holo.Dialog"
+            android:excludeFromRecents="true" >
+        </activity>
 
         <receiver
             android:name=".NotificationReceiver"

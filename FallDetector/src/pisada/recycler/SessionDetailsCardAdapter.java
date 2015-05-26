@@ -155,7 +155,9 @@ public class SessionDetailsCardAdapter extends RecyclerView.Adapter<RecyclerView
 			}
 
 			Oholder.fallTime.setText("Time: " + Utility.getStringTime(fall.getTime()));
-
+			Oholder.boolNotif.setText(activity.getResources().getString(R.string.notsent));
+			Oholder.boolNotif.setTextColor(Color.RED);
+			
 			if(fall.wasNotified()){
 				Oholder.boolNotif.setText(activity.getResources().getString(R.string.sent));
 				Oholder.boolNotif.setTextColor(Color.GREEN);
