@@ -167,17 +167,19 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	}
 
 	@Override
-	public void onBindViewHolder(ViewHolder holder,  int i) {
+	public void onBindViewHolder(ViewHolder holder,  final int i) {
 
 		Session currSession=sessionData.currentSession();
 		switch(i) {
 		case 0: 
-			if(!sessionData.existCurrentSession())	{
+			if(sessionData.existCurrentSession())	{
 				NewSessionHolder Nholder=(NewSessionHolder) holder;
 				Nholder.rLay.setVisibility(View.GONE);
+				Nholder.card.setVisibility(View.INVISIBLE);
 			}
 			else{
 				NewSessionHolder Nholder=(NewSessionHolder) holder;
+				Nholder.card.setVisibility(View.VISIBLE);
 				Nholder.rLay.setVisibility(View.VISIBLE);
 			}
 			return;
@@ -185,12 +187,15 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		case 1:
 			CurrentSessionHolder cHolder=(CurrentSessionHolder) holder;
 			if(currSession!=null){
+			
+				cHolder.card.setVisibility(View.VISIBLE);
 				cHolder.rLay.setVisibility(View.VISIBLE);
 				cHolder.sessionName.setText(currSession.getName()+"\n Close: "+currSession.booleanIsClose()+"\n ID= "+ currSession.getID());
 				cHolder.sessionStart.setText(String.valueOf(currSession.getStartTime()).toString());
 			}
 			else{
 				cHolder.rLay.setVisibility(View.GONE);
+				cHolder.card.setVisibility(View.INVISIBLE);
 			}
 
 			return;
@@ -198,7 +203,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		final OldSessionHolder Oholder=(OldSessionHolder) holder;
 		final Session session = sessionList.get(i);
-		final int j=i;
+		
 
 		OnClickListener sessionDetailListener=new OnClickListener() {
 			
@@ -230,7 +235,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 					public void onClick(DialogInterface dialog, int whichButton) {
 						String value = input.getText().toString(); 
 						sessionData.renameSession(session, value);
-						notifyItemChanged(j);
+						notifyItemChanged(i);
 					
 					}
 				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -247,14 +252,14 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 			@Override
 			public void onClick(View v) {
-				if(expandedArray.get(j)==false){
-					expandedArray.set(j, true);
+				if(expandedArray.get(i)==false){
+					expandedArray.set(i, true);
 					Oholder.buttonsLayout.setVisibility(View.VISIBLE);
 					Animation animation = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.expandanimation);
 					Oholder.buttonsLayout.startAnimation(animation);
 				}
 				else{
-					expandedArray.set(j, false);
+					expandedArray.set(i, false);
 					Animation animation = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.collapseanimation);
 					animation.setAnimationListener(new AnimationListener() {
 
@@ -290,10 +295,10 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			@Override
 			public void onClick(View v) {
 				sessionData.deleteSession(session);
-				sessionList.remove(j);
-				expandedArray.remove(j);
-				notifyItemRemoved(j);
-				notifyItemRangeChanged(j, size-j);
+				sessionList.remove(i);
+				expandedArray.remove(i);
+				notifyItemRemoved(i);
+				notifyItemRangeChanged(i, size-i);
 			}
 		});
 
@@ -303,10 +308,10 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				sessionData.setSessionArchived(session, true);
-				sessionList.remove(j);
-				expandedArray.remove(j);
-				notifyItemRemoved(j);
-				notifyItemRangeChanged(j, size-j);
+				sessionList.remove(i);
+				expandedArray.remove(i);
+				notifyItemRemoved(i);
+				notifyItemRangeChanged(i, size-i);
 			}
 		});
 
@@ -319,13 +324,13 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		if(type==0) {
 			View v=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_new_session_card, viewGroup, false);
-			if(sessionData.existCurrentSession())v.setLayoutParams(new LayoutParams(v.getWidth(),0));
+			if(sessionData.existCurrentSession())v.setLayoutParams(new LayoutParams(v.getHeight(),0));
 			return new NewSessionHolder(v);
 		}
 
 		if(type==1){
 			View v=LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.first_current_session_sessions_list_card, viewGroup, false);
-			if(!sessionData.existCurrentSession())v.setLayoutParams(new LayoutParams(v.getWidth(),0));
+			if(!sessionData.existCurrentSession())v.setLayoutParams(new LayoutParams(v.getHeight(),0));
 			return new CurrentSessionHolder(v);
 		}
 

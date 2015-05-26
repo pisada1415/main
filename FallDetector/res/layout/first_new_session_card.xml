@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/first_new_session_card"
     android:layout_width="match_parent"
-    android:layout_height="1400px"
-    android:layout_margin="5dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="0dp"
     card_view:cardCornerRadius="4dp"
     
     android:clickable="true"
@@ -13,7 +13,7 @@
     <RelativeLayout
          android:id="@+id/new_session_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="wrap_content" >
 
         <TextView
             android:id="@+id/new_session_text"
