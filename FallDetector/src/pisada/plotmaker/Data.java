@@ -1,5 +1,8 @@
 package pisada.plotmaker;
-
+/*
+ * classe Data (dati) usata al posto della classe point di java
+ * perché abbiamo bisogno di valori float
+ */
 public class Data {
 	public float x;
 	public float y;

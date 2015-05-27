@@ -33,8 +33,13 @@ public class StoBeneActivity extends Activity {
 	private FallDataSource.Fall fall;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		 if (savedInstanceState != null) {
+		        // Restore value of members from saved state
+		        mProgressStatus = savedInstanceState.getInt("progress");
+		    } 
 		fds = new FallDataSource(this);
 		setFinishOnTouchOutside(false);
 		fall = fds.getFall(getIntent().getLongExtra("time", 0), getIntent().getStringExtra("sessionName"));
@@ -63,7 +68,8 @@ public class StoBeneActivity extends Activity {
 						e.printStackTrace();
 					}
 					mProgressStatus += 1;
-
+					
+					
 					// Update the progress bar
 					mHandler.post(new Runnable() {
 						public void run() {
@@ -130,5 +136,11 @@ public class StoBeneActivity extends Activity {
 	public void onBackPressed()
 	{
 		//non usciamo
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle savedInstanceState) {
+		savedInstanceState.putInt("progress", mProgressStatus);
+	    super.onSaveInstanceState(savedInstanceState);
 	}
 }
