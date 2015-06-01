@@ -8,27 +8,25 @@ public class DetectorAlgorithm {
 	public static boolean danielAlgorithm(ExpiringList list)
 	{
 
-	
-		 
+
+
 		boolean fall=false;
 		int i=0;
 		int j=0;
 		for(Acquisition a : list.timerAcquisitionList){
 
-			if(module(a)>7 && i>2){
+			if(i>25){
 				fall=true;
 				break;
 			}
-			if(module(a)<2.5){
+			if(module(a)<8){
 				i++;
-				if(j>0) j--;
 			}
 			else{
 				j++;
-				if(i>0)i--;
 			}
 
-			if(j>150){
+			if(j>5){
 				j=0;i=0;
 			}
 

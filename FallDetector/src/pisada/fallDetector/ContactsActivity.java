@@ -132,8 +132,8 @@ public class ContactsActivity extends AppCompatActivity {
 				}
 			}).create();
 
-			final EditText inputName = (EditText) textEntryView.findViewById(R.id.editText1);
-			final EditText inputNumber = (EditText) textEntryView.findViewById(R.id.editText2);
+			final EditText inputName = (EditText) textEntryView.findViewById(R.id.first_curr_name);
+			final EditText inputNumber = (EditText) textEntryView.findViewById(R.id.first_curr_num_cadute_field2);
 			inputNumber.setInputType(InputType.TYPE_CLASS_PHONE);
 
 			//questo ha lo scopo di settare i tasti dopo aver inizializzato le textview:

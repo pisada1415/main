@@ -600,6 +600,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 		else if(thumbNailCurrent != null)
 			thumbNailCurrent.setVisibility(View.GONE);
+		
 		/*if(thumbNailCurrent == null && session != null)
 			bitmapThumbNailCurrent = sessionBitmap;*/
 

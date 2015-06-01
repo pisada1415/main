@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -217,7 +218,15 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		navAdapter.selectItem(position);
 
 		setTitle(listItems.get(position).getTitle());
-		mDrawerLayout.closeDrawer(mDrawerList);
+		Handler handler=new Handler();
+		 handler.postDelayed(new Runnable() {
+
+	            @Override
+	            public void run() {
+	                mDrawerLayout.closeDrawer(mDrawerList);
+	            }           
+	        }, 40);
+		
 	}
 
 	@Override

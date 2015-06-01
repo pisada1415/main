@@ -13,6 +13,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView.FindListener;
+import android.widget.ImageView;
 import fallDetectorException.BoolNotBoolException;
 
 
@@ -26,6 +28,7 @@ public class SessionsListFragment extends FallDetectorFragment {
 	private static SessionDataSource sessionData;
 	Intent serviceIntent;
 	Activity activity;
+	private ImageView FAB;
 	private final int TYPE = 1;
 
 
@@ -61,13 +64,24 @@ public class SessionsListFragment extends FallDetectorFragment {
 		//INIZIALIZZO RECYCLERVIEW
 
 		rView=(RecyclerView) getView().findViewById(R.id.session_list_recycler);
-	
+
 		cardAdapter=new SessionListCardAdapter(activity, rView);
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(activity);
 		rView.setLayoutManager(mLayoutManager);
 		rView.setItemAnimator(new DefaultItemAnimator());
 		this.scroll(MainActivity.sessionsListFragmentLastIndex);
+		FAB=(ImageView) activity.findViewById(R.id.FAB);
+		if(sessionData.existCurrentSession()) FAB.setVisibility(View.GONE);
+		else FAB.setVisibility(View.VISIBLE);
+		FAB.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Intent intent=new Intent(activity,CurrentSessionFragment.class);
+				((FragmentCommunicator)activity).switchFragment(intent);
+			}
+		});
 	}
 
 

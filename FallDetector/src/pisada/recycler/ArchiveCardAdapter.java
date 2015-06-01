@@ -38,7 +38,7 @@ public class ArchiveCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 		private Button archiveBtn;
 		public SessionHolder(View v) {
 			super(v);
-			vName =  (TextView) v.findViewById(R.id.old_session_description);
+			//vName =  (TextView) v.findViewById(R.id.old_session_description);
 			deleteBtn=(Button) v.findViewById(R.id.old_delete_button);
 			archiveBtn =(Button)v.findViewById(R.id.old_rename_button);
 		}
