@@ -3,60 +3,186 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/card_view"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="5dp"
-    card_view:cardBackgroundColor="@color/accent_material_dark"
+    android:layout_height="wrap_content"
+    android:layout_margin="3dp"
+    android:clickable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    card_view:cardBackgroundColor="#FFFFFF"
     card_view:cardCornerRadius="4dp" >
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-
+        android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        card_view:cardCornerRadius="4dp" 
-        
-    android:clickable="true"
-    android:foreground="?android:attr/selectableItemBackground">
-
-
-        <TextView
-            android:id="@+id/nameText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="banane"
-            android:textColor="@color/abc_primary_text_material_dark"
-            android:textSize="20sp" />
+        android:clickable="true"
+        android:paddingBottom="0dp"
+        card_view:cardCornerRadius="4dp" >
 
         <RelativeLayout
+            android:id="@+id/icon_r_lay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+            <ImageView
+                android:id="@+id/archive_old_session_icon"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true" />
+
+            <Button
+                android:id="@+id/expand_button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignBottom="@+id/old_field_description"
+                android:layout_alignParentRight="true"
+                android:background="@drawable/expander_ic_minimized" />
+
+            <RelativeLayout
+                android:id="@+id/old_field_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="10dp"
+                android:layout_toLeftOf="@+id/expand_button"
+                android:layout_toRightOf="@+id/archive_old_session_icon"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/old_name_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:gravity="left"
+                    android:singleLine="true"
+                    android:text="@string/name"
+                    android:textColor="#000000"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/old_falls_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@id/old_name_name"
+                    android:gravity="left"
+                    android:singleLine="true"
+                    android:text="@string/falls"
+                    android:textColor="@color/black_overlay"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/old_start_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@id/old_falls_name"
+                    android:gravity="left"
+                    android:singleLine="true"
+                    android:text="@string/date_start_time"
+                    android:textColor="@color/black_overlay"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/old_duration_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@id/old_start_name"
+                    android:gravity="left"
+                    android:singleLine="true"
+                    android:text="@string/duration"
+                    android:textColor="@color/black_overlay"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/old_duration_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_alignLeft="@+id/old_falls_description"
+                    android:layout_below="@+id/old_start_description"
+                    android:gravity="left"
+                    android:singleLine="true"
+                    android:textColor="@color/black_overlay"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/old_start_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_above="@+id/old_duration_name"
+                    android:layout_alignLeft="@+id/old_falls_description"
+                    android:gravity="left"
+                    android:singleLine="true"
+                    android:textColor="@color/black_overlay"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/old_name_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_above="@+id/old_falls_description"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="left"
+                    android:singleLine="true"
+             android:textColor="@color/black_overlay"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/old_falls_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_above="@+id/old_start_description"
+                    android:layout_alignLeft="@+id/old_name_description"
+                    android:gravity="left"
+                    android:singleLine="true"
+             android:textColor="@color/black_overlay"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/buttons_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1" >
+            android:layout_below="@id/icon_r_lay" >
 
-            <Button
-                android:id="@+id/old_details_button"
-                android:layout_width="50dp"
-                android:layout_height="match_parent"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:background="@drawable/ic_action_search"/>
-
-            <Button
-                android:id="@+id/old_rename_button"
-                android:layout_width="50dp"
-                android:layout_height="match_parent"
-                android:layout_toLeftOf="@id/old_details_button"
-                  android:background="@drawable/editbtn"
-                  />
+            <View
+                android:id="@+id/separator"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginLeft="3dp"
+                android:layout_marginRight="3dp"
+                android:layout_marginTop="2dp"
+                android:background="#BEBEBE" />
 
             <Button
                 android:id="@+id/old_delete_button"
-                android:layout_width="50dp"
-                android:layout_height="match_parent"
-                android:layout_toLeftOf="@id/old_rename_button"
-                android:background="@drawable/ic_action_delete" />
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_below="@id/separator"
+                android:background="@drawable/ic_menu_delete" />
+
+            <Button
+                android:id="@+id/old_archive_button"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentBottom="true"
+                android:layout_below="@id/separator"
+                android:layout_toLeftOf="@id/old_delete_button"
+                android:background="@drawable/ic_menu_archive" />
+
+            <Button
+                android:id="@+id/old_rename_button"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentBottom="true"
+                android:layout_below="@id/separator"
+                android:layout_toLeftOf="@id/old_archive_button"
+                android:background="@drawable/ic_menu_edit" />
         </RelativeLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
 </android.support.v7.widget.CardView>

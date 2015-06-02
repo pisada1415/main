@@ -46,9 +46,10 @@
     <string name="notsent">not sent yet</string>
     <string name="sent">sent</string>
     <string name="requiresSetup">requires setup</string>
-    <string name="starttime">Start:&#160;</string>
-    <string name="duration">Duration:&#160;</string>
     <string name="date">Date:&#160;</string>
+    <string name="duration">Duration:&#160;</string>
+    <string name="falls">Falls</string>
+    <string name="date_start_time">Date:&#160;</string>
     <string name="notifSentCorrectly">Notification was sent correctly to your contacts for this event</string>
     <string name="notifNotSent">Notification was not sent to anyone for this event</string>
     <string name="notavailable">not available</string>
@@ -57,11 +58,22 @@
     <string name="thumbnailFall">Fall thumbnail</string>
     <string name="thumbnail">thumbnail</string>
     <string name="navdrawic">navigation drawer icon</string>
+
     <string name="areyouok">Are you OK?</string>
     <string name="title_activity_sto_bene">I Feel Fine</string>
     <string name="leavetimetopress">I\'m about to warn your contacts about your fall, press cancel to dismiss</string>
-    
+
+    <string name="first_curr_date_field">Date:</string>
+    <string name="first_curr_num_cadute_field">Falls:</string>
+    <string name="first_curr_ora_inizio_field">Time:</string>
+    <string name="first_curr_sent_field">Sent:</string>
+    <string name="FAB">FAB</string>
+    <string name="no_current_session">No current session</string>
+      <string name="falls_notified">Falls sent</string>
+       <string name="falls_unnotified">Falls not sent</string>
+
     <string name="credits">
+        
 <![CDATA[
 	    <p>Designed, built and implemented by <br>
 	    <b>

@@ -206,8 +206,13 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 
 			bestProvider = lm.getBestProvider(criteria, true); 
-			lm.requestLocationUpdates(bestProvider, MIN_TIME_LOCATION_UPDATES, MIN_DISTANCE_LOCATION_UPDATES, locationListenerGPS); //if gps is available
-			lm.requestLocationUpdates(networkProvider, MIN_TIME_LOCATION_UPDATES, MIN_DISTANCE_LOCATION_UPDATES, locationListenerNetwork); //always updates location with network: it's faster
+
+
+			if (lm.getAllProviders().contains(LocationManager.NETWORK_PROVIDER))
+				lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerGPS);
+
+			if (lm.getAllProviders().contains(LocationManager.GPS_PROVIDER))
+				lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerNetwork);
 
 		}
 
@@ -363,9 +368,11 @@ public class ForegroundService extends Service implements SensorEventListener {
 							@Override
 							public void run() {
 								if(!locationUpdatesRemoved){
-									lm.requestLocationUpdates(GPSProvider, MIN_TIME_LOCATION_UPDATES, MIN_DISTANCE_LOCATION_UPDATES, locationListenerGPS);
-									lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_LOCATION_UPDATES,  MIN_DISTANCE_LOCATION_UPDATES, locationListenerNetwork);
-								}
+									if (lm.getAllProviders().contains(LocationManager.NETWORK_PROVIDER))
+										lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerGPS);
+
+									if (lm.getAllProviders().contains(LocationManager.GPS_PROVIDER))
+										lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListenerNetwork);								}
 							}
 						});
 					}
@@ -385,7 +392,9 @@ public class ForegroundService extends Service implements SensorEventListener {
 								sr.runOnUiThread(r);
 
 							}
+
 						stopSelf();
+
 					}
 					try {
 						Thread.sleep(SERVICE_SLEEP_TIME);

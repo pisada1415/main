@@ -1,11 +1,16 @@
 package pisada.fallDetector;
 
+import java.awt.font.NumericShaper;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -26,6 +31,7 @@ public class Utility {
 
 	public final static String FALL_TIME_KEY = "fall_time";
 	public final static String SESSION_NAME_KEY = "session_name";
+	private static ArrayList<Entry> mapp=new ArrayList<Utility.Entry>();
 
 	public static String checkLocationServices(final Context context, boolean showDialog)
 	{
@@ -103,7 +109,7 @@ public class Utility {
 		return formatter.format(date);
 
 	}
-	
+
 	public static String getStringHour(long timeMillis)
 	{
 		final SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss");
@@ -132,34 +138,99 @@ public class Utility {
 	}
 
 	public static Bitmap createImage(int sessionNumber){
-
-
 		sessionNumber+=3;
-		ArrayList<int[]> primes=getPrimes(sessionNumber);
-		int size=primes.size();
+		ArrayList<int[]>  primes=getPrimesList(sessionNumber);
 		Bitmap icon=Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
 		icon.eraseColor(Color.TRANSPARENT);//rgb(224, 224, 224));
 		Canvas canvas=new Canvas(icon);
 		Paint paint=new Paint();
 		paint.setAntiAlias(true); //aggiunta per depixellare e rendere più "smooth" le forme
 		paint.setStyle(Style.FILL);
-		int[] colors={Color.CYAN,Color.GREEN,Color.MAGENTA,Color.YELLOW,Color.BLUE,Color.RED};
+		int[] colors={Color.CYAN,Color.GREEN,Color.MAGENTA,Color.YELLOW,Color.BLUE,Color.RED,Color.BLACK, Color.DKGRAY};
 
-		for(int i=size-1;i>=0;i--){
+		for(int i=0;i<primes.size();i++){
 			int prime=primes.get(i)[0];
 			int exp=primes.get(i)[1];
-		//	paint.setARGB(((prime*101)%128)+128, ((exp*153)%128)+128,(int) ((Math.pow(prime, exp)*91)%128)+128, 0);
-			paint.setColor(colors[(int)(Math.pow(prime, exp))%6]);
-			canvas.drawPath(getPolygon(prime*exp,new Point(100,100),100/exp), paint);
+			//	paint.setARGB(((prime*101)%128)+128, ((exp*153)%128)+128,(int) ((Math.pow(prime, exp)*91)%128)+128, 0);
+			paint.setColor(colors[(int)((Math.pow(prime, exp)*5+7)%11)%8]);
+			canvas.drawPath(getPolygon(prime*exp,new Point(100,100),Math.max(50,100/exp), prime*exp%2==0&&prime*exp>7), paint);
 
+		}
+
+		if(isPrime(sessionNumber)){
+			primes=getPrimesList(sessionNumber+10);
+			for(int i=0;i<primes.size();i++){
+				int prime=primes.get(i)[0];
+				int exp=primes.get(i)[1];
+				//	paint.setARGB(((prime*101)%128)+128, ((exp*153)%128)+128,(int) ((Math.pow(prime, exp)*91)%128)+128, 0);
+				paint.setColor(colors[(int)((Math.pow(prime, exp)*5+7)%11)%8]);
+				canvas.drawPath(getPolygon(prime*exp,new Point(100,100),(float)(Math.max(50,100/exp)/1.5), prime*exp%2==0&&prime*exp>7), paint);
+
+			}
 		}
 		return icon;
 	}
 
+	private static ArrayList<int[]> getPrimesList(int sessionNumber){
+		boolean keyFound=false;
+	
+		ArrayList<int[]> primes=new ArrayList<int[]>();
+		int  size=0;
+		for(Entry e: mapp){
+			if(e.key==sessionNumber){
+				primes=e.primes;
+				size=primes.size();
+				keyFound=true;
+				break;
+			}
+		}
 
+		if(!keyFound){
+			primes=getPrimes(sessionNumber);
+			size=primes.size();
+			Collections.sort(primes, new Comparator<int[]>(){
+
+				@Override
+				public int compare(int[] prime1, int[] prime2) {
+					double res=-(double)1/(double)prime2[1]-(double)1/(double)prime1[1];
+					if(res<0) return -1;
+					if(res>0)return 1;
+					else return 0;
+				}
+
+			});
+
+
+			ArrayList<int[]> tmp=new ArrayList<int[]>();
+
+			for(int firstIndex=0,lastIndex=0;lastIndex<primes.size();lastIndex++){
+				int[] prime=primes.get(lastIndex);
+				tmp.add(prime);
+
+				if(lastIndex+1==size||prime[1]!=primes.get(lastIndex+1)[1]){
+					Collections.sort(tmp, new Comparator<int[]>(){
+
+						@Override
+						public int compare(int[] prime1, int[] prime2) {
+							// TODO Auto-generated method stub
+							return prime2[1]*prime2[0]- prime1[1]*prime1[0];
+						}
+
+					});
+
+					for(int[] p: tmp){
+						primes.set(firstIndex++, p);
+					}
+					tmp=null;
+					tmp=new ArrayList<int[]>();
+				}
+			}
+			mapp.add(new Entry(sessionNumber, primes));
+		}
+		return primes;
+
+	}
 	private static ArrayList<int[]> getPrimes(int sNumber){
-
-
 
 
 		ArrayList<int[]> factors=new ArrayList<int[]>();
@@ -207,14 +278,29 @@ public class Utility {
 		return prime;
 	}
 
-	private static Path getPolygon(int n, Point startPoint, float dimension){
+	private static Path getPolygon(int n, Point startPoint, float dimension, boolean star){
 
 		float startX=startPoint.x;
 		float startY=startPoint.y;
 		float deg=(float) (2*Math.PI/((float) n));
 		ArrayList<float[]> points=new ArrayList<float[]>();
 		for(int i=0; i<n;i++){
-			float[] p={(float)(startX+ Math.sin(deg*i)*dimension),(float)(startY-Math.cos(deg*i)*dimension)};
+
+			float[] p=new float[2];
+			if(star){
+				if(i%2==0){
+					p[0]=((float)(startX+ Math.sin(deg*i)*dimension));
+					p[1]=(float)(startY-Math.cos(deg*i)*dimension);
+				}
+				else{
+					p[0]=((float)(startX+ Math.sin(deg*i)*dimension/2.0));
+					p[1]=(float)(startY-Math.cos(deg*i)*dimension/2.0);
+				}
+			}
+			else{
+				p[0]=((float)(startX+ Math.sin(deg*i)*dimension));
+				p[1]=(float)(startY-Math.cos(deg*i)*dimension);
+			}
 			points.add(p);
 		}
 		Path path=new Path();
@@ -244,5 +330,17 @@ public class Utility {
 
 
 
+
+	private  static  class Entry{
+		int key;
+		ArrayList<int[]> primes;
+
+		public Entry(int key, ArrayList<int[]> primes){
+			this.key=key;
+			this.primes=primes;
+		}
+
+
+	}
 
 }

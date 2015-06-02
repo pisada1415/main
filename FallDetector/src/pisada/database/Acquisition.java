@@ -3,9 +3,6 @@ package pisada.database;
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource.Session;
 
-
-//DA FARE
-//Samuele gay
 public class Acquisition {
 	private long time;
 	private float xAxis;
@@ -32,11 +29,8 @@ public class Acquisition {
 	public Session getSession(){return session;}
 	public Fall getFall(){return fall;}
 	public boolean isValidAcquisition(){return isValid;}
-	
-	
-	/*****************NON USARE**********************/
-	public void setSession(Session session){this.session=session;}
-	public void setFall(Fall fall){this.fall=fall;}
-	/*****************NON USARE**********************/
+	protected void setSession(Session session){this.session=session;}
+	protected void setFall(Fall fall){this.fall=fall;}
+
 
 }
