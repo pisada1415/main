@@ -58,7 +58,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 
 
-	
+
 
 
 	public static class CurrentSessionHolder extends RecyclerView.ViewHolder {
@@ -96,7 +96,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		}
 
 	}
-	
+
 	public static class OldSessionHolder extends RecyclerView.ViewHolder
 	{
 		private TextView vName;
@@ -120,7 +120,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			renameBtn=(Button) v.findViewById(R.id.old_rename_button);
 			deleteBtn=(Button) v.findViewById(R.id.old_delete_button);
 			archiveBtn =(Button)v.findViewById(R.id.old_archive_button); //TEMPORANEO
-			sessionIcon=(ImageView) v.findViewById(R.id.old_session_icon);
+			sessionIcon=(ImageView) v.findViewById(R.id.archive_old_session_icon);
 			buttonsLayout= (RelativeLayout) v.findViewById(R.id.buttons_layout);
 			expandButton=(Button) v.findViewById(R.id.expand_button);
 			startTimeTextView=(TextView) v.findViewById(R.id.old_start_description);
@@ -182,10 +182,10 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				cHolder.timeText.setText(Utility.getStringHour(currSession.getStartTime()));
 				cHolder.fallsText.setText(String.valueOf(currSession.getFallsNumber()));
 				ArrayList<Fall> falls=currSession.getFalls();
-				
+
 				if(falls!=null){
-					 cHolder.sentText.setVisibility(View.VISIBLE);
-					 cHolder.sentText.setText(activity.getResources().getString(R.string.falls_notified));
+					cHolder.sentText.setVisibility(View.VISIBLE);
+					cHolder.sentText.setText(activity.getResources().getString(R.string.falls_notified));
 					for(Fall f:falls){
 						if(!f.wasNotified()) cHolder.sentText.setText(activity.getResources().getString(R.string.falls_unnotified));
 						break;
@@ -249,24 +249,37 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				final EditText input = new EditText(activity);
 				input.setText( session.getName());
 				input.addTextChangedListener((TextWatcher) activity);
-				new AlertDialog.Builder(activity)
-				.setTitle("Rename")
-				.setMessage("Insert name")
-				.setView(input)
-				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						String value = input.getText().toString(); 
-						sessionData.renameSession(session, value);
-						notifyItemChanged(i);
+				final Boolean isValid=null;
+			
+				
+					new AlertDialog.Builder(activity)
+					.setTitle("Rename")
+					.setMessage("Insert name")
+					.setView(input)
+					.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int whichButton) {
 
-					}
-				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						// Do nothing.
-					}
-				}).show();
+							String value = input.getText().toString(); 
+							if(sessionData.existSession(value)){
+								Toast.makeText(activity, "A session with this name already exists", Toast.LENGTH_SHORT).show();
+							}
+							else{
+								sessionData.renameSession(session, value);
+								notifyItemChanged(i);
+							}
+
+						}
+					}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int whichButton) {
+							// Do nothing.
+						}
+					}).show();
+				
 			}
+
+
 		});
+
 
 		if(expandedArray.get(i))Oholder.buttonsLayout.setVisibility(View.VISIBLE);
 		else Oholder.buttonsLayout.setVisibility(View.GONE);
@@ -331,7 +344,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				sessionList.remove(i);
 				expandedArray.remove(i);
 				notifyItemRemoved(i);
-				notifyItemRangeChanged(i, size-i);
+				notifyItemRangeChanged(i, i+15);
 			}
 		});
 
@@ -344,7 +357,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				sessionList.remove(i);
 				expandedArray.remove(i);
 				notifyItemRemoved(i);
-				notifyItemRangeChanged(i, size-i);
+				notifyItemRangeChanged(i, i+15);
 			}
 		});
 
@@ -406,7 +419,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 	}
 
-	
+
 	public void closeAllDetails(){
 		for(int k=0;k<expandedArray.size();k++){
 

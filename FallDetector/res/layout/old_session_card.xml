@@ -24,7 +24,7 @@
             android:layout_height="wrap_content" >
 
             <ImageView
-                android:id="@+id/old_session_icon"
+                android:id="@+id/archive_old_session_icon"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_alignParentLeft="true"
@@ -45,7 +45,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_marginLeft="10dp"
                 android:layout_toLeftOf="@+id/expand_button"
-                android:layout_toRightOf="@+id/old_session_icon"
+                android:layout_toRightOf="@+id/archive_old_session_icon"
                 android:orientation="vertical" >
 
                 <TextView
@@ -68,7 +68,7 @@
                     android:gravity="left"
                     android:singleLine="true"
                     android:text="@string/falls"
-                    android:textColor="@color/accent_material_dark"
+                    android:textColor="@color/black_overlay"
                     android:textSize="15sp" />
 
                 <TextView
@@ -80,7 +80,7 @@
                     android:gravity="left"
                     android:singleLine="true"
                     android:text="@string/date_start_time"
-                    android:textColor="@color/accent_material_dark"
+                    android:textColor="@color/black_overlay"
                     android:textSize="15sp" />
 
                 <TextView
@@ -92,7 +92,7 @@
                     android:gravity="left"
                     android:singleLine="true"
                     android:text="@string/duration"
-                    android:textColor="@color/accent_material_dark"
+                    android:textColor="@color/black_overlay"
                     android:textSize="15sp" />
 
                 <TextView
@@ -103,7 +103,7 @@
                     android:layout_below="@+id/old_start_description"
                     android:gravity="left"
                     android:singleLine="true"
-                    android:textColor="@color/accent_material_dark"
+                    android:textColor="@color/black_overlay"
                     android:textSize="15sp" />
 
                 <TextView
@@ -114,7 +114,7 @@
                     android:layout_alignLeft="@+id/old_falls_description"
                     android:gravity="left"
                     android:singleLine="true"
-                    android:textColor="@color/accent_material_dark"
+                    android:textColor="@color/black_overlay"
                     android:textSize="15sp" />
 
                 <TextView
@@ -125,7 +125,7 @@
                     android:layout_centerHorizontal="true"
                     android:gravity="left"
                     android:singleLine="true"
-                    android:textColor="@color/accent_material_dark"
+             android:textColor="@color/black_overlay"
                     android:textSize="15sp" />
 
                 <TextView
@@ -136,7 +136,7 @@
                     android:layout_alignLeft="@+id/old_name_description"
                     android:gravity="left"
                     android:singleLine="true"
-                    android:textColor="@color/accent_material_dark"
+             android:textColor="@color/black_overlay"
                     android:textSize="15sp" />
             </RelativeLayout>
         </RelativeLayout>

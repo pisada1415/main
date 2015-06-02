@@ -81,7 +81,7 @@ public class Plot extends View {
 		canvas.drawRGB(255, 255, 255); //white background
 		
 		for (int i = 0; i < valuesInPixel.size()-1; i++) {
-			paint.setColor(getResources().getColor(R.color.coolGreen));
+			paint.setColor(getResources().getColor(R.color.red));
 			canvas.drawLine(valuesInPixel.get(i).x,canvasHeight-valuesInPixel.get(i).y,valuesInPixel.get(i+1).x,canvasHeight-valuesInPixel.get(i+1).y,paint);
 		}
 		

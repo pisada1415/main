@@ -1,6 +1,7 @@
 package pisada.fallDetector;
 
 
+import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
 import pisada.recycler.SessionListCardAdapter;
 import android.app.Activity;
@@ -19,7 +20,7 @@ import fallDetectorException.BoolNotBoolException;
 
 
 
-public class SessionsListFragment extends FallDetectorFragment {
+public class SessionsListFragment extends FallDetectorFragment implements ServiceReceiver {
 
 	//private RecyclerView rView;
 	private static SessionListCardAdapter cardAdapter;
@@ -75,13 +76,14 @@ public class SessionsListFragment extends FallDetectorFragment {
 		if(sessionData.existCurrentSession()) FAB.setVisibility(View.GONE);
 		else FAB.setVisibility(View.VISIBLE);
 		FAB.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				Intent intent=new Intent(activity,CurrentSessionFragment.class);
 				((FragmentCommunicator)activity).switchFragment(intent);
 			}
 		});
+		ForegroundService.connect(this);
 	}
 
 
@@ -114,6 +116,32 @@ public class SessionsListFragment extends FallDetectorFragment {
 	public void currentSessionDetails(View v){
 
 		this.addSession(v);
+	}
+	@Override
+	public void serviceUpdate(float x, float y, float z, long time) {
+		// TODO Auto-generated method stub
+
+	}
+	@Override
+	public void serviceUpdate(Fall fall, String sessionName) {
+		rView.getAdapter().notifyItemChanged(0);
+
+	}
+	@Override
+	public void sessionTimeOut() {
+		// TODO Auto-generated method stub
+
+	}
+	@Override
+	public boolean equalsClass(ServiceReceiver obj) {
+		if(obj instanceof SessionsListFragment)
+			return true;
+		return false;
+	}
+	@Override
+	public void runOnUiThread(Runnable r) {
+	
+
 	}
 
 }

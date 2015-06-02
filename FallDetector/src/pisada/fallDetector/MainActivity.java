@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
 
 		sessionData = new SessionDataSource(this); 
+		sessionData.renameAllSession();
 		setContentView(R.layout.activity_navigation_drawer);
 		isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true : false;
 		fm = getSupportFragmentManager();

@@ -15,7 +15,7 @@ public class DetectorAlgorithm {
 		int j=0;
 		for(Acquisition a : list.timerAcquisitionList){
 
-			if(i>25){
+			if(i>16){
 				fall=true;
 				break;
 			}

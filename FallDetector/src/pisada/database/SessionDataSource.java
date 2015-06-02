@@ -433,7 +433,15 @@ public class SessionDataSource {
 	private static int getSessionFallsNumber(String sessionName){return  database.rawQuery("SELECT * FROM "+FallSqlHelper.FALL_TABLE+" WHERE "+FallSqlHelper.FALL_FSESSION+" = '"+sessionName+"' ORDER BY "+FallSqlHelper.FALL_TIME+" DESC",null ).getCount();}
 
 
-
+	public void renameAllSession(){
+		if(sessionList==null)	return;
+		
+		for(Session s: sessionList){
+			String name=s.getName();
+			if(name.contains(":")) renameSession(s, "Session"+s.getID());
+		}
+			
+	}
 
 
 }
