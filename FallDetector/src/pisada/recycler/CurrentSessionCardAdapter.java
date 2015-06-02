@@ -602,7 +602,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 		else if(thumbNailCurrent != null)
 			thumbNailCurrent.setVisibility(View.GONE);
-		
 		/*if(thumbNailCurrent == null && session != null)
 			bitmapThumbNailCurrent = sessionBitmap;*/
 
@@ -714,11 +713,9 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			int chronometer;
 
 			long time = System.currentTimeMillis(); //MEMORIZZA IL MOMENTO IN CUI è STATO PREMUTO IL TASTO
-			if(currentSessionName.equals(sessionNameDefault)){ //cioè non è stato cambiato
-				int prevID = sds.sessions().size() > 0 ? sds.sessions().get(0).getID() : 0;
-				currentSessionName = "Session"+(prevID+1); //assegno nome default UNICO (altrimenti tengo quello cambiato)
-				
-			}
+			if(currentSessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
+				currentSessionName = "Session:"+ Utility.getStringTime(time); //assegno nome default UNICO (altrimenti tengo quello cambiato)
+
 
 			if(!ForegroundService.isRunning()){
 				//il service non sta andando

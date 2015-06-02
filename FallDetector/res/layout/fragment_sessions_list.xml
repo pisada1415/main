@@ -1,10 +1,9 @@
 
-<RelativeLayout
-     xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
+    android:orientation="vertical"
     tools:context="pisada.fallDetector.SessionsListActivity" >
    
 
@@ -12,23 +11,10 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/session_list_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-
+        android:layout_height="0dp"
+        android:layout_weight="12"
         android:scrollbars="vertical" 
         android:background="@color/lightGrey"
-       />
+       /> 
 
-    <ImageButton
-        android:id="@+id/FAB"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="20dp"
-        android:layout_marginRight="20dp"
-        android:background="@drawable/circle"
-        android:contentDescription="@string/FAB"
-        android:src="@drawable/ic_input_add"
-        android:tint="@android:color/white" />
-
-</RelativeLayout>
+</LinearLayout>

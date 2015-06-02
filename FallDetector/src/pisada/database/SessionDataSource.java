@@ -2,7 +2,6 @@ package pisada.database;
 
 import java.util.ArrayList;
 
-import pisada.database.FallDataSource.Fall;
 import fallDetectorException.AlreadyCloseSessionException;
 import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.DublicateNameSessionException;
@@ -17,7 +16,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 
 public class SessionDataSource {
-	private static SQLiteDatabase database;
+	private SQLiteDatabase database;
 	private FallSqlHelper databaseHelper;
 	private String[] allColumns={FallSqlHelper.SESSION_NAME,FallSqlHelper.SESSION_IMG,FallSqlHelper.SESSION_START_TIME,FallSqlHelper.SESSION_END_TIME, 
 			FallSqlHelper.SESSION_CLOSE_COLUMN, FallSqlHelper.SESSION_DURATION, FallSqlHelper.SESSION_STOP_TIME_PREFERENCE, FallSqlHelper.SESSION_PAUSE_COLUMN, FallSqlHelper.SESSION_ARCHIVED_COLUMN , FallSqlHelper.SESSION_ID};
@@ -38,7 +37,6 @@ public class SessionDataSource {
 		private int archived;
 		private int id;
 		private boolean isValid=true;
-		private int falls=0;
 
 		//COSTRUTTORE INTERNO NUOVA SESSIONE
 		private Session(String name, String img,long startTime,long endTime,long stopTimePreference, int close, int pause, int archived,int id, Context context) throws BoolNotBoolException{
@@ -53,8 +51,6 @@ public class SessionDataSource {
 				this.pause=pause;
 				this.archived=archived;
 				this.id=id;
-				this.falls=SessionDataSource.getSessionFallsNumber(name);
-
 			}
 
 		}
@@ -79,13 +75,6 @@ public class SessionDataSource {
 		public boolean isRunning(){return pause==FallSqlHelper.RUNNING;}
 		public boolean isArchived(){return archived==FallSqlHelper.ARCHIVED;}
 		public int getID(){return id;}
-		public int getFallsNumber(){return falls;}
-		public ArrayList<Fall> getFalls(){
-			FallDataSource fallData=new FallDataSource(context);
-			return fallData.sessionFalls(this);
-
-		}
-
 
 		//SETTER PRIVATI
 		private void setName(String name){this.name=name;}
@@ -99,7 +88,6 @@ public class SessionDataSource {
 			if(archived) i=FallSqlHelper.ARCHIVED;
 			this.archived=i;
 		}
-		protected int  addFall(){return ++falls;}
 	}
 
 	public SessionDataSource(Context context){
@@ -130,8 +118,8 @@ public class SessionDataSource {
 
 		if(existCurrentSession()) throw new MoreThanOneOpenSessionException();
 		if(getSession(name)!=null) throw new DublicateNameSessionException();
-
-
+		
+		
 		int id=0;
 		if(!sessionList.isEmpty()) id=sessionList.get(0).id+1;
 		ContentValues values=new ContentValues();
@@ -152,7 +140,7 @@ public class SessionDataSource {
 
 		if(existCurrentSession()) throw new MoreThanOneOpenSessionException();
 		if(getSession(name)!=null) throw new DublicateNameSessionException();
-
+		
 		int id=0;
 		if(!sessionList.isEmpty()) id=sessionList.get(0).id+1;
 		ContentValues values=new ContentValues();
@@ -424,24 +412,13 @@ public class SessionDataSource {
 			}
 			index++;
 		}
-
+		
 		database.delete(FallSqlHelper.FALL_TABLE, FallSqlHelper.FALL_FSESSION+" = ?", new String[]{s.name});
 		database.delete(FallSqlHelper.ACQUISITION_TABLE, FallSqlHelper.ACQUISITION_ASESSION+" = ?", new String[]{s.name});
 
 	}
 
-	private static int getSessionFallsNumber(String sessionName){return  database.rawQuery("SELECT * FROM "+FallSqlHelper.FALL_TABLE+" WHERE "+FallSqlHelper.FALL_FSESSION+" = '"+sessionName+"' ORDER BY "+FallSqlHelper.FALL_TIME+" DESC",null ).getCount();}
 
-
-	public void renameAllSession(){
-		if(sessionList==null)	return;
-		
-		for(Session s: sessionList){
-			String name=s.getName();
-			if(name.contains(":")) renameSession(s, "Session"+s.getID());
-		}
-			
-	}
 
 
 }

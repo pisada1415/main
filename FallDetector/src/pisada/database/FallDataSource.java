@@ -123,7 +123,6 @@ public class FallDataSource {
 		for(Acquisition a: acquisitionList){
 			insertAcquisition(fall, a);
 		}
-		session.addFall();
 		return fall;
 
 	}
