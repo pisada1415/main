@@ -22,7 +22,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:textColor="@color/material_green_400"
+                android:textColor="@color/black_overlay"
+                android:textStyle="bold"
                 android:text="@string/plotsCardText"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         <LinearLayout
