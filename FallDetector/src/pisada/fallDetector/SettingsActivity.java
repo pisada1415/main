@@ -27,33 +27,17 @@ import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-/**
- * A {@link PreferenceActivity} that presents a set of application settings. On
- * handset devices, settings are presented as a single list. On tablets,
- * settings are split by category, with category headers shown to the left of
- * the list of settings.
- * <p>
- * See <a href="http://developer.android.com/design/patterns/settings.html">
- * Android Design: Settings</a> for design guidelines and the <a
- * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
- * API Guide</a> for more information on developing a Settings UI.
- */
+
 public class SettingsActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener{
 	private ActionBar actionBar;
-	private Preference smsNotiPref, maxDurationSession, sampleRate, alarmTime;
 	private static AlarmManager alarmManager;
-	/**
-	 * Determines whether to always show the simplified settings UI, where
-	 * settings are presented in a single list. When false, settings are shown
-	 * as a master/detail two-pane view on tablets. When true, a single pane is
-	 * shown on tablets.
-	 */
+
+
 	@Override
 	protected boolean isValidFragment(String fragmentName) {
-		String miouno = SimplePreferenceFragment.class.getName();
-		String miodue = GeneralPreferenceFragment.class.getName();
 		  return (fragmentName.equals(SimplePreferenceFragment.class.getName()) ||
-				  fragmentName.equals(GeneralPreferenceFragment.class.getName()));
+				  fragmentName.equals(GeneralPreferenceFragment.class.getName())) || 
+				  fragmentName.equals(NotificationPreferenceFragment.class.getName());
 		}
 	
 	private static final boolean ALWAYS_SIMPLE_PREFS = false;
@@ -79,31 +63,13 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 		
 	}
 
-	/**
-	 * Shows the simplified settings UI if the device configuration if the
-	 * device configuration dictates that a simplified, single-pane UI should be
-	 * shown.
-	
-	 *
-	 *
-	 *
-	 *
-	 *
-	 *
-	 *
-	 */
 	
 	
 	
-	
+	@SuppressWarnings("unused")
 	private void setupSimplePreferencesScreen() {
 
 
-
-		// In the simplified UI, fragments are not used at all and we instead
-		// use the older PreferenceActivity APIs.
-
-		// Display the fragment as the main content.
 		FragmentManager mFragmentManager = getFragmentManager();
 		FragmentTransaction mFragmentTransaction = mFragmentManager
 				.beginTransaction();
@@ -111,44 +77,24 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 		mFragmentTransaction.replace(android.R.id.content, mPrefsFragment);
 		mFragmentTransaction.commit();
 
-		/*
-		// Add 'general' preferences.
-		addPreferencesFromResource(R.xml.pref_general);
-
-		// Add 'notifications' preferences, and a corresponding header.
-		PreferenceCategory fakeHeader = new PreferenceCategory(this);
-		fakeHeader.setTitle(R.string.pref_header_notifications);
-		getPreferenceScreen().addPreference(fakeHeader);
-		addPreferencesFromResource(R.xml.pref_notification);
-		smsNotiPref = (Preference) findPreference("sms_list");
-		smsNotiPref.setOnPreferenceClickListener(clickListener);
-		 */
-
 
 	}
 	
 	public static class SimplePreferenceFragment extends PreferenceFragment {
-		private Preference smsNotiPref, maxDurationSession, sampleRate, alarmTime;
-		private static AlarmManager alarmManager;
+		private Preference smsNotiPref;
 		
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			/*PreferenceCategory header2 = new PreferenceCategory(getActivity());
-			header2.setTitle(R.string.pref_header_general);
-			getPreferenceScreen().addPreference(header2);
-			 */addPreferencesFromResource(R.xml.pref_general);
+			 addPreferencesFromResource(R.xml.pref_general);
 			 
 			 
-			 PreferenceCategory header1 = new PreferenceCategory(getActivity());
-			 header1.setTitle(R.string.pref_header_notifications);
-			 getPreferenceScreen().addPreference(header1);
+			 PreferenceCategory fakeHeader = new PreferenceCategory(getActivity());
+			 fakeHeader.setTitle(R.string.pref_header_notifications);
+			 getPreferenceScreen().addPreference(fakeHeader);
 			 addPreferencesFromResource(R.xml.pref_notification);
 			 smsNotiPref = (Preference) findPreference("sms_list");
 			 smsNotiPref.setOnPreferenceClickListener(clickListener);
-			 sampleRate = (Preference) findPreference("sample_rate");
-			 maxDurationSession = (Preference) findPreference("max_duration_session");
-			 alarmTime = (Preference) findPreference("time");
 			 bindPreferenceSummaryToValue(findPreference("sample_rate"));
 
 				bindPreferenceSummaryToValue(findPreference("sms_list"));
@@ -182,23 +128,12 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 	}
 
 	
-	/**
-	 * Helper method to determine if the device has an extra-large screen. For
-	 * example, 10" tablets are extra-large.
-	 */
 	private static boolean isXLargeTablet(Context context) {
 		boolean returnedBool =  (context.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
 
 		return returnedBool;
 	}
 
-	/**
-	 * Determines whether the simplified settings UI should be shown. This is
-	 * true if this is forced via {@link #ALWAYS_SIMPLE_PREFS}, or the device
-	 * doesn't have newer APIs like {@link PreferenceFragment}, or the device
-	 * doesn't have an extra-large screen. In these cases, a single-pane
-	 * "simplified" settings UI should be shown.
-	 */
 	private static boolean isSimplePreferences(Context context) {
 		return ALWAYS_SIMPLE_PREFS
 				|| Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB
@@ -223,34 +158,21 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 
 			if (preference instanceof ListPreference) {
 				
-				// For list preferences, look up the correct display value in
-				// the preference's 'entries' list.
 				ListPreference listPreference = (ListPreference) preference;
 				int index = listPreference.findIndexOfValue(stringValue);
 
-				// Set the summary to reflect the new value.
 				preference
 						.setSummary(index >= 0 ? listPreference.getEntries()[index]
 								: null);
 
 			}  else {
-				// For all other preferences, set the summary to the value's
-				// simple string representation.
 				preference.setSummary(stringValue);
 			}
 			return true;
 		}
 	};
 
-	/**
-	 * Binds a preference's summary to its value. More specifically, when the
-	 * preference's value is changed, its summary (line of text below the
-	 * preference title) is updated to reflect the value. The summary is also
-	 * immediately updated upon calling this method. The exact display format is
-	 * dependent on the type of preference.
-	 *
-	 * @see #sBindPreferenceSummaryToValueListener
-	 */
+	
 	private static void bindPreferenceSummaryToValue(Preference preference) {
 		// Set the listener to watch for value changes.
 		preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
@@ -264,37 +186,38 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 						""));
 	}
 
-	/**
-	 * This fragment shows general preferences only. It is used when the
-	 * activity is showing a two-pane settings UI.
-	 */
+	
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	public static class GeneralPreferenceFragment extends PreferenceFragment {
-		private Preference smsNotiPref, maxDurationSession, sampleRate, alarmTime;
-		private static AlarmManager alarmManager;
 		
 		
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			addPreferencesFromResource(R.xml.pref_general);
-			 PreferenceCategory header1 = new PreferenceCategory(getActivity());
-			 header1.setTitle(R.string.pref_header_notifications);
-			 getPreferenceScreen().addPreference(header1);
-			 addPreferencesFromResource(R.xml.pref_notification);
-			 smsNotiPref = (Preference) findPreference("sms_list");
-			 smsNotiPref.setOnPreferenceClickListener(clickListener);
-			 sampleRate = (Preference) findPreference("sample_rate");
-			 maxDurationSession = (Preference) findPreference("max_duration_session");
-			 alarmTime = (Preference) findPreference("time");
-			// Bind the summaries of EditText/List/Dialog/Ringtone preferences
-			// to their values. When their values change, their summaries are
-			// updated to reflect the new value, per the Android Design
-			// guidelines.
+			 
+			
 			bindPreferenceSummaryToValue(findPreference("sample_rate"));
 			bindPreferenceSummaryToValue(findPreference("max_duration_session"));
 		}
 		
+		
+	}
+
+
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	public static class NotificationPreferenceFragment extends
+			PreferenceFragment {
+		Preference smsNotiPref;
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			addPreferencesFromResource(R.xml.pref_notification);
+			smsNotiPref = (Preference) findPreference("sms_list");
+			smsNotiPref.setOnPreferenceClickListener(clickListener);
+			
+			bindPreferenceSummaryToValue(findPreference("time"));
+		}
 		private Preference.OnPreferenceClickListener clickListener = new Preference.OnPreferenceClickListener(){
 
 			@Override
@@ -309,27 +232,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 
 
 		};
-	}
 
-
-	/**
-	 * This fragment shows notification preferences only. It is used when the
-	 * activity is showing a two-pane settings UI.
-	 */
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	public static class NotificationPreferenceFragment extends
-			PreferenceFragment {
-		@Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			addPreferencesFromResource(R.xml.pref_notification);
-
-			// Bind the summaries of EditText/List/Dialog/Ringtone preferences
-			// to their values. When their values change, their summaries are
-			// updated to reflect the new value, per the Android Design
-			// guidelines.
-			bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
-		}
 	}
 
 	
@@ -399,12 +302,9 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 		    }
 			
 			
-			//get time from database and initialise the variables.
-
 
 			Calendar now = Calendar.getInstance();
 			Calendar calendar = Calendar.getInstance();
-		//	calendar.setTimeInMillis(System.currentTimeMillis());
 			
 			calendar.set(Calendar.HOUR, hour);  
 			if(am)

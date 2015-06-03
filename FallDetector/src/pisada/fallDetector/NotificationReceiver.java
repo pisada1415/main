@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.support.v4.app.NotificationCompat;
-import android.widget.Toast;
 
 public class NotificationReceiver extends BroadcastReceiver {
 
@@ -19,7 +18,6 @@ public class NotificationReceiver extends BroadcastReceiver {
 	  @Override
 	  public void onReceive (Context context, Intent intent)
 	    {
-		 Toast.makeText(context, "ARRIVATA", Toast.LENGTH_LONG).show();
 		  NotificationManager nm;
 		  SessionDataSource s = new SessionDataSource(context);
 		  if(s.existCurrentSession())
