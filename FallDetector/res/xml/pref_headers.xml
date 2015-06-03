@@ -3,10 +3,10 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="pisada.fallDetector.SettingsActivity2$GeneralPreferenceFragment"
+        android:fragment="pisada.fallDetector.SettingsActivity$GeneralPreferenceFragment"
         android:title="@string/pref_header_general" />
     <header
-        android:fragment="pisada.fallDetector.SettingsActivity2$NotificationPreferenceFragment"
+        android:fragment="pisada.fallDetector.SettingsActivity$NotificationPreferenceFragment"
         android:title="@string/pref_header_notifications" />
     
 
