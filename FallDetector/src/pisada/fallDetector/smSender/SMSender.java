@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.telephony.SmsManager;
-import android.widget.Toast;
 
 /*
  * in teoria funziona così:
@@ -59,14 +58,12 @@ public class SMSender {
 
 
 		String SENT = "SMS_SENT";
-		String DELIVERED = "SMS_DELIVERED";
 
 
 		PendingIntent sentPI = PendingIntent.getBroadcast(ctx, 0,
 				new Intent(SENT), 0);
 
-		PendingIntent deliveredPI = PendingIntent.getBroadcast(ctx, 0,
-				new Intent(DELIVERED), 0);
+		
 
 		//---when the SMS has been sent---
 		ctx.registerReceiver(new BroadcastReceiver(){
@@ -120,7 +117,7 @@ public class SMSender {
 		      
 
 		SmsManager sms = SmsManager.getDefault();
-		sms.sendTextMessage(number, null, message, sentPI, deliveredPI);   
+		sms.sendTextMessage(number, null, message, sentPI, null);   
 		wait = true;
 	}
 

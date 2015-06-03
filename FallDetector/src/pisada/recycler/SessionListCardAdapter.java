@@ -2,38 +2,28 @@ package pisada.recycler;
 
 
 import java.util.ArrayList;
-import java.util.Random;
-
-import javax.sql.DataSource;
 
 import pisada.database.FallDataSource;
 import pisada.database.FallDataSource.Fall;
 import pisada.database.SessionDataSource;
 import pisada.database.SessionDataSource.Session;
 import pisada.fallDetector.FragmentCommunicator;
-import pisada.fallDetector.MainActivity;
 import pisada.fallDetector.R;
 import pisada.fallDetector.SessionDetailsFragment;
 import pisada.fallDetector.Utility;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextWatcher;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
@@ -46,7 +36,7 @@ import android.widget.Toast;
 import fallDetectorException.DublicateNameSessionException;
 
 
-
+@SuppressWarnings("unused") //(classi statiche pubbliche presenti)
 public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
 	private ArrayList<Session> sessionList;
@@ -55,7 +45,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	private static FallDataSource fallData;
 	private ArrayList<Boolean> expandedArray=new ArrayList<Boolean>();
 	private boolean existExp=false;
-
 
 
 
@@ -103,6 +92,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 		private TextView durationText;
 		private TextView startTimeTextView;
 		private TextView fallsTextView;
+		
 		private TextView fallsTextViewDesc;
 
 		private ImageView sessionIcon;
@@ -226,6 +216,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 			}
 		};
+		
 		String fallsNumber="0";
 		if(fallData.sessionFalls(session)!=null)
 			fallsNumber=String.valueOf(fallData.sessionFalls(session).size());

@@ -12,13 +12,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
-import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 
 
 public class SessionDataSource {
 	private static SQLiteDatabase database;
 	private FallSqlHelper databaseHelper;
+	@SuppressWarnings("unused")
 	private String[] allColumns={FallSqlHelper.SESSION_NAME,FallSqlHelper.SESSION_IMG,FallSqlHelper.SESSION_START_TIME,FallSqlHelper.SESSION_END_TIME, 
 			FallSqlHelper.SESSION_CLOSE_COLUMN, FallSqlHelper.SESSION_DURATION, FallSqlHelper.SESSION_STOP_TIME_PREFERENCE, FallSqlHelper.SESSION_PAUSE_COLUMN, FallSqlHelper.SESSION_ARCHIVED_COLUMN , FallSqlHelper.SESSION_ID};
 	private Context context;
@@ -89,6 +89,7 @@ public class SessionDataSource {
 
 		//SETTER PRIVATI
 		private void setName(String name){this.name=name;}
+		@SuppressWarnings("unused")
 		private void setEndTime(long endTime){this.endTime=endTime;}
 		private void setClose(long endTime){close=FallSqlHelper.CLOSE;this.endTime=endTime;}
 		private void setStopTimePreference(long t){stopTimePreference=t;}
@@ -405,6 +406,7 @@ public class SessionDataSource {
 
 		ContentValues values=new ContentValues();
 		values.put(FallSqlHelper.SESSION_ARCHIVED_COLUMN,archived);
+		@SuppressWarnings("unused")
 		String[] whereArgs={s.getName()};
 		database.update(FallSqlHelper.SESSION_TABLE, values, FallSqlHelper.SESSION_NAME+" = ?",new String[]{s.name});
 		s.setArchived(boolArchived);

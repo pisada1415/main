@@ -1,4 +1,5 @@
 /*
+ * MESSAGGIO INDIRIZZATO AI MEMBRI DEL GRUPPO PISADA
  * fate così quando mettete l'azione al tasto back nella actionbar o comunque quando usate un qualsiasi intent:
  *
  * Intent intent = new Intent(this, Activity.class);
@@ -24,9 +25,3 @@
 	*/
  */
  
- 
- da fare:
- -archivio
- -info
- -sistemare grafica sessions list e rendere sessioni archiviabili - animazioni ecc
- -rivedere utilizzo ram ecc. (DDMS)

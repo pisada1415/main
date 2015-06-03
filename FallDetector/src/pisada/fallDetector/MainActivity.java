@@ -552,6 +552,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 	public void onResume()
 	{
 		super.onResume();
+		setTitle(listItems.get(currentUIIndex).getTitle());
 		isForeground = true;
 		isPortrait =  getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? true : false;
 		

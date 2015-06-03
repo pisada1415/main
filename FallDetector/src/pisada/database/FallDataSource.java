@@ -1,25 +1,17 @@
 package pisada.database;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import fallDetectorException.BoolNotBoolException;
 import fallDetectorException.InvalidFallException;
 import fallDetectorException.InvalidSessionException;
 import pisada.database.SessionDataSource.Session;
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.widget.Toast;
 
 public class FallDataSource {
 	private static SQLiteDatabase database;
@@ -27,7 +19,7 @@ public class FallDataSource {
 	private SessionDataSource sessionData;
 	private String[] fallColumns = {FallSqlHelper.FALL_TIME, FallSqlHelper.FALL_FSESSION,FallSqlHelper.FALL_LAT,FallSqlHelper.FALL_LNG, FallSqlHelper.FALL_NOTIFIED_COLUMN};
 	private String[] acquisitionColumns = {FallSqlHelper.ACQUISITION_TIME,FallSqlHelper.ACQUISITION_FALL_TIME, FallSqlHelper.ACQUISITION_ASESSION, FallSqlHelper.ACQUISITION_XAXIS, FallSqlHelper.ACQUISITION_YAXIS, FallSqlHelper.ACQUISITION_ZAXIS};
-	private Context context;
+	
 
 
 
@@ -83,7 +75,6 @@ public class FallDataSource {
 		synchronized(FallDataSource.class){
 			if(databaseHelper==null) databaseHelper=FallSqlHelper.getIstance(context);
 			sessionData=new SessionDataSource(context);
-			this.context=context;
 			open();
 		}
 	}
@@ -149,6 +140,7 @@ public class FallDataSource {
 
 	}
 
+	@SuppressWarnings("unused") //(teniamo l'opzione per eventuali modifiche)
 	private Acquisition getAcquisition(Fall fall,long acquisitionTime){
 
 
