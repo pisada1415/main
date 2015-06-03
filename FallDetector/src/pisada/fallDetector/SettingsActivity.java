@@ -260,15 +260,7 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 			String newValue = sharedPreferences.getString(key, "");
 			ForegroundService.MAX_SENSOR_UPDATE_RATE = Integer.parseInt(newValue);
 		}
-		else if(key.equals("max_duration_session"))
-		{
-			String newValue = sharedPreferences.getString(key, "");
-			String value = newValue;
-			if(Integer.parseInt(value) < 1 || Integer.parseInt(value)>24)
-			{
-				Toast.makeText(this, "Insert a value between 1 and 24", Toast.LENGTH_SHORT).show();
-			}
-		}
+		
 		else if(key.equals("time"))
 		{
 			String newValue = sharedPreferences.getString(key, "");
