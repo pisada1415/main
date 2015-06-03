@@ -34,10 +34,7 @@
 
         <service android:name=".ForegroundService" />
 
-        <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings" >
-        </activity>
+        
         <activity
             android:name=".ContactsActivity"
             android:label="@string/title_activity_contacts" >
@@ -55,10 +52,20 @@
         </receiver>
 
         <activity
-            android:name=".SettingsActivity2"
+            android:name=".SettingsActivity"
             android:theme="@style/SettingsTheme"
-            android:label="@string/title_activity_settings_activity2" >
+            android:label="@string/title_activity_settings" >
         </activity>
+        
+        
+        <activity
+            android:name=".StoBeneActivity"
+            android:label="@string/title_activity_sto_bene"
+            android:theme="@android:style/Theme.Holo.Dialog"
+            android:excludeFromRecents="true" >
+        </activity>
+
+        
     </application>
 
 </manifest>

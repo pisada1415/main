@@ -9,7 +9,7 @@
         android:id="@+id/firstsecondcards"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="3"
+        android:layout_weight="5"
         android:orientation="vertical" >
 
         <android.support.v7.widget.CardView
@@ -34,6 +34,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
+                     android:baselineAligned="false"
                     android:orientation="horizontal" >
 
                     <RelativeLayout
@@ -46,44 +47,51 @@
 
                         <RelativeLayout
                             android:id="@+id/buttonWrapper"
-                            android:layout_width="150dp"
-                            android:layout_height="75dp"
+                            android:layout_width="300dp"
+                            android:layout_height="150dp"
                             android:layout_marginBottom="5dp"
                             android:layout_marginTop="10dp" >
 
                             <ProgressBar
                                 android:id="@+id/progressBarFirstCard"
-                                android:layout_width="30dp"
-                                android:layout_height="30dp"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
                                 android:layout_centerHorizontal="true"
                                 android:layout_centerInParent="true"
                                 android:visibility="visible" />
 
                             <Button
                                 android:id="@+id/start_pause_button"
-                                android:layout_width="150dp"
-                                android:layout_height="75dp"
+                                android:layout_width="300dp"
+                                android:layout_height="150dp"
                                 android:layout_alignParentTop="true"
                                 android:background="@drawable/button_selector_play" />
                         </RelativeLayout>
 
                         <Button
                             android:id="@+id/stop_button"
-                            android:layout_width="150dp"
-                            android:layout_height="75dp"
+                            android:layout_width="300dp"
+                            android:layout_height="150dp"
                             android:layout_below="@id/buttonWrapper"
                             android:background="@drawable/button_selector_stop" />
                     </RelativeLayout>
+
+					<RelativeLayout
+					    android:layout_width="0dp"
+					    android:layout_height="match_parent"
+					    android:layout_weight="1" >
 
                     <Chronometer
                         android:id="@+id/chronometer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
-                        android:layout_margin="20dp"
+                        android:layout_centerVertical="true"
+                        android:layout_margin="50dp"
                         android:typeface="sans"
                         android:textColor="@color/material_green_400"
                         android:textSize="35sp" />
+                    </RelativeLayout>
                 </LinearLayout>
 
                 <RelativeLayout
@@ -161,7 +169,7 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
+        android:layout_weight="4"
         android:orientation="vertical" >
 
         <android.support.v7.widget.CardView
@@ -169,7 +177,7 @@
             xmlns:card_view="http://schemas.android.com/apk/res-auto"
             android:id="@+id/plotcard"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="200dp"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="0dp"
             android:clickable="true"
@@ -179,7 +187,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="200dp"
                 android:orientation="vertical" >
 
                 <TextView
@@ -196,8 +204,7 @@
                 <LinearLayout
                     android:id="@+id/graph"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_margin="5dp"
+                    android:layout_height="170dp"
                     android:orientation="vertical" >
                 </LinearLayout>
             </LinearLayout>

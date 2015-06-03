@@ -391,6 +391,8 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 			//Oholder.fallPosition.setText("Position: "+ fall.getPos());
 			Oholder.fallTime.setText("Time: " + Utility.getStringTime(fall.getTime()));
+			Oholder.boolNotif.setText(activity.getResources().getString(R.string.notsent));
+			Oholder.boolNotif.setTextColor(Color.RED);
 			if(fall.wasNotified()){
 				Oholder.boolNotif.setText(activity.getResources().getString(R.string.sent));
 				Oholder.boolNotif.setTextColor(Color.GREEN);
@@ -600,7 +602,6 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 		}
 		else if(thumbNailCurrent != null)
 			thumbNailCurrent.setVisibility(View.GONE);
-		
 		/*if(thumbNailCurrent == null && session != null)
 			bitmapThumbNailCurrent = sessionBitmap;*/
 
@@ -713,10 +714,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 			long time = System.currentTimeMillis(); //MEMORIZZA IL MOMENTO IN CUI è STATO PREMUTO IL TASTO
 			if(currentSessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
-				{
-					int oldID = sds.sessions().size() > 0 ? sds.sessions().get(0).getID() : -1;
-					currentSessionName = "Session"+(oldID+1); //assegno nome default UNICO (altrimenti tengo quello cambiato)
-				}
+				currentSessionName = "Session:"+ Utility.getStringTime(time); //assegno nome default UNICO (altrimenti tengo quello cambiato)
 
 
 			if(!ForegroundService.isRunning()){

@@ -3,8 +3,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/first_curr_session_card"
     android:layout_width="match_parent"
-    android:layout_height="1400px"
-    android:layout_margin="5dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="0dp"
+ 
     android:clickable="true"
     android:foreground="?android:attr/selectableItemBackground"
     card_view:cardCornerRadius="4dp" >
@@ -12,42 +13,128 @@
     <RelativeLayout
         android:id="@+id/curr_card_session_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp" >
 
         <TextView
-            android:id="@+id/current_session_name_text"
+            android:id="@+id/first_curr_name"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="10dp"
             android:gravity="center"
-            android:text="cazzo"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/current_session_start_text"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:layout_below="@id/current_session_name_text"
-            android:gravity="center"
-            android:text="cazzo"
-            android:textSize="20sp" />
+            android:text="Session Name"
+            android:textSize="20sp"
+            android:typeface="serif" />
 
         <ImageView
             android:id="@+id/current_session_icon"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
+            android:layout_width="245dp"
+            android:layout_height="245dp"
+            android:layout_below="@+id/first_curr_name"
             android:layout_centerHorizontal="true"
-            android:layout_below="@id/current_session_start_text"
-            android:gravity="center" />
+            android:layout_marginTop="40dp"
+            android:src="@drawable/abc_ab_share_pack_mtrl_alpha" />
 
-        <Button
-            android:id="@+id/details_current_button"
+        <RelativeLayout
+            android:id="@+id/first_curr_field_layout"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:layout_below="@id/current_session_icon"
-            android:layout_centerHorizontal="true"
-            android:onClick="currentSessionDetails"
-            android:text="Dettaglio Session"
-            android:textSize="20sp" />
+            android:layout_height="match_parent"
+            android:layout_below="@id/current_session_icon" >
+
+            <TextView
+                android:id="@+id/first_curr_num_cadute_field"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/first_curr_num_cadute_field" />
+
+            <TextView
+                android:id="@+id/first_curr_sent_field"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/fist_curr_num_cadute"
+                android:layout_alignBottom="@+id/fist_curr_num_cadute"
+                android:layout_alignLeft="@+id/first_curr_duration"
+                android:text="@string/first_curr_sent_field" />
+
+            <TextView
+                android:id="@+id/first_curr_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/first_curr_date_field"
+                android:layout_alignBottom="@+id/first_curr_date_field"
+                android:layout_alignLeft="@+id/first_curr_ora_inizio"
+                android:gravity="right"
+                android:text="24/07/1991" />
+
+            <TextView
+                android:id="@+id/first_curr_ora_inizio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/first_curr_ora_inizio_field"
+                android:layout_alignBottom="@+id/first_curr_ora_inizio_field"
+                android:layout_alignLeft="@+id/fist_curr_num_cadute"
+                android:text="12:25:13" />
+
+            <Chronometer
+                android:id="@+id/chronometer1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/first_curr_duration"
+                android:layout_alignParentRight="true"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="10dp"
+                android:text="Chronometer"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/first_curr_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/first_curr_date"
+                android:layout_alignBottom="@+id/first_curr_date"
+                android:layout_marginRight="30dp"
+                android:layout_toLeftOf="@id/chronometer1"
+                android:gravity="center"
+                android:text="@string/duration"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/first_curr_ora_inizio_field"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/first_curr_num_cadute_field"
+                android:layout_below="@+id/first_curr_num_cadute_field"
+                android:layout_marginTop="10dp"
+                android:text="@string/first_curr_ora_inizio_field" />
+
+            <TextView
+                android:id="@+id/first_curr_date_field"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignLeft="@+id/first_curr_num_cadute_field"
+                android:layout_below="@+id/first_curr_ora_inizio_field"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/first_curr_date_field" />
+
+            <TextView
+                android:id="@+id/fist_curr_num_cadute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/first_curr_num_cadute_field"
+                android:layout_alignBottom="@+id/first_curr_num_cadute_field"
+                android:layout_marginLeft="30dp"
+                android:layout_toRightOf="@+id/first_curr_ora_inizio_field"
+                android:gravity="right"
+                android:text="2" />
+
+        </RelativeLayout>
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

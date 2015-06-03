@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 			fragment = new ArchiveFragment();
 			break;
 		case 3:
-			Intent intent = new Intent(this, SettingsActivity2.class);
+			Intent intent = new Intent(this, SettingsActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP); //per far si che risvegli l'activity se sta già runnando e non richiami oncreate
 			startActivity(intent);
 			Intent intent2 = new Intent(MainActivity.this, CurrentSessionFragment.class);

@@ -13,6 +13,14 @@
     <string name="time_elapsed">00:00:00</string>
     <string name="info">info.</string>
     <string name="falls">Falls</string>
+    <string name="first_curr_date_field">Date:</string>
+    <string name="first_curr_num_cadute_field">Falls:</string>
+    <string name="first_curr_ora_inizio_field">Time:</string>
+    <string name="first_curr_sent_field">Sent:</string>
+    <string name="FAB">FAB</string>
+    <string name="no_current_session">No current session</string>
+      <string name="falls_notified">Falls sent</string>
+       <string name="falls_unnotified">Falls not sent</string>
     <string name="date_start_time">Date:&#160;</string>
     <string name="position">position</string>
     <string name="paused">PAUSED</string>
