@@ -160,7 +160,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 			@Override
 			public void onLocationChanged(Location location) {
 				stopLocationUpdates();
-				Toast.makeText(getApplicationContext(), "ricevuta posizione gps", Toast.LENGTH_LONG).show();
 			}
 
 			@Override
@@ -186,7 +185,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 			@Override
 			public void onLocationChanged(Location location) {
 				stopLocationUpdates();
-				Toast.makeText(getApplicationContext(), "ricevuta posizione network", Toast.LENGTH_LONG).show();
 			}
 
 			@Override
@@ -246,7 +244,6 @@ public class ForegroundService extends Service implements SensorEventListener {
 
 		if(running)
 		{
-			Toast.makeText(this, "Already running", Toast.LENGTH_LONG).show();
 			return Service.START_STICKY;
 		}
 		else
