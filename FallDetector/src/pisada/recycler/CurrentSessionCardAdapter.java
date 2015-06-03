@@ -713,7 +713,10 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 
 			long time = System.currentTimeMillis(); //MEMORIZZA IL MOMENTO IN CUI è STATO PREMUTO IL TASTO
 			if(currentSessionName.equals(sessionNameDefault)) //cioè non è stato cambiato
-				currentSessionName = "Session"+(sds.sessions().get(0).getID()+1); //assegno nome default UNICO (altrimenti tengo quello cambiato)
+				{
+					int oldID = sds.sessions().size() > 0 ? sds.sessions().get(0).getID() : 0;
+					currentSessionName = "Session"+(oldID+1); //assegno nome default UNICO (altrimenti tengo quello cambiato)
+				}
 
 
 			if(!ForegroundService.isRunning()){

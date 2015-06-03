@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="16"
+        android:minSdkVersion="21"
         android:targetSdkVersion="22" />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -13,25 +13,25 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.SEND_SMS" />
- <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/CustomActionBarTheme" >
-
-        <activity android:name=".MainActivity" android:configChanges="keyboardHidden|orientation|screenSize">
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
-        
         <activity android:name=".SessionDetailsActivity" >
         </activity>
-        
+
         <service android:name=".ForegroundService" />
 
         <activity
@@ -52,8 +52,13 @@
         <receiver
             android:name=".NotificationReceiver"
             android:label="@string/app_name" >
-
         </receiver>
+
+        <activity
+            android:name=".SettingsActivity2"
+            android:theme="@style/SettingsTheme"
+            android:label="@string/title_activity_settings_activity2" >
+        </activity>
     </application>
 
 </manifest>
