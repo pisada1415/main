@@ -124,6 +124,9 @@ public class SettingsActivity extends PreferenceActivity implements OnSharedPref
 	/** {@inheritDoc} */
 	@Override
 	public boolean onIsMultiPane() {
+		if(!isXLargeTablet(this)||isSimplePreferences(this))
+			setupSimplePreferencesScreen();
+			
 		return isXLargeTablet(this) && !isSimplePreferences(this);
 	}
 
