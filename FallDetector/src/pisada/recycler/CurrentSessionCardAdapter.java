@@ -42,6 +42,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+
+
 public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements ServiceReceiver {
 
 	private static ArrayList<FallDataSource.Fall> cardContentList;
@@ -714,7 +717,7 @@ public class CurrentSessionCardAdapter extends RecyclerView.Adapter<RecyclerView
 			long time = System.currentTimeMillis(); //MEMORIZZA IL MOMENTO IN CUI è STATO PREMUTO IL TASTO
 			if(currentSessionName.equals(sessionNameDefault)){
 				//cioè non è stato cambiato
-				int prevID=sds.sessions().size()>0 ? sds.sessions().get(0).getID() : 0;
+				int prevID=sds.sessions().size()>0 ? sds.sessions().get(0).getID() : -1;
 				currentSessionName = "Session"+(prevID+1); //assegno nome default UNICO (altrimenti tengo quello cambiato)
 			}
 

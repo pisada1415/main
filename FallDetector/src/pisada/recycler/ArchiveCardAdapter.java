@@ -70,7 +70,7 @@ public class ArchiveCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
 		SessionHolder Oholder=(SessionHolder) holder;
 		final Session session = sessionList.get(i);
-	
+
 		Oholder.name.setText(session.getName());
 		Oholder.falls.setText(String.valueOf(session.getFallsNumber()));
 		Oholder.date.setText(Utility.getStringDate(session.getStartTime()));
@@ -82,7 +82,8 @@ public class ArchiveCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 				sessionData.setSessionArchived(session, false);
 				sessionList.remove(i);
 				notifyItemRemoved(i);
-				notifyItemRangeChanged(i, sessionList.size()-i);
+				if(i==0&&sessionList.size()==1)notifyDataSetChanged();
+				else notifyItemRangeChanged(i,i<sessionList.size()-15 ? i+15: sessionList.size()-1);
 			}
 		});
 
@@ -93,7 +94,7 @@ public class ArchiveCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 				sessionData.deleteSession(session);
 				sessionList.remove(i);
 				notifyItemRemoved(i);
-				notifyItemRangeChanged(i, sessionList.size()-i);
+				notifyItemRangeChanged(i, i<sessionList.size()-15 ? i+15: sessionList.size()-1);
 			}
 		});
 
@@ -109,7 +110,7 @@ public class ArchiveCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 			}
 		});*/
 
-	
+
 	}
 
 	@Override

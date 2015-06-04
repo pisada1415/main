@@ -14,7 +14,11 @@ import pisada.fallDetector.FragmentCommunicator;
 import pisada.fallDetector.MainActivity;
 import pisada.fallDetector.R;
 import pisada.fallDetector.SessionDetailsFragment;
+import pisada.fallDetector.SessionsListFragment;
 import pisada.fallDetector.Utility;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -23,6 +27,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -54,7 +59,11 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 	private static SessionDataSource sessionData;
 	private static FallDataSource fallData;
 	private ArrayList<Boolean> expandedArray=new ArrayList<Boolean>();
+	private ArrayList<Boolean> selectedArray=new ArrayList<Boolean>();
 	private boolean existExp=false;
+	protected boolean oneSelected=false;
+	private int selectedCard=0;
+	private SessionsListFragment frag;
 
 
 
@@ -127,20 +136,18 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 			fallsTextView= (TextView) v.findViewById(R.id.old_falls_description);
 			durationText=(TextView) v.findViewById(R.id.old_duration_description);
 			fallsTextViewDesc=(TextView) v.findViewById(R.id.old_falls_name);
-
-
 		}
 
 
 	}
 
 
-	public SessionListCardAdapter(final Activity activity, RecyclerView rView) {
+	public SessionListCardAdapter(final Activity activity, RecyclerView rView, SessionsListFragment frag) {
 
 		SessionListCardAdapter.activity=activity;
 		sessionData=new SessionDataSource(activity);
 		fallData=new FallDataSource(activity);
-
+		this.frag=frag;
 		this.sessionList=sessionData.notArchivedSessions();
 
 		if(!sessionData.existCurrentSession()){
@@ -149,6 +156,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		for(int i=0;i<sessionList.size();i++){
 			expandedArray.add(false);
+			selectedArray.add(false);
 		}
 	}
 
@@ -200,30 +208,103 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 		final OldSessionHolder Oholder=(OldSessionHolder) holder;
 		final Session session = sessionList.get(i);
+		if(selectedArray.get(i))Oholder.oldCard.setBackgroundColor(Color.CYAN);
+		else Oholder.oldCard.setBackgroundColor(Color.WHITE);
+
+		Oholder.oldCard.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(final View v) {
+				if(selectedCard>0){
+					Integer colorFrom =null;
+					Integer colorTo =null;
+
+					if(selectedArray.get(i)==false){
+						selectedArray.set(i, true);
+						colorFrom =Color.WHITE;
+						colorTo =Color.CYAN;
+						selectedCard++;
+					}
+					else{
+						colorFrom =Color.CYAN;
+						colorTo =Color.WHITE;
+						selectedArray.set(i,false);
+						selectedCard--;
+					}
+
+					frag.existSelectedItem(selectedCard>0);
+					ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+					colorAnimation.addUpdateListener(new AnimatorUpdateListener() {
+
+						@Override
+						public void onAnimationUpdate(ValueAnimator animator) {
+							v.setBackgroundColor((Integer)animator.getAnimatedValue());
+						}
+
+					});
+					colorAnimation.setDuration(250).start();
+				}
+
+
+			}
+		});
+		Oholder.oldCard.setOnLongClickListener(new View.OnLongClickListener() {
+
+			@Override
+			public boolean onLongClick(final View v) {
+
+				Integer colorFrom =null;
+				Integer colorTo =null;
+
+				if(selectedArray.get(i)==false){
+					selectedArray.set(i, true);
+					colorFrom =Color.WHITE;
+					colorTo =Color.CYAN;
+					selectedCard++;
+
+					frag.existSelectedItem(selectedCard>0);
+					ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+					colorAnimation.addUpdateListener(new AnimatorUpdateListener() {
+
+						@Override
+						public void onAnimationUpdate(ValueAnimator animator) {
+							v.setBackgroundColor((Integer)animator.getAnimatedValue());
+						}
+
+					});
+
+					colorAnimation.setDuration(250).start();
+				}
+				return true;
+
+			}
+		});
+
 
 
 		OnClickListener sessionDetailListener=new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				if(existExp){
-					int k;
+				if(selectedCard==0){
+					if(existExp){
+						int k;
 
 
-					for(k=0;k<expandedArray.size();k++){
+						for(k=0;k<expandedArray.size();k++){
 
-						if(k!=i&&expandedArray.get(k)){
-							expandedArray.set(k,false);
-							notifyItemChanged(k);
-							return;
+							if(k!=i&&expandedArray.get(k)){
+								expandedArray.set(k,false);
+								notifyItemChanged(k);
+								return;
+							}
 						}
 					}
+
+					Intent intent=new Intent(activity,SessionDetailsFragment.class);
+					intent.putExtra(Utility.SESSION_NAME_KEY, session.getName());
+					((FragmentCommunicator)activity).switchFragment(intent);
 				}
-
-				Intent intent=new Intent(activity,SessionDetailsFragment.class);
-				intent.putExtra(Utility.SESSION_NAME_KEY, session.getName());
-				((FragmentCommunicator)activity).switchFragment(intent);
-
 			}
 		};
 		String fallsNumber="0";
@@ -239,7 +320,6 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
 
 		BitmapManager.loadBitmap(session.getID(), Oholder.sessionIcon, activity);
-		Oholder.oldCard.setOnClickListener(sessionDetailListener);
 		Oholder.vName.setOnClickListener(sessionDetailListener);
 		Oholder.sessionIcon.setOnClickListener(sessionDetailListener);
 		Oholder.renameBtn.setOnClickListener(new OnClickListener(){
@@ -250,31 +330,31 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				input.setText( session.getName());
 				input.addTextChangedListener((TextWatcher) activity);
 				final Boolean isValid=null;
-			
-				
-					new AlertDialog.Builder(activity)
-					.setTitle("Rename")
-					.setMessage("Insert name")
-					.setView(input)
-					.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int whichButton) {
 
-							String value = input.getText().toString(); 
-							if(sessionData.existSession(value)){
-								Toast.makeText(activity, "A session with this name already exists", Toast.LENGTH_SHORT).show();
-							}
-							else{
-								sessionData.renameSession(session, value);
-								notifyItemChanged(i);
-							}
 
+				new AlertDialog.Builder(activity)
+				.setTitle("Rename")
+				.setMessage("Insert name")
+				.setView(input)
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+
+						String value = input.getText().toString(); 
+						if(sessionData.existSession(value)){
+							Toast.makeText(activity, "A session with this name already exists", Toast.LENGTH_SHORT).show();
 						}
-					}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int whichButton) {
-							// Do nothing.
+						else{
+							sessionData.renameSession(session, value);
+							notifyItemChanged(i);
 						}
-					}).show();
-				
+
+					}
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						// Do nothing.
+					}
+				}).show();
+
 			}
 
 
@@ -344,7 +424,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				sessionList.remove(i);
 				expandedArray.remove(i);
 				notifyItemRemoved(i);
-				notifyItemRangeChanged(i, i+15);
+				notifyItemRangeChanged(i, i<sessionList.size()-15 ? i+15: sessionList.size()-1);
 			}
 		});
 
@@ -357,7 +437,7 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				sessionList.remove(i);
 				expandedArray.remove(i);
 				notifyItemRemoved(i);
-				notifyItemRangeChanged(i, i+15);
+				notifyItemRangeChanged(i,i<sessionList.size()-15 ? i+15: sessionList.size()-1);
 			}
 		});
 
@@ -429,6 +509,46 @@ public class SessionListCardAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 				return;
 			}
 		}
+	}
+
+	public void deleteSelectedSession(){
+		int i=0;
+		while(i<selectedArray.size()){
+
+			if(selectedArray.get(i)){			
+				Session s=sessionList.remove(i);
+				selectedArray.remove(i);
+				sessionData.deleteSession(s);
+				notifyItemRemoved(i);
+				notifyItemRangeChanged(i, i<sessionList.size()-15 ? i+15: sessionList.size()-1);
+			}
+			else i++;
+
+
+		}
+		selectedCard=0;
+		frag.existSelectedItem(false);
+
+	}
+
+	public void archiveSelectedSession(){
+		int i=0;
+		while(i<selectedArray.size()){
+
+			if(selectedArray.get(i)){			
+				Session s=sessionList.remove(i);
+				selectedArray.remove(i);
+				sessionData.setSessionArchived(s, true);
+				notifyItemRemoved(i);
+				notifyItemRangeChanged(i, i<sessionList.size()-15 ? i+15: sessionList.size()-1);
+			}
+			else i++;
+
+
+		}
+		selectedCard=0;
+		frag.existSelectedItem(false);
+
 	}
 
 }

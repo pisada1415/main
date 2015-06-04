@@ -244,6 +244,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
 		try{
 			menu.findItem(R.id.rename_session).setVisible(!drawerOpen);
+			
 		}
 		catch(NullPointerException e)
 		{

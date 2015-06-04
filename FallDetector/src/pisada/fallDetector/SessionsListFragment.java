@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView.FindListener;
@@ -31,7 +32,7 @@ public class SessionsListFragment extends FallDetectorFragment implements Servic
 	Activity activity;
 	private ImageView FAB;
 	private final int TYPE = 1;
-
+	private boolean existSelected=false;
 
 	public SessionsListFragment()
 	{
@@ -43,6 +44,7 @@ public class SessionsListFragment extends FallDetectorFragment implements Servic
 	}
 	@Override
 	public View onCreateView(android.view.LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
 		return inflater.inflate(R.layout.fragment_sessions_list, container, false);
 	};
 
@@ -66,7 +68,7 @@ public class SessionsListFragment extends FallDetectorFragment implements Servic
 
 		rView=(RecyclerView) getView().findViewById(R.id.session_list_recycler);
 
-		cardAdapter=new SessionListCardAdapter(activity, rView);
+		cardAdapter=new SessionListCardAdapter(activity, rView, this);
 		rView.setAdapter(cardAdapter);
 		mLayoutManager = new LinearLayoutManager(activity);
 		rView.setLayoutManager(mLayoutManager);
@@ -93,6 +95,11 @@ public class SessionsListFragment extends FallDetectorFragment implements Servic
 		// Inflate the menu; this adds items to the action bar if it is present.
 		menu.clear();
 		inflater.inflate(R.menu.sessions_list, menu);
+		if(existSelected){
+			menu.findItem(R.id.delete_bar).setVisible(true);
+			menu.findItem(R.id.archive_bar).setVisible(true);
+		}
+
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
@@ -140,8 +147,30 @@ public class SessionsListFragment extends FallDetectorFragment implements Servic
 	}
 	@Override
 	public void runOnUiThread(Runnable r) {
-	
 
+
+	}
+
+	public void existSelectedItem(boolean existSelected){
+		this.existSelected=existSelected;
+		getActivity().invalidateOptionsMenu();
+
+	}
+
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+
+		switch (item.getItemId()) {
+		case R.id.delete_bar:
+			((SessionListCardAdapter) rView.getAdapter()).deleteSelectedSession();
+			return true;
+		case R.id.archive_bar:
+			((SessionListCardAdapter) rView.getAdapter()).archiveSelectedSession();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 }

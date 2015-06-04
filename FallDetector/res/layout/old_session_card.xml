@@ -14,9 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:clickable="true"
         android:paddingBottom="0dp"
-        card_view:cardCornerRadius="4dp" >
+       >
 
         <RelativeLayout
             android:id="@+id/icon_r_lay"
